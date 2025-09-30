@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import org.rajat.quickpick.presentation.feature.DummyScreen
 import org.rajat.quickpick.presentation.feature.SplashScreen
 import org.rajat.quickpick.presentation.navigation.Routes
 
@@ -17,6 +18,7 @@ fun AppNavigation(
     ) {
         composable(Routes.Splash.route) {
             SplashScreen()
+//            DummyScreen()
         }
     }
 }
