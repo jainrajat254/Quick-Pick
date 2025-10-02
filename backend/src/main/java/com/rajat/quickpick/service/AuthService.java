@@ -6,6 +6,7 @@ import com.rajat.quickpick.model.dto.AuthDtos;
 import com.rajat.quickpick.model.dto.VendorDtos;
 import com.rajat.quickpick.repository.*;
 import com.rajat.quickpick.security.JwtUtil;
+import com.rajat.quickpick.utils.Secrets;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -342,12 +343,14 @@ public class AuthService {
     private void createAndSendVerificationToken(String email, Role userType) {
         emailVerificationTokenRepository.deleteByEmailAndUserType(email, userType);
 
+        long expirationHours = Secrets.EMAIL_VERIFICATION_TOKEN_EXPIRATION / (1000 * 60 * 60);
+
         String token = UUID.randomUUID().toString();
         EmailVerificationToken verificationToken = new EmailVerificationToken();
         verificationToken.setToken(token);
         verificationToken.setEmail(email);
         verificationToken.setUserType(userType);
-        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(24));
+        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(expirationHours));
         verificationToken.setUsed(false);
         verificationToken.setCreatedAt(LocalDateTime.now());
 
@@ -356,6 +359,9 @@ public class AuthService {
     }
 
     public void resendVerificationEmail(String email, Role userType) {
+
+        long expirationHours = Secrets.PASSWORD_RESET_TOKEN_EXPIRATION / (1000 * 60 * 60);
+
         boolean userExists = false;
         boolean emailVerified = false;
 

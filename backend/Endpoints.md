@@ -66,7 +66,73 @@
   - Fields: vendorName, storeName, phone, address, vendorDescription, foodCategories, profileImageUrl
 
 
+## College Endpoints
 
+### Public Endpoints
+
+#### Get all colleges (public)
+- **GET /api/colleges/public**
+  - Returns: List of CollegeResponseDto (id, name, address, city, state)
+
+#### Get paginated colleges (public)
+- **GET /api/colleges/public/paginated**
+  - Query Params: page (default 0), size (default 10)
+  - Returns: Page of CollegeResponseDto
+
+#### Get college by ID (public)
+- **GET /api/colleges/public/{id}**
+  - Path Param: id
+  - Returns: CollegeResponseDto
+
+#### Search colleges (public)
+- **GET /api/colleges/public/search**
+  - Query Param: query
+  - Returns: List of CollegeResponseDto
+
+#### Get all cities (public)
+- **GET /api/colleges/public/cities**
+  - Returns: List of city names
+
+#### Get all states (public)
+- **GET /api/colleges/public/states**
+  - Returns: List of state names
+
+#### Get colleges by city (public)
+- **GET /api/colleges/public/city/{city}**
+  - Path Param: city
+  - Returns: List of CollegeResponseDto
+
+#### Get colleges by state (public)
+- **GET /api/colleges/public/state/{state}**
+  - Path Param: state
+  - Returns: List of CollegeResponseDto
+
+#### Get total colleges count (public)
+- **GET /api/colleges/public/count**
+  - Returns: { "count": long }
+
+---
+
+### Admin Endpoints 
+
+#### Create college
+- **POST /api/colleges/create**
+  - Header: Authorization: Bearer {jwt_token}
+  - Body: CollegeCreateDto (name, address, city, state)
+  - Returns: CollegeResponseDto
+
+#### Update college
+- **PUT /api/colleges/update/{id}**
+  - Header: Authorization: Bearer {jwt_token}
+  - Path Param: id
+  - Body: CollegeCreateDto
+  - Returns: CollegeResponseDto
+
+#### Delete college
+- **DELETE /api/colleges/delete/{id}**
+  - Header: Authorization: Bearer {jwt_token}
+  - Path Param: id
+  - Returns: { "message": "College deleted successfully" }
 
 
 ---

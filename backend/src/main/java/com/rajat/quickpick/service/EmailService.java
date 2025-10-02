@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import com.rajat.quickpick.utils.Secrets;
+
 
 @Service
 @RequiredArgsConstructor
@@ -35,10 +37,14 @@ public class EmailService {
             message.setSubject("QuickPick - Email Verification");
 
             String verificationUrl = baseUrl + "/api/auth/verify-email?token=" + token + "&type=" + userType;
+
+            long expirationHours = Secrets.EMAIL_VERIFICATION_TOKEN_EXPIRATION / (1000 * 60 * 60);
+
+
             String body = "Welcome to QuickPick!\n\n" +
                     "Please click the link below to verify your email address:\n" +
                     verificationUrl + "\n\n" +
-                    "This link will expire in 24 hours.\n\n" +
+                    "This link will expire in "+ expirationHours +"hours+.\n\n" +
                     "If you didn't create an account, please ignore this email.";
 
             message.setText(body);
@@ -58,10 +64,12 @@ public class EmailService {
             message.setSubject("QuickPick - Password Reset");
 
             String resetUrl = baseUrl + "/api/auth/reset-password?token=" + token + "&type=" + userType;
+
+            String expirationHours = String.valueOf(Secrets.PASSWORD_RESET_TOKEN_EXPIRATION / (1000 * 60 * 60));
             String body = "You requested a password reset for your QuickPick account.\n\n" +
                     "Please click the link below to reset your password:\n" +
                     resetUrl + "\n\n" +
-                    "This link will expire in 1 hour.\n\n" +
+                    "This link will expire in "+expirationHours+" hour.\n\n" +
                     "If you didn't request this reset, please ignore this email.";
 
             message.setText(body);
