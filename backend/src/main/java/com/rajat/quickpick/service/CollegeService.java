@@ -1,13 +1,13 @@
 package com.rajat.quickpick.service;
 
 
+import com.rajat.quickpick.dto.college.CollegeCreateDto;
+import com.rajat.quickpick.dto.college.CollegeResponseDto;
 import com.rajat.quickpick.exception.BadRequestException;
 import com.rajat.quickpick.exception.ResourceNotFoundException;
 import com.rajat.quickpick.model.College;
-import com.rajat.quickpick.model.dto.CollegeDtos;
 import com.rajat.quickpick.repository.CollegeRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,27 +17,25 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.rajat.quickpick.model.dto.CollegeDtos.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+//@Slf4j
 @Transactional
 public class CollegeService {
 
+    private static final Logger log = LoggerFactory.getLogger(CollegeService.class);
     @Autowired
     private CollegeRepository collegeRepository;
-
-    private static final Logger log = LoggerFactory.getLogger(CollegeService.class);
-
 
     public CollegeResponseDto createCollege(CollegeCreateDto createDto) {
         if (collegeRepository.existsByName(createDto.getName())) {
             throw new BadRequestException("College with name '" + createDto.getName() + "' already exists");
-        }else{
+        } else {
             College college = new College();
             college.setName(createDto.getName().trim());
             college.setAddress(createDto.getAddress().trim());
@@ -107,7 +105,7 @@ public class CollegeService {
     }
 
 
-//admin only
+    //admin only
     public CollegeResponseDto updateCollege(String id, CollegeCreateDto updateDto) {
         College existingCollege = collegeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("College not found with id: " + id));
@@ -128,7 +126,8 @@ public class CollegeService {
 
         return mapToResponseDto(updatedCollege);
     }
-//for admin only
+
+    //for admin only
     public void deleteCollege(String id) {
         College college = collegeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("College not found with id: " + id));
@@ -139,7 +138,8 @@ public class CollegeService {
     public long getCollegeCount() {
         return collegeRepository.count();
     }
-//for stats if needed
+
+    //for stats if needed
     public List<String> getAllCities() {
         return collegeRepository.findAll()
                 .stream()

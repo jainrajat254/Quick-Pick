@@ -1,6 +1,7 @@
 package com.rajat.quickpick.service;
 
-import com.rajat.quickpick.model.enums.Role;
+import com.rajat.quickpick.enums.Role;
+import com.rajat.quickpick.utils.Secrets;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -10,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-import com.rajat.quickpick.utils.Secrets;
 
 
 @Service
@@ -18,16 +18,13 @@ import com.rajat.quickpick.utils.Secrets;
 @Slf4j
 public class EmailService {
 
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
     @Autowired
     private JavaMailSender mailSender;
-
     @Value("${app.mail.from}")
     private String fromEmail;
-
     @Value("${app.baseUrl}")
     private String baseUrl;
-
-    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
     public void sendVerificationEmail(String toEmail, String token, Role userType) {
         try {
@@ -44,7 +41,7 @@ public class EmailService {
             String body = "Welcome to QuickPick!\n\n" +
                     "Please click the link below to verify your email address:\n" +
                     verificationUrl + "\n\n" +
-                    "This link will expire in "+ expirationHours +"hours+.\n\n" +
+                    "This link will expire in " + expirationHours + "hours+.\n\n" +
                     "If you didn't create an account, please ignore this email.";
 
             message.setText(body);
@@ -69,7 +66,7 @@ public class EmailService {
             String body = "You requested a password reset for your QuickPick account.\n\n" +
                     "Please click the link below to reset your password:\n" +
                     resetUrl + "\n\n" +
-                    "This link will expire in "+expirationHours+" hour.\n\n" +
+                    "This link will expire in " + expirationHours + " hour.\n\n" +
                     "If you didn't request this reset, please ignore this email.";
 
             message.setText(body);

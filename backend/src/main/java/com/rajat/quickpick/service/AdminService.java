@@ -1,12 +1,12 @@
 package com.rajat.quickpick.service;
 
+import com.rajat.quickpick.dto.auth.AuthResponseDto;
 import com.rajat.quickpick.exception.BadRequestException;
 import com.rajat.quickpick.model.User;
-import com.rajat.quickpick.model.enums.Role;
+import com.rajat.quickpick.enums.Role;
 import com.rajat.quickpick.repository.UserRepository;
 import com.rajat.quickpick.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,29 +17,26 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.rajat.quickpick.model.dto.AuthDtos.*;
+
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+//@Slf4j
 @Transactional
 public class AdminService {
 
+    private static final Logger log = LoggerFactory.getLogger(AdminService.class);
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private AuthenticationManager authenticationManager;
-
     @Autowired
     private JwtUtil jwtUtil;
-
     @Autowired
     private CustomUserDetailsService userDetailsService;
-
-    private static final Logger log = LoggerFactory.getLogger(AdminService.class);
 
     public AuthResponseDto createAdmin(String email, String password, String fullName) {
         if (userRepository.existsByEmail(email)) {
@@ -85,7 +82,7 @@ public class AdminService {
 
             String token = jwtUtil.generateToken(userDetails, admin.getId(), admin.getRole().name());
 
-            String refreshToken = jwtUtil.generateRefreshToken(userDetails, admin.getId(),admin.getRole().name());
+            String refreshToken = jwtUtil.generateRefreshToken(userDetails, admin.getId(), admin.getRole().name());
 
             AuthResponseDto response = new AuthResponseDto();
 

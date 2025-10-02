@@ -1,6 +1,8 @@
 package com.rajat.quickpick.controller;
 
 
+import com.rajat.quickpick.dto.college.CollegeCreateDto;
+import com.rajat.quickpick.dto.college.CollegeResponseDto;
 import com.rajat.quickpick.service.CollegeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import com.rajat.quickpick.model.dto.CollegeDtos.*;
+
 import java.util.List;
 import java.util.Map;
 
@@ -70,7 +72,6 @@ public class CollegeController {
     }
 
 
-
     @GetMapping("/public/{id}")
     public ResponseEntity<CollegeResponseDto> getCollegeById(@PathVariable String id) {
         CollegeResponseDto college = collegeService.getCollegeById(id);
@@ -96,7 +97,7 @@ public class CollegeController {
     }
 
 
-//admin
+    //admin
     @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CollegeResponseDto> updateCollege(@PathVariable String id,
@@ -105,14 +106,13 @@ public class CollegeController {
         return ResponseEntity.ok(updatedCollege);
     }
 
-//admin
+    //admin
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deleteCollege(@PathVariable String id) {
         collegeService.deleteCollege(id);
         return ResponseEntity.ok(Map.of("message", "College deleted successfully"));
     }
-
 
 
 }

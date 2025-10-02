@@ -1,14 +1,17 @@
 package com.rajat.quickpick.controller;
 
-
+import com.rajat.quickpick.dto.auth.AuthResponseDto;
+import com.rajat.quickpick.dto.user.UserLoginDto;
 import com.rajat.quickpick.service.AdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import com.rajat.quickpick.model.dto.AuthDtos.*;
-import com.rajat.quickpick.model.dto.UserDtos.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.util.Map;
 
 @RestController

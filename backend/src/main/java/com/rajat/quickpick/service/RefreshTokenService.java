@@ -1,5 +1,7 @@
 package com.rajat.quickpick.service;
 
+import com.rajat.quickpick.exception.BadRequestException;
+import com.rajat.quickpick.exception.ResourceNotFoundException;
 import com.rajat.quickpick.model.RefreshToken;
 import com.rajat.quickpick.model.User;
 import com.rajat.quickpick.model.Vendor;
@@ -7,8 +9,6 @@ import com.rajat.quickpick.repository.RefreshTokenRepository;
 import com.rajat.quickpick.repository.UserRepository;
 import com.rajat.quickpick.repository.VendorRepository;
 import com.rajat.quickpick.security.JwtUtil;
-import com.rajat.quickpick.exception.BadRequestException;
-import com.rajat.quickpick.exception.ResourceNotFoundException;
 import com.rajat.quickpick.utils.Secrets;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

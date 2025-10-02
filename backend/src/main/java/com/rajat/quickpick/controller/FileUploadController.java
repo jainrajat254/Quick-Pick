@@ -28,7 +28,7 @@ public class FileUploadController {
             return ResponseEntity.ok(imageUrl);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body("Upload failed: " + e.getMessage());
+                    .body("Upload failed: " + e.getMessage());
         }
     }
 }

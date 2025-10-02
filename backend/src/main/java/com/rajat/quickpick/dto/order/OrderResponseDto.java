@@ -1,35 +1,25 @@
-package com.rajat.quickpick.model;
+package com.rajat.quickpick.dto.order;
 
+import com.rajat.quickpick.model.OrderItem;
 import com.rajat.quickpick.enums.OrderStatus;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Document(collection = "orders")
-public class Order {
 
-    @Id
+public class OrderResponseDto {
+
     private String id;
-
     private String userId;
     private String vendorId;
-
+    private String vendorName;
+    private String storeName;
     private List<OrderItem> orderItems;
-
     private double totalAmount;
-
     private OrderStatus orderStatus;
-
     private String specialInstructions;
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

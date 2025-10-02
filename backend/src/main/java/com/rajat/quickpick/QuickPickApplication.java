@@ -10,6 +10,5 @@ public class QuickPickApplication {
         Dotenv dotenv = Dotenv.load();
         dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
         SpringApplication.run(QuickPickApplication.class, args);
-
     }
 }

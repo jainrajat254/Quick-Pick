@@ -1,10 +1,12 @@
 package com.rajat.quickpick.controller;
 
 
-import com.rajat.quickpick.model.dto.AuthDtos;
-import com.rajat.quickpick.model.dto.UserDtos;
-import com.rajat.quickpick.model.dto.VendorDtos;
-import com.rajat.quickpick.model.enums.Role;
+import com.rajat.quickpick.dto.auth.*;
+import com.rajat.quickpick.dto.user.UserLoginDto;
+import com.rajat.quickpick.dto.user.UserRegistrationDto;
+import com.rajat.quickpick.dto.vendor.VendorLoginDto;
+import com.rajat.quickpick.dto.vendor.VendorRegistrationDto;
+import com.rajat.quickpick.enums.Role;
 import com.rajat.quickpick.security.JwtUtil;
 import com.rajat.quickpick.service.AuthService;
 import jakarta.validation.Valid;
@@ -13,11 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.rajat.quickpick.model.dto.AuthDtos.*;
-import com.rajat.quickpick.model.dto.UserDtos.*;
-import org.springframework.web.bind.annotation.RestController;
-
-
 
 import java.util.Map;
 
@@ -32,13 +29,13 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/register/user")
-    public ResponseEntity<AuthDtos.AuthResponseDto> registerUser(@Valid @RequestBody UserRegistrationDto registrationDto) {
+    public ResponseEntity<AuthResponseDto> registerUser(@Valid @RequestBody UserRegistrationDto registrationDto) {
         AuthResponseDto response = authService.registerUser(registrationDto);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register/vendor")
-    public ResponseEntity<AuthResponseDto> registerVendor(@Valid @RequestBody VendorDtos.VendorRegistrationDto registrationDto) {
+    public ResponseEntity<AuthResponseDto> registerVendor(@Valid @RequestBody VendorRegistrationDto registrationDto) {
         AuthResponseDto response = authService.registerVendor(registrationDto);
         return ResponseEntity.ok(response);
     }
@@ -50,7 +47,7 @@ public class AuthController {
     }
 
     @PostMapping("/login/vendor")
-    public ResponseEntity<AuthResponseDto> loginVendor(@Valid @RequestBody VendorDtos.VendorLoginDto loginDto) {
+    public ResponseEntity<AuthResponseDto> loginVendor(@Valid @RequestBody VendorLoginDto loginDto) {
         AuthResponseDto response = authService.login(loginDto.getEmail(), loginDto.getPassword(), "VENDOR");
         return ResponseEntity.ok(response);
     }

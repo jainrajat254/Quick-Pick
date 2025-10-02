@@ -1,10 +1,19 @@
 package com.rajat.quickpick.service;
 
-
+import com.rajat.quickpick.dto.auth.AuthResponseDto;
+import com.rajat.quickpick.dto.auth.ChangePasswordDto;
+import com.rajat.quickpick.dto.auth.ForgotPasswordDto;
+import com.rajat.quickpick.dto.auth.ResetPasswordDto;
+import com.rajat.quickpick.dto.user.UserRegistrationDto;
+import com.rajat.quickpick.dto.vendor.VendorRegistrationDto;
+import com.rajat.quickpick.exception.BadRequestException;
+import com.rajat.quickpick.exception.ResourceNotFoundException;
 import com.rajat.quickpick.model.*;
-import com.rajat.quickpick.model.dto.AuthDtos;
-import com.rajat.quickpick.model.dto.VendorDtos;
-import com.rajat.quickpick.repository.*;
+import com.rajat.quickpick.enums.Role;
+import com.rajat.quickpick.repository.EmailVerificationTokenRepository;
+import com.rajat.quickpick.repository.PasswordResetTokenRepository;
+import com.rajat.quickpick.repository.UserRepository;
+import com.rajat.quickpick.repository.VendorRepository;
 import com.rajat.quickpick.security.JwtUtil;
 import com.rajat.quickpick.utils.Secrets;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +26,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.rajat.quickpick.model.dto.AuthDtos.*;
-import com.rajat.quickpick.model.enums.Role;
-import com.rajat.quickpick.exception.*;
-import com.rajat.quickpick.service.*;
-import com.rajat.quickpick.model.dto.UserDtos.*;
-import com.rajat.quickpick.model.dto.VendorDtos.*;
-
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -35,27 +37,27 @@ import java.util.UUID;
 public class AuthService {
 
     @Autowired
-    private  UserRepository userRepository;
+    private UserRepository userRepository;
     @Autowired
-    private  VendorRepository vendorRepository;
+    private VendorRepository vendorRepository;
     @Autowired
-    private  EmailVerificationTokenRepository emailVerificationTokenRepository;
+    private EmailVerificationTokenRepository emailVerificationTokenRepository;
     @Autowired
-    private  PasswordResetTokenRepository passwordResetTokenRepository;
+    private PasswordResetTokenRepository passwordResetTokenRepository;
     @Autowired
-    private  PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
     @Autowired
-    private  AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
     @Autowired
-    private  JwtUtil jwtUtil;
+    private JwtUtil jwtUtil;
     @Autowired
-    private  EmailService emailService;
+    private EmailService emailService;
     @Autowired
-    private  CustomUserDetailsService userDetailsService;
+    private CustomUserDetailsService userDetailsService;
     @Autowired
     private RefreshTokenService refreshTokenService;
 
-    public AuthDtos.AuthResponseDto registerUser(UserRegistrationDto registrationDto) {
+    public AuthResponseDto registerUser(UserRegistrationDto registrationDto) {
         if (userRepository.existsByEmail(registrationDto.getEmail())) {
             throw new BadRequestException("Email already registered");
         }

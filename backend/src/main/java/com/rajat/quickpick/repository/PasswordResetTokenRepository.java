@@ -1,7 +1,7 @@
 package com.rajat.quickpick.repository;
 
 import com.rajat.quickpick.model.PasswordResetToken;
-import com.rajat.quickpick.model.enums.Role;
+import com.rajat.quickpick.enums.Role;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

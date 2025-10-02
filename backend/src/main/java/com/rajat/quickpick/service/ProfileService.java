@@ -1,19 +1,19 @@
 package com.rajat.quickpick.service;
 
 
+import com.rajat.quickpick.dto.user.UserResponseDto;
+import com.rajat.quickpick.dto.user.UserUpdateDto;
+import com.rajat.quickpick.dto.vendor.VendorResponseDto;
+import com.rajat.quickpick.dto.vendor.VendorUpdateDto;
 import com.rajat.quickpick.exception.ResourceNotFoundException;
 import com.rajat.quickpick.model.User;
 import com.rajat.quickpick.model.Vendor;
-import com.rajat.quickpick.model.dto.UserDtos.*;
-import com.rajat.quickpick.model.dto.VendorDtos.*;
 import com.rajat.quickpick.repository.UserRepository;
 import com.rajat.quickpick.repository.VendorRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.time.LocalDateTime;
 

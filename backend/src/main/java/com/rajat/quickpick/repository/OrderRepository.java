@@ -1,7 +1,7 @@
 package com.rajat.quickpick.repository;
 
 import com.rajat.quickpick.model.Order;
-import com.rajat.quickpick.model.enums.OrderStatus;
+import com.rajat.quickpick.enums.OrderStatus;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

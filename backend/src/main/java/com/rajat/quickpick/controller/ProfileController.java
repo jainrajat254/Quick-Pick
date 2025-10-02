@@ -1,9 +1,10 @@
 package com.rajat.quickpick.controller;
 
 
-import com.rajat.quickpick.model.dto.UserDtos.*;
-import com.rajat.quickpick.model.dto.VendorDtos.*;
-
+import com.rajat.quickpick.dto.user.UserResponseDto;
+import com.rajat.quickpick.dto.user.UserUpdateDto;
+import com.rajat.quickpick.dto.vendor.VendorResponseDto;
+import com.rajat.quickpick.dto.vendor.VendorUpdateDto;
 import com.rajat.quickpick.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

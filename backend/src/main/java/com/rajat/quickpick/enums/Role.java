@@ -1,4 +1,4 @@
-package com.rajat.quickpick.model.enums;
+package com.rajat.quickpick.enums;
 
 public enum Role {
     STUDENT,
