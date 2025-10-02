@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class OrderCreateDto {
+public class CreateOrderDto {
 
     @NotBlank(message = "Vendor ID is required")
     private String vendorId;

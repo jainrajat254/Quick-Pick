@@ -2,9 +2,9 @@ package com.rajat.quickpick.controller;
 
 
 import com.rajat.quickpick.dto.user.UserResponseDto;
-import com.rajat.quickpick.dto.user.UserUpdateDto;
+import com.rajat.quickpick.dto.user.UpdateUserDto;
 import com.rajat.quickpick.dto.vendor.VendorResponseDto;
-import com.rajat.quickpick.dto.vendor.VendorUpdateDto;
+import com.rajat.quickpick.dto.vendor.UpdateVendorDto;
 import com.rajat.quickpick.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ public class ProfileController {
 
     @PutMapping("/user")
     @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
-    public ResponseEntity<UserResponseDto> updateUserProfile(@Valid @RequestBody UserUpdateDto updateDto,
+    public ResponseEntity<UserResponseDto> updateUserProfile(@Valid @RequestBody UpdateUserDto updateDto,
                                                              Authentication authentication) {
         String email = authentication.getName();
         UserResponseDto updatedProfile = profileService.updateUserProfile(email, updateDto);
@@ -50,7 +50,7 @@ public class ProfileController {
 
     @PutMapping("/vendor")
     @PreAuthorize("hasRole('VENDOR') or hasRole('ADMIN')")
-    public ResponseEntity<VendorResponseDto> updateVendorProfile(@Valid @RequestBody VendorUpdateDto updateDto,
+    public ResponseEntity<VendorResponseDto> updateVendorProfile(@Valid @RequestBody UpdateVendorDto updateDto,
                                                                  Authentication authentication) {
         String email = authentication.getName();
         VendorResponseDto updatedProfile = profileService.updateVendorProfile(email, updateDto);

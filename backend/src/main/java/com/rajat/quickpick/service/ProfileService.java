@@ -2,9 +2,9 @@ package com.rajat.quickpick.service;
 
 
 import com.rajat.quickpick.dto.user.UserResponseDto;
-import com.rajat.quickpick.dto.user.UserUpdateDto;
+import com.rajat.quickpick.dto.user.UpdateUserDto;
 import com.rajat.quickpick.dto.vendor.VendorResponseDto;
-import com.rajat.quickpick.dto.vendor.VendorUpdateDto;
+import com.rajat.quickpick.dto.vendor.UpdateVendorDto;
 import com.rajat.quickpick.exception.ResourceNotFoundException;
 import com.rajat.quickpick.model.User;
 import com.rajat.quickpick.model.Vendor;
@@ -69,7 +69,7 @@ public class ProfileService {
         return response;
     }
 
-    public UserResponseDto updateUserProfile(String email, UserUpdateDto updateDto) {
+    public UserResponseDto updateUserProfile(String email, UpdateUserDto updateDto) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -92,7 +92,7 @@ public class ProfileService {
         return getUserProfile(updatedUser.getEmail());
     }
 
-    public VendorResponseDto updateVendorProfile(String email, VendorUpdateDto updateDto) {
+    public VendorResponseDto updateVendorProfile(String email, UpdateVendorDto updateDto) {
         Vendor vendor = vendorRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
 

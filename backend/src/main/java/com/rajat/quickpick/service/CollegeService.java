@@ -1,7 +1,7 @@
 package com.rajat.quickpick.service;
 
 
-import com.rajat.quickpick.dto.college.CollegeCreateDto;
+import com.rajat.quickpick.dto.college.CreateCollegeDto;
 import com.rajat.quickpick.dto.college.CollegeResponseDto;
 import com.rajat.quickpick.exception.BadRequestException;
 import com.rajat.quickpick.exception.ResourceNotFoundException;
@@ -32,7 +32,7 @@ public class CollegeService {
     @Autowired
     private CollegeRepository collegeRepository;
 
-    public CollegeResponseDto createCollege(CollegeCreateDto createDto) {
+    public CollegeResponseDto createCollege(CreateCollegeDto createDto) {
         if (collegeRepository.existsByName(createDto.getName())) {
             throw new BadRequestException("College with name '" + createDto.getName() + "' already exists");
         } else {
@@ -106,7 +106,7 @@ public class CollegeService {
 
 
     //admin only
-    public CollegeResponseDto updateCollege(String id, CollegeCreateDto updateDto) {
+    public CollegeResponseDto updateCollege(String id, CreateCollegeDto updateDto) {
         College existingCollege = collegeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("College not found with id: " + id));
 

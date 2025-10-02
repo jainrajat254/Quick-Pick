@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class CollegeCreateDto {
+public class CreateCollegeDto {
 
     @NotBlank(message = "College name is required")
     private String name;

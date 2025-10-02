@@ -8,7 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class VendorRegistrationDto {
+public class RegisterVendor {
 
     @NotBlank(message = "Vendor name is required")
     private String vendorName;

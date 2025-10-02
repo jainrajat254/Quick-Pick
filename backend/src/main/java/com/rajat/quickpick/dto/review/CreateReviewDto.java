@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class ReviewCreateDto {
+public class CreateReviewDto {
 
     @NotBlank(message = "Vendor ID is required")
     private String vendorId;

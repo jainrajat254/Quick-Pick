@@ -4,7 +4,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 @Data
-public class MenuItemUpdateDto {
+public class UpdateMenuItemDto {
 
     private String name;
     private String description;

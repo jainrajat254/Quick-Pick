@@ -4,8 +4,8 @@ import com.rajat.quickpick.dto.auth.AuthResponseDto;
 import com.rajat.quickpick.dto.auth.ChangePasswordDto;
 import com.rajat.quickpick.dto.auth.ForgotPasswordDto;
 import com.rajat.quickpick.dto.auth.ResetPasswordDto;
-import com.rajat.quickpick.dto.user.UserRegistrationDto;
-import com.rajat.quickpick.dto.vendor.VendorRegistrationDto;
+import com.rajat.quickpick.dto.user.RegisterUserDto;
+import com.rajat.quickpick.dto.vendor.RegisterVendor;
 import com.rajat.quickpick.exception.BadRequestException;
 import com.rajat.quickpick.exception.ResourceNotFoundException;
 import com.rajat.quickpick.model.*;
@@ -57,7 +57,7 @@ public class AuthService {
     @Autowired
     private RefreshTokenService refreshTokenService;
 
-    public AuthResponseDto registerUser(UserRegistrationDto registrationDto) {
+    public AuthResponseDto registerUser(RegisterUserDto registrationDto) {
         if (userRepository.existsByEmail(registrationDto.getEmail())) {
             throw new BadRequestException("Email already registered");
         }
@@ -100,7 +100,7 @@ public class AuthService {
         return response;
     }
 
-    public AuthResponseDto registerVendor(VendorRegistrationDto registrationDto) {
+    public AuthResponseDto registerVendor(RegisterVendor registrationDto) {
         if (vendorRepository.existsByEmail(registrationDto.getEmail())) {
             throw new BadRequestException("Email already registered");
         }

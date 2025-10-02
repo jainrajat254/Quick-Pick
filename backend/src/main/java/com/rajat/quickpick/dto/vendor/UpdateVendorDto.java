@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class VendorUpdateDto {
+public class UpdateVendorDto {
 
     private String vendorName;
     private String storeName;

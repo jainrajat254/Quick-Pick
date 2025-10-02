@@ -1,7 +1,7 @@
 package com.rajat.quickpick.controller;
 
 import com.rajat.quickpick.dto.auth.AuthResponseDto;
-import com.rajat.quickpick.dto.user.UserLoginDto;
+import com.rajat.quickpick.dto.user.LoginUserDto;
 import com.rajat.quickpick.service.AdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class AdminController {
     private AdminService adminService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> adminLogin(@Valid @RequestBody UserLoginDto loginDto) {
+    public ResponseEntity<AuthResponseDto> adminLogin(@Valid @RequestBody LoginUserDto loginDto) {
         AuthResponseDto response = adminService.adminLogin(loginDto.getEmail(), loginDto.getPassword());
         return ResponseEntity.ok(response);
     }

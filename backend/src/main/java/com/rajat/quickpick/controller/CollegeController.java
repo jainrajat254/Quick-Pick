@@ -1,7 +1,7 @@
 package com.rajat.quickpick.controller;
 
 
-import com.rajat.quickpick.dto.college.CollegeCreateDto;
+import com.rajat.quickpick.dto.college.CreateCollegeDto;
 import com.rajat.quickpick.dto.college.CollegeResponseDto;
 import com.rajat.quickpick.service.CollegeService;
 import jakarta.validation.Valid;
@@ -91,7 +91,7 @@ public class CollegeController {
     // for admin only
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CollegeResponseDto> createCollege(@Valid @RequestBody CollegeCreateDto createDto) {
+    public ResponseEntity<CollegeResponseDto> createCollege(@Valid @RequestBody CreateCollegeDto createDto) {
         CollegeResponseDto college = collegeService.createCollege(createDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(college);
     }
@@ -101,7 +101,7 @@ public class CollegeController {
     @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CollegeResponseDto> updateCollege(@PathVariable String id,
-                                                            @Valid @RequestBody CollegeCreateDto updateDto) {
+                                                            @Valid @RequestBody CreateCollegeDto updateDto) {
         CollegeResponseDto updatedCollege = collegeService.updateCollege(id, updateDto);
         return ResponseEntity.ok(updatedCollege);
     }

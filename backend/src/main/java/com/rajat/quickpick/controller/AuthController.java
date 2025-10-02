@@ -2,10 +2,10 @@ package com.rajat.quickpick.controller;
 
 
 import com.rajat.quickpick.dto.auth.*;
-import com.rajat.quickpick.dto.user.UserLoginDto;
-import com.rajat.quickpick.dto.user.UserRegistrationDto;
-import com.rajat.quickpick.dto.vendor.VendorLoginDto;
-import com.rajat.quickpick.dto.vendor.VendorRegistrationDto;
+import com.rajat.quickpick.dto.user.LoginUserDto;
+import com.rajat.quickpick.dto.user.RegisterUserDto;
+import com.rajat.quickpick.dto.vendor.LoginVendorDto;
+import com.rajat.quickpick.dto.vendor.RegisterVendor;
 import com.rajat.quickpick.enums.Role;
 import com.rajat.quickpick.security.JwtUtil;
 import com.rajat.quickpick.service.AuthService;
@@ -29,25 +29,25 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/register/user")
-    public ResponseEntity<AuthResponseDto> registerUser(@Valid @RequestBody UserRegistrationDto registrationDto) {
+    public ResponseEntity<AuthResponseDto> registerUser(@Valid @RequestBody RegisterUserDto registrationDto) {
         AuthResponseDto response = authService.registerUser(registrationDto);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register/vendor")
-    public ResponseEntity<AuthResponseDto> registerVendor(@Valid @RequestBody VendorRegistrationDto registrationDto) {
+    public ResponseEntity<AuthResponseDto> registerVendor(@Valid @RequestBody RegisterVendor registrationDto) {
         AuthResponseDto response = authService.registerVendor(registrationDto);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login/user")
-    public ResponseEntity<AuthResponseDto> loginUser(@Valid @RequestBody UserLoginDto loginDto) {
+    public ResponseEntity<AuthResponseDto> loginUser(@Valid @RequestBody LoginUserDto loginDto) {
         AuthResponseDto response = authService.login(loginDto.getEmail(), loginDto.getPassword(), "USER");
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login/vendor")
-    public ResponseEntity<AuthResponseDto> loginVendor(@Valid @RequestBody VendorLoginDto loginDto) {
+    public ResponseEntity<AuthResponseDto> loginVendor(@Valid @RequestBody LoginVendorDto loginDto) {
         AuthResponseDto response = authService.login(loginDto.getEmail(), loginDto.getPassword(), "VENDOR");
         return ResponseEntity.ok(response);
     }
