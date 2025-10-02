@@ -34,3 +34,5 @@ build/
 
 # Ignore secrets file
 src/main/java/com/rajat/quickpick/utils/Secrets.java
+
+.env
