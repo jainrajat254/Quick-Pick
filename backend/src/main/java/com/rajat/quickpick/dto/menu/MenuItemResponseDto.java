@@ -19,4 +19,9 @@ public class MenuItemResponseDto {
     private boolean isAvailable;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+
+    public void setIsAvailable(boolean isAvailable) {
+        this.isAvailable = isAvailable;
+    }
 }

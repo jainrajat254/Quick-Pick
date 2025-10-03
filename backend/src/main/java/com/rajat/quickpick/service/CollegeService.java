@@ -89,8 +89,8 @@ public class CollegeService {
         return mapToResponseDto(college);
     }
 
-    //add paginated queries
-    public Page<CollegeResponseDto> getCollegesPaginated(int page, int size) {
+    //add  queries
+    public Page<CollegeResponseDto> getColleges(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         Page<College> collegePage = collegeRepository.findAll(pageable);
 

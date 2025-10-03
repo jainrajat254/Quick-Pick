@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -56,6 +57,14 @@ public class AuthService {
     private CustomUserDetailsService userDetailsService;
     @Autowired
     private RefreshTokenService refreshTokenService;
+
+    public static final List<String> DEFAULT_CATEGORIES = List.of(
+            "Beverages", "Snacks", "Main Course", "Desserts", "Fast Food",
+            "Indian", "Chinese", "South Indian", "North Indian", "Continental",
+            "Sandwiches", "Pizza", "Burgers", "Rolls", "Salads", "Juices",
+            "Tea/Coffee", "Ice Cream", "Sweets", "Breakfast"
+    );
+
 
     public AuthResponseDto registerUser(RegisterUserDto registrationDto) {
         if (userRepository.existsByEmail(registrationDto.getEmail())) {
@@ -122,7 +131,11 @@ public class AuthService {
         vendor.setAddress(registrationDto.getAddress());
         vendor.setCollegeName(registrationDto.getCollegeName());
         vendor.setVendorDescription(registrationDto.getVendorDescription());
-        vendor.setFoodCategories(registrationDto.getFoodCategories());
+        List<String> categories = registrationDto.getFoodCategories();
+        if (categories == null || categories.isEmpty()) {
+            categories = DEFAULT_CATEGORIES;
+        }
+        vendor.setFoodCategories(categories);
         vendor.setGstNumber(registrationDto.getGstNumber());
         vendor.setLicenseNumber(registrationDto.getLicenseNumber());
         vendor.setFoodLicenseNumber(registrationDto.getFoodLicenseNumber());
