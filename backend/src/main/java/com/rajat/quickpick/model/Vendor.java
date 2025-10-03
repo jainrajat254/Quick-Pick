@@ -1,6 +1,7 @@
 package com.rajat.quickpick.model;
 
 import com.rajat.quickpick.enums.Role;
+import com.rajat.quickpick.enums.VendorVerificationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -46,5 +47,12 @@ public class Vendor {
 
     private Role role = Role.VENDOR;
 
+    private VendorVerificationStatus verificationStatus = VendorVerificationStatus.PENDING;
+    private LocalDateTime verifiedAt;
+    private LocalDateTime rejectedAt;
+    private String rejectionReason;
+    private boolean suspended = false;
+    private String suspensionReason;
+    private LocalDateTime suspendedAt;
 
 }

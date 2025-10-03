@@ -1,6 +1,9 @@
 package com.rajat.quickpick.repository;
 
+import com.rajat.quickpick.enums.VendorVerificationStatus;
 import com.rajat.quickpick.model.Vendor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -37,4 +40,14 @@ public interface VendorRepository extends MongoRepository<Vendor, String> {
     List<Vendor> findByIsEmailVerified(boolean isEmailVerified);
 
     List<Vendor> findByIsPhoneVerified(boolean isPhoneVerified);
+
+    List<Vendor> findByVerificationStatus(VendorVerificationStatus status);
+
+    Page<Vendor> findByVerificationStatus(VendorVerificationStatus status, Pageable pageable);
+
+    long countByVerificationStatus(VendorVerificationStatus status);
+
+    long countByCollegeName(String collegeName);
+
+
 }

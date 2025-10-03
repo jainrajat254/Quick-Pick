@@ -136,3 +136,58 @@
 
 
 ---
+
+## Admin Management Endpoints
+
+Verify a vendor.
+Get list of all users/vendors.
+Get list of users/vendors by college name.
+Suspend/unsuspend a user/vendor.
+
+### Users
+
+- **GET /api/admin-management/users**
+  - Returns: Page<AdminUserDto>
+  - Query Params: page, size
+
+- **GET /api/admin-management/users/college/{collegeName}**
+  - Returns: Page<AdminUserDto>
+  - Path Param: collegeName
+  - Query Params: page, size
+
+- **POST /api/admin-management/users/{userId}/suspend**
+  - Returns: AdminUserDto
+  - Path Param: userId
+  - Body: SuspensionDto { reason }
+
+- **POST /api/admin-management/users/{userId}/unsuspend**
+  - Returns: AdminUserDto
+  - Path Param: userId
+
+### Vendors
+- **GET /api/admin-management/vendors**
+  - Returns: Page<AdminVendorDto>
+  - Query Params: page, size
+
+- **GET /api/admin-management/vendors/pending** 
+  - Returns: Page<AdminVendorDto>
+  - Query Params: page, size
+
+- **POST /api/admin-management/vendors/{vendorId}/verify** 
+  - Returns: AdminVendorDto
+  - Path Param: vendorId
+  - Body: VerificationDto { notes }
+
+- **POST /api/admin-management/vendors/{vendorId}/reject**
+  - Returns: AdminVendorDto
+  - Path Param: vendorId
+  - Body: VerificationDto { rejectionReason }
+
+- **POST /api/admin-management/vendors/{vendorId}/suspend** 
+  - Returns: AdminVendorDto
+  - Path Param: vendorId
+  - Body: SuspensionDto { reason }
+
+- **POST /api/admin-management/vendors/{vendorId}/unsuspend**
+  - Returns: AdminVendorDto
+  - Path Param: vendorId
