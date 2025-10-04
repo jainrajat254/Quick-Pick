@@ -5,6 +5,7 @@ import com.rajat.quickpick.model.Vendor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -49,5 +50,12 @@ public interface VendorRepository extends MongoRepository<Vendor, String> {
 
     long countByCollegeName(String collegeName);
 
+    List<Vendor> findByCollegeNameAndVerificationStatus(String collegeName, VendorVerificationStatus status);
 
+    @Query("{ 'collegeName': ?0, '$or': [ " +
+           "{ 'storeName': { $regex: ?1, $options: 'i' } }, " +
+           "{ 'vendorName': { $regex: ?1, $options: 'i' } }, " +
+           "{ 'foodCategories': { $regex: ?1, $options: 'i' } } " +
+           "], 'verificationStatus': 'VERIFIED' }")
+    List<Vendor> findByCollegeNameAndSearchQuery(String collegeName, String searchQuery);
 }
