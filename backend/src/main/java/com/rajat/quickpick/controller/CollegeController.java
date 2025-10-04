@@ -34,12 +34,6 @@ public class CollegeController {
     }
 
 
-    @GetMapping("/public")
-    public ResponseEntity<List<CollegeResponseDto>> getAllColleges() {
-        List<CollegeResponseDto> colleges = collegeService.getAllColleges();
-        return ResponseEntity.ok(colleges);
-    }
-
     @GetMapping("/public/search")
     public ResponseEntity<List<CollegeResponseDto>> searchColleges(@RequestParam String query) {
         List<CollegeResponseDto> colleges = collegeService.searchColleges(query);
@@ -79,11 +73,11 @@ public class CollegeController {
     }
 
 
-    @GetMapping("/public/paginated")
-    public ResponseEntity<Page<CollegeResponseDto>> getCollegesPaginated(
+    @GetMapping("/public")
+    public ResponseEntity<Page<CollegeResponseDto>> getAllColleges(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Page<CollegeResponseDto> colleges = collegeService.getCollegesPaginated(page, size);
+        Page<CollegeResponseDto> colleges = collegeService.getColleges(page, size);
         return ResponseEntity.ok(colleges);
     }
 

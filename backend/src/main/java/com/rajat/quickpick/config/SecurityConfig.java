@@ -51,6 +51,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/colleges/public").permitAll()
                         .requestMatchers("/api/colleges/public/**").permitAll()
+                        .requestMatchers("/api/admin/create").permitAll()
+                        .requestMatchers("api/admin/login").permitAll()
+                        .requestMatchers("/api/admin-management/**").authenticated()
+
 
 
                         .anyRequest().authenticated()

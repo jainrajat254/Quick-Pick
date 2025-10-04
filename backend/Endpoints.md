@@ -8,7 +8,7 @@
 
 ### Register Vendor
 - **POST /api/auth/register/vendor**
-  - Fields: vendorName, storeName, email, phone, password, address, collegeName, vendorDescription, foodCategories, gstNumber, licenseNumber, foodLicenseNumber
+  - Fields: vendorName, storeName, email, phone, password, address, collegeName, vendorDescription, foodCategories(optional, defaults applied if not provided), gstNumber, licenseNumber, foodLicenseNumber
 
 ### User Login
 - **POST /api/auth/login/user**
@@ -45,6 +45,8 @@
 
 ---
 
+
+
 ## Profile Endpoints
 
 ### Get User Profile
@@ -66,6 +68,107 @@
   - Fields: vendorName, storeName, phone, address, vendorDescription, foodCategories, profileImageUrl
 
 
+## Menu Item Endpoints
+
+### Vendor Private Endpoints
+
+- **POST /api/menu-items**
+    - Create a new menu item (vendor only)
+    - Header: Authorization: Bearer {jwt_token}
+    - Body: MenuItemCreateDto
+
+- **GET /api/menu-items/my-menu**
+    - Get paginated menu items for vendor
+    - Header: Authorization: Bearer {jwt_token}
+    - Query Params: page, size
+
+- **GET /api/menu-items/my-menu/available**
+    - Get available menu items for vendor
+    - Header: Authorization: Bearer {jwt_token}
+
+- **GET /api/menu-items/my-menu/category/{category}**
+    - Get menu items by category
+    - Header: Authorization: Bearer {jwt_token}
+    - Path Param: category
+
+- **GET /api/menu-items/my-menu/search**
+    - Search menu items by name
+    - Header: Authorization: Bearer {jwt_token}
+    - Query Param: query
+
+- **GET /api/menu-items/my-menu/price-range**
+    - Get menu items by price range
+    - Header: Authorization: Bearer {jwt_token}
+    - Query Params: minPrice, maxPrice
+
+- **GET /api/menu-items/my-menu/categories**
+    - Get distinct categories used in vendor's menu
+    - Header: Authorization: Bearer {jwt_token}
+
+- **PUT /api/menu-items/{menuItemId}**
+    - Update a menu item
+    - Header: Authorization: Bearer {jwt_token}
+    - Path Param: menuItemId
+    - Body: UpdateMenuItemDto
+
+- **PATCH /api/menu-items/{menuItemId}/toggle-availability**
+    - Toggle menu item availability
+    - Header: Authorization: Bearer {jwt_token}
+    - Path Param: menuItemId
+
+- **PATCH /api/menu-items/{menuItemId}/quantity**
+    - Update menu item quantity
+    - Header: Authorization: Bearer {jwt_token}
+    - Path Param: menuItemId
+    - Query Param: quantity
+
+- **DELETE /api/menu-items/{menuItemId}**
+    - Delete a menu item
+    - Header: Authorization: Bearer {jwt_token}
+    - Path Param: menuItemId
+
+- **DELETE /api/menu-items/bulk**
+    - Bulk delete menu items
+    - Header: Authorization: Bearer {jwt_token}
+    - Body: { menuItemIds: List<String> }
+
+- **GET /api/menu-items/my-menu/stats**
+    - Get stats (total/available/unavailable) for vendor's menu
+    - Header: Authorization: Bearer {jwt_token}
+
+### Public Endpoints
+
+- **GET /api/menu-items/vendor/{vendorId}**
+    - Get public menu for a vendor
+
+- **GET /api/menu-items/vendor/{vendorId}/category/{category}**
+    - Get public menu for a vendor by category
+
+- **GET /api/menu-items/{menuItemId}**
+    - Get menu item details by ID
+
+---
+
+
+## Vendor Category Endpoints
+
+### Vendor Private Endpoints
+
+- **GET /api/vendor-categories/default**
+    - Get list of default categories (for UI/selection)
+    - Header: Authorization: Bearer {jwt_token}
+
+- **PUT /api/vendor-categories**
+    - Update vendor's menu categories (falls back to defaults if none provided)
+    - Header: Authorization: Bearer {jwt_token}
+    - Body: { categories: List<String> }
+
+- **POST /api/vendor-categories/reset**
+    - Reset vendor's categories to default set
+    - Header: Authorization: Bearer {jwt_token}
+
+---
+
 ## College Endpoints
 
 ### Public Endpoints
@@ -74,8 +177,8 @@
 - **GET /api/colleges/public**
   - Returns: List of CollegeResponseDto (id, name, address, city, state)
 
-#### Get paginated colleges (public)
-- **GET /api/colleges/public/paginated**
+#### Get  colleges (public)
+- **GET /api/colleges/public/**
   - Query Params: page (default 0), size (default 10)
   - Returns: Page of CollegeResponseDto
 
@@ -136,3 +239,58 @@
 
 
 ---
+
+## Admin Management Endpoints
+
+Verify a vendor.
+Get list of all users/vendors.
+Get list of users/vendors by college name.
+Suspend/unsuspend a user/vendor.
+
+### Users
+
+- **GET /api/admin-management/users**
+  - Returns: Page<AdminUserDto>
+  - Query Params: page, size
+
+- **GET /api/admin-management/users/college/{collegeName}**
+  - Returns: Page<AdminUserDto>
+  - Path Param: collegeName
+  - Query Params: page, size
+
+- **POST /api/admin-management/users/{userId}/suspend**
+  - Returns: AdminUserDto
+  - Path Param: userId
+  - Body: SuspensionDto { reason }
+
+- **POST /api/admin-management/users/{userId}/unsuspend**
+  - Returns: AdminUserDto
+  - Path Param: userId
+
+### Vendors
+- **GET /api/admin-management/vendors**
+  - Returns: Page<AdminVendorDto>
+  - Query Params: page, size
+
+- **GET /api/admin-management/vendors/pending** 
+  - Returns: Page<AdminVendorDto>
+  - Query Params: page, size
+
+- **POST /api/admin-management/vendors/{vendorId}/verify** 
+  - Returns: AdminVendorDto
+  - Path Param: vendorId
+  - Body: VerificationDto { notes }
+
+- **POST /api/admin-management/vendors/{vendorId}/reject**
+  - Returns: AdminVendorDto
+  - Path Param: vendorId
+  - Body: VerificationDto { rejectionReason }
+
+- **POST /api/admin-management/vendors/{vendorId}/suspend** 
+  - Returns: AdminVendorDto
+  - Path Param: vendorId
+  - Body: SuspensionDto { reason }
+
+- **POST /api/admin-management/vendors/{vendorId}/unsuspend**
+  - Returns: AdminVendorDto
+  - Path Param: vendorId

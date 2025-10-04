@@ -35,4 +35,14 @@ public class MenuItem {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public void setIsAvailable(boolean available) {
+        isAvailable = available;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public boolean getIsAvailable() {
+        return isAvailable;
+    }
+
 }

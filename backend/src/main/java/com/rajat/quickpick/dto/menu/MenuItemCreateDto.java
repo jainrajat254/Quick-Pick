@@ -6,7 +6,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 @Data
-public class CreateMenuItemDto {
+public class MenuItemCreateDto {
 
     @NotBlank(message = "Menu item name is required")
     private String name;

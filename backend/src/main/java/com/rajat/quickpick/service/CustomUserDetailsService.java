@@ -34,6 +34,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .password(u.getPassword())
                     .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + u.getRole().name())))
                     .accountExpired(false)
+                    .accountLocked(u.isSuspended())
                     .accountLocked(false)
                     .credentialsExpired(false)
                     .disabled(!u.isEmailVerified())
@@ -49,6 +50,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + v.getRole().name())))
                     .accountExpired(false)
                     .accountLocked(false)
+                    .accountLocked(v.isSuspended())
                     .credentialsExpired(false)
                     .disabled(!v.isEmailVerified())
                     .build();
