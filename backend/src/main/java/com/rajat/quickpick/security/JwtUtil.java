@@ -101,4 +101,12 @@ public class JwtUtil {
     public boolean isAccessToken(String token) {
         return "access".equals(extractTokenType(token));
     }
+
+    public String resolveToken(jakarta.servlet.http.HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
 }
