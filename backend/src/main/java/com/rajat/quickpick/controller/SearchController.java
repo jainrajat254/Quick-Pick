@@ -1,5 +1,6 @@
 package com.rajat.quickpick.controller;
 
+import com.rajat.quickpick.model.MenuItem;
 import com.rajat.quickpick.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -104,7 +104,7 @@ public class SearchService {
         }
     }
 
-    private List<MenuItem> applyMenuItemFilters(List<MenuItem> menuItems, MenuItemSearchDto criteria) {
+    public List<MenuItem> applyMenuItemFilters(List<MenuItem> menuItems, MenuItemSearchDto criteria) {
         return menuItems.stream()
                 .filter(item -> !criteria.isAvailableOnly() || item.getIsAvailable())
                 .filter(item -> criteria.getCategory() == null ||
@@ -203,7 +203,7 @@ public class SearchService {
         return dto;
     }
 
-    private MenuItemResponseDto mapToMenuItemDto(MenuItem menuItem) {
+    public MenuItemResponseDto mapToMenuItemDto(MenuItem menuItem) {
         MenuItemResponseDto dto = new MenuItemResponseDto();
         dto.setId(menuItem.getId());
         dto.setVendorId(menuItem.getVendorId());
