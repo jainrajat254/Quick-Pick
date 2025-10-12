@@ -1,6 +1,8 @@
 package com.rajat.quickpick.repository;
 
 import com.rajat.quickpick.model.Review;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -12,6 +14,8 @@ import java.util.Optional;
 public interface ReviewRepository extends MongoRepository<Review, String> {
 
     List<Review> findByVendorId(String vendorId);
+
+    Page<Review> findByVendorId(String vendorId, Pageable pageable);
 
     List<Review> findByUserId(String userId);
 
@@ -39,5 +43,13 @@ public interface ReviewRepository extends MongoRepository<Review, String> {
 
     long countByVendorId(String vendorId);
 
+    long countByUserId(String userId);
+
     long countByVendorIdAndRating(String vendorId, int rating);
+
+    @Query(value = "{ 'vendorId': ?0 }", sort = "{ 'createdAt': -1 }")
+    List<Review> findRecentReviewsByVendor(String vendorId, Pageable pageable);
+
+    @Query(value = "{ 'vendorId': ?0, 'rating': { $gte: ?1 } }", sort = "{ 'createdAt': -1 }")
+    List<Review> findHighRatedReviewsByVendor(String vendorId, int minRating);
 }

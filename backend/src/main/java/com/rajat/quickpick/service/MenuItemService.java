@@ -11,7 +11,6 @@ import com.rajat.quickpick.model.Vendor;
 import com.rajat.quickpick.repository.MenuItemRepository;
 import com.rajat.quickpick.repository.VendorRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,6 +143,7 @@ public class MenuItemService {
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
+
 
     public List<String> getMenuCategories(String vendorId) {
         List<MenuItem> menuItems = menuItemRepository.findByVendorId(vendorId);
