@@ -1,5 +1,8 @@
 package org.rajat.quickpick.domain.modal.auth
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class RegisterUserResponse(
     val email: String?,
     val message: String?,

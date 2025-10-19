@@ -1,4 +1,8 @@
-package org.rajat.quickpick.domain.modal.adminManagement.GetAllUsers
+package org.rajat.quickpick.domain.modal.adminManagement.getAllUsers
+
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Pageable(
     val offset: Int,
     val pageNumber: Int,

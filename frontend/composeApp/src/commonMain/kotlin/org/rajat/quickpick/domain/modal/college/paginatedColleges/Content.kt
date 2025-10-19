@@ -1,5 +1,8 @@
-package org.rajat.quickpick.domain.modal.college.getAllColleges(paginated)
+package org.rajat.quickpick.domain.modal.college.paginatedColleges
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Content(
     val address: String,
     val city: String,

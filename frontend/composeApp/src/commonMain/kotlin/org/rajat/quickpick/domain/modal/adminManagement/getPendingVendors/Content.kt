@@ -1,4 +1,8 @@
 package org.rajat.quickpick.domain.modal.adminManagement.getPendingVendors
+
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Content(
     val address: String,
     val adminNotes: Any,

@@ -1,4 +1,8 @@
 package org.rajat.quickpick.domain.modal.college
+
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class CreateANewCollegeResponse(
     val address: String,
     val city: String,

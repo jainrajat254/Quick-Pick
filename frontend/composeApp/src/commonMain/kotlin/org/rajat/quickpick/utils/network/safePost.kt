@@ -14,7 +14,7 @@ import io.ktor.http.takeFrom
 
 suspend inline fun <reified T, reified R> HttpClient.safePost(
     endpoint: String,
-    body: R,
+    body: R? = null,
     queryParams: Map<String, String> = emptyMap(),
     headers: Map<String, String> = emptyMap()
 ): T {
@@ -26,11 +26,15 @@ suspend inline fun <reified T, reified R> HttpClient.safePost(
                     parameters.append(key, value)
                 }
             }
+
             headers.forEach { (key, value) ->
                 header(key, value)
             }
-            contentType(ContentType.Application.Json)
-            setBody(body)
+
+            if (body != null) {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }
         }
 
         if (!response.status.isSuccess()) {
@@ -45,3 +49,15 @@ suspend inline fun <reified T, reified R> HttpClient.safePost(
     }
 }
 
+suspend inline fun <reified T> HttpClient.safePost(
+    endpoint: String,
+    queryParams: Map<String, String> = emptyMap(),
+    headers: Map<String, String> = emptyMap()
+): T {
+    return this.safePost<T, Unit>(
+        endpoint = endpoint,
+        body = Unit,
+        queryParams = queryParams,
+        headers = headers
+    )
+}

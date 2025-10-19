@@ -1,4 +1,8 @@
 package org.rajat.quickpick.domain.modal.adminManagement
+
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class SuspendUserResponse(
     val collegeName: String,
     val createdAt: String,

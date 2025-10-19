@@ -1,12 +1,13 @@
 package org.rajat.quickpick.utils.network
 
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.util.*
-import kotlinx.serialization.json.Json
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.delete
+import io.ktor.client.request.header
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
+import io.ktor.http.takeFrom
 
 suspend inline fun <reified T> HttpClient.safeDelete(
     endpoint: String,

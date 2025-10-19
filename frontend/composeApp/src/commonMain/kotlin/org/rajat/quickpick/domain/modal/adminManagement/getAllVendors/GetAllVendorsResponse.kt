@@ -1,4 +1,8 @@
 package org.rajat.quickpick.domain.modal.adminManagement.getAllVendors
+
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class GetAllVendorsResponse(
     val content: List<Content>,
     val empty: Boolean,

@@ -1,5 +1,8 @@
 package org.rajat.quickpick.domain.modal.auth
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class RegisterVendorRequest(
     val address: String?,
     val collegeName: String?,

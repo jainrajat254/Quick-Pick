@@ -1,6 +1,9 @@
-package org.rajat.quickpick.domain.modal.college.getAllColleges(paginated)
+package org.rajat.quickpick.domain.modal.college.paginatedColleges
 
-data class GetallcollegespaginatedResponse(
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class PaginatedCollegesResponse(
     val content: List<Content>,
     val empty: Boolean,
     val first: Boolean,

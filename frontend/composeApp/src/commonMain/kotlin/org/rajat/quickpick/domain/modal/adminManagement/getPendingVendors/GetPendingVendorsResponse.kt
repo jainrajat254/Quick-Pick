@@ -1,4 +1,8 @@
 package org.rajat.quickpick.domain.modal.adminManagement.getPendingVendors
+
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class GetPendingVendorsResponse(
     val content: List<Content>,
     val empty: Boolean,
