@@ -206,47 +206,7 @@ Available statuses: `PENDING`, `CONFIRMED`, `PREPARING`, `READY`, `COMPLETED`, `
 
 ```json
 {
-  "orderStatus": "CONFIRMED"
-}
-```
-
-### 3.5 Update Order Status - PREPARING
-**PATCH** `/api/orders/vendor/orders/{orderId}/status`
-**Role:** VENDOR
-
-```json
-{
-  "orderStatus": "PREPARING"
-}
-```
-
-### 3.6 Update Order Status - READY for Pickup
-**PATCH** `/api/orders/vendor/orders/{orderId}/status`
-**Role:** VENDOR
-
-```json
-{
-  "orderStatus": "READY"
-}
-```
-
-### 3.7 Update Order Status - COMPLETED
-**PATCH** `/api/orders/vendor/orders/{orderId}/status`
-**Role:** VENDOR
-
-```json
-{
-  "orderStatus": "COMPLETED"
-}
-```
-
-### 3.8 Update Order Status - REJECT Order
-**PATCH** `/api/orders/vendor/orders/{orderId}/status`
-**Role:** VENDOR
-
-```json
-{
-  "orderStatus": "REJECTED"
+  "orderStatus": "ACCEPTED"
 }
 ```
 

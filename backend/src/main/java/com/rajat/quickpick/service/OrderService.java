@@ -252,34 +252,15 @@ public class OrderService {
     }
 
     private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
-        switch (currentStatus) {
-            case PENDING:
-                if (newStatus != OrderStatus.ACCEPTED && newStatus != OrderStatus.REJECTED) {
-                    throw new BadRequestException("Invalid status transition from PENDING to " + newStatus);
-                }
-                break;
-            case ACCEPTED:
-                if (newStatus != OrderStatus.PREPARING) {
-                    throw new BadRequestException("Invalid status transition from ACCEPTED to " + newStatus);
-                }
-                break;
-            case PREPARING:
-                if (newStatus != OrderStatus.READY_FOR_PICKUP) {
-                    throw new BadRequestException("Invalid status transition from PREPARING to " + newStatus);
-                }
-                break;
-            case READY_FOR_PICKUP:
-                if (newStatus != OrderStatus.COMPLETED) {
-                    throw new BadRequestException("Invalid status transition from READY_FOR_PICKUP to " + newStatus);
-                }
-                break;
-            case COMPLETED:
-            case CANCELLED:
-            case REJECTED:
-                throw new BadRequestException("Cannot change status from " + currentStatus);
-            default:
-                throw new BadRequestException("Unknown order status: " + currentStatus);
+        // Only prevent changing from final states
+        if (currentStatus == OrderStatus.COMPLETED ||
+            currentStatus == OrderStatus.CANCELLED ||
+            currentStatus == OrderStatus.REJECTED) {
+            throw new BadRequestException("Cannot change status from " + currentStatus);
         }
+
+        // Allow any forward transition from PENDING, ACCEPTED, PREPARING, READY_FOR_PICKUP
+        // This allows vendors to skip steps if needed (e.g., ACCEPTED -> COMPLETED)
     }
 
     private void restoreMenuItemQuantities(List<OrderItem> orderItems) {
