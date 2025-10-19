@@ -17,6 +17,7 @@ import com.rajat.quickpick.repository.VendorRepository;
 import com.rajat.quickpick.security.JwtUtil;
 import com.rajat.quickpick.utils.Secrets;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 @Service
 @RequiredArgsConstructor
@@ -160,6 +162,7 @@ public class AuthService {
     }
 
     public AuthResponseDto login(String email, String password, String userType) {
+        final Logger logger = Logger.getLogger(AuthService.class.getName());
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
@@ -168,7 +171,7 @@ public class AuthService {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
             var userOpt = userRepository.findByEmail(email);
-            if (userOpt.isPresent() && "STUDENT".equals(userType)) {
+            if (userOpt.isPresent()) {
                 User user = userOpt.get();
 
                 if (!user.isEmailVerified()) {
@@ -210,13 +213,16 @@ public class AuthService {
                 response.setRole(vendor.getRole());
                 response.setMessage("Login successful");
 
+                logger.info("Login successful for email: " + email);
                 return response;
             }
 
             throw new BadRequestException("Invalid credentials or user type mismatch");
 
         } catch (Exception e) {
+            logger.info("Login failed for email: " + email + " - " + e.getMessage());
             throw new BadRequestException("Invalid credentials");
+
         }
     }
 
@@ -333,6 +339,30 @@ public class AuthService {
 
         resetToken.setUsed(true);
         passwordResetTokenRepository.save(resetToken);
+    }
+
+    public void validateResetToken(String token, String type) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new BadRequestException("Invalid reset token"));
+
+        if (resetToken.isUsed()) {
+            throw new BadRequestException("Token already used");
+        }
+
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Token has expired");
+        }
+
+        Role typeRole;
+        try {
+            typeRole = Role.valueOf(type);
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid user type");
+        }
+
+        if (!resetToken.getUserType().equals(typeRole)) {
+            throw new BadRequestException("Invalid token type");
+        }
     }
 
     public void changePassword(String email, ChangePasswordDto changePasswordDto) {
@@ -453,3 +483,4 @@ public class AuthService {
         refreshTokenService.revokeRefreshToken(refreshTokenValue);
     }
 }
+
