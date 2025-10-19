@@ -1,0 +1,28 @@
+package org.rajat.quickpick.domain.modal.adminManagement
+data class RejectVendorResponse(
+    val address: String,
+    val adminNotes: Any,
+    val collegeName: String,
+    val createdAt: String,
+    val email: String,
+    val emailVerified: Boolean,
+    val foodCategories: List<String>,
+    val foodLicenseNumber: String,
+    val gstNumber: String,
+    val id: String,
+    val licenseNumber: String,
+    val phone: String,
+    val phoneVerified: Boolean,
+    val rejectedAt: String,
+    val rejectionReason: String,
+    val role: String,
+    val storeName: String,
+    val suspended: Boolean,
+    val suspendedAt: Any,
+    val suspensionReason: Any,
+    val updatedAt: String,
+    val vendorDescription: String,
+    val vendorName: String,
+    val verificationStatus: String,
+    val verifiedAt: String
+)

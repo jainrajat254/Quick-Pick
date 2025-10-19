@@ -1,5 +1,5 @@
 package org.rajat.quickpick.domain.modal.auth
-data class LoginVendorRequest(
+data class ForgotPasswordRequest(
     val email: String?,
-    val password: String?
+    val userType: String?
 )

@@ -1,5 +1,6 @@
-package org.rajat.quickpick.domain.modal.auth
-data class LoginUserResponse(
+package org.rajat.quickpick.domain.modal.admin
+
+data class AdminLoginResponse(
     val email: String,
     val message: String,
     val name: String,

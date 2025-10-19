@@ -1,6 +1,5 @@
 package org.rajat.quickpick.domain.modal.auth
-
-data class LoginVendorOutput(
+data class RefreshTokenResponse(
     val email: String,
     val message: String,
     val name: String,

@@ -1,5 +1,4 @@
 package org.rajat.quickpick.domain.modal.auth
-
 data class RegisterUserRequest(
     val collegeName: String ?,
     val department: String ?,
