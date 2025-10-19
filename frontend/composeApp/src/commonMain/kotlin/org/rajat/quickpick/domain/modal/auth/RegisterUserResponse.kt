@@ -1,4 +1,5 @@
 package org.rajat.quickpick.domain.modal.auth
+
 data class RegisterUserResponse(
     val email: String,
     val message: String,
