@@ -138,7 +138,13 @@ object RegisterComponents {
                     value = value,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text(label) },
+                    placeholder = {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
                     leadingIcon = {
                         Icon(
                             imageVector = leadingIcon,
