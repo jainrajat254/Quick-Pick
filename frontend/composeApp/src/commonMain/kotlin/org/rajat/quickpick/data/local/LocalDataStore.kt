@@ -10,5 +10,8 @@ interface LocalDataStore {
     suspend fun getRefreshToken(): String?
     suspend fun clearRefreshToken()
 
+    suspend fun saveTokenExpiryMillis(expiryMillis: Long)
+    suspend fun getTokenExpiryMillis(): Long?
+
     suspend fun clearAll()
 }
