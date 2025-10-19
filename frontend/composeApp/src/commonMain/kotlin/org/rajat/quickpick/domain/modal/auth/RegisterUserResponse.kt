@@ -1,11 +1,11 @@
 package org.rajat.quickpick.domain.modal.auth
 
 data class RegisterUserResponse(
-    val email: String,
-    val message: String,
-    val name: String,
-    val refreshToken: Any,
-    val role: String,
-    val token: Any,
-    val userId: String
+    val email: String?,
+    val message: String?,
+    val name: String?,
+    val refreshToken: String?,
+    val role: String?,
+    val token: String?,
+    val userId: String?
 )
