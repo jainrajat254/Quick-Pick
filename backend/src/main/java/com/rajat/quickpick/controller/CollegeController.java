@@ -1,8 +1,10 @@
 package com.rajat.quickpick.controller;
 
 
+import com.rajat.quickpick.dto.college.CitiesResponseDto;
 import com.rajat.quickpick.dto.college.CreateCollegeDto;
 import com.rajat.quickpick.dto.college.CollegeResponseDto;
+import com.rajat.quickpick.dto.college.StatesResponseDto;
 import com.rajat.quickpick.service.CollegeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,14 +44,14 @@ public class CollegeController {
 
 
     @GetMapping("/public/cities")
-    public ResponseEntity<List<String>> getAllCities() {
-        List<String> cities = collegeService.getAllCities();
+    public ResponseEntity<CitiesResponseDto> getAllCities() {
+        CitiesResponseDto cities = collegeService.getAllCities();
         return ResponseEntity.ok(cities);
     }
 
     @GetMapping("/public/states")
-    public ResponseEntity<List<String>> getAllStates() {
-        List<String> states = collegeService.getAllStates();
+    public ResponseEntity<StatesResponseDto> getAllStates() {
+        StatesResponseDto states = collegeService.getAllStates();
         return ResponseEntity.ok(states);
     }
 
@@ -82,7 +84,6 @@ public class CollegeController {
     }
 
 
-    // for admin only
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CollegeResponseDto> createCollege(@Valid @RequestBody CreateCollegeDto createDto) {
@@ -91,7 +92,6 @@ public class CollegeController {
     }
 
 
-    //admin
     @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CollegeResponseDto> updateCollege(@PathVariable String id,
@@ -100,7 +100,6 @@ public class CollegeController {
         return ResponseEntity.ok(updatedCollege);
     }
 
-    //admin
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deleteCollege(@PathVariable String id) {
