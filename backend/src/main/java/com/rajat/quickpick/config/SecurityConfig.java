@@ -54,10 +54,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/create").permitAll()
                         .requestMatchers("api/admin/login").permitAll()
                         .requestMatchers("/api/admin-management/**").authenticated()
+                        .requestMatchers("/api/menu-items/vendor/{vendorId}").permitAll()
+                        .requestMatchers("/api/orders/**").authenticated()
 
 
+                        .requestMatchers("/ws/**").permitAll()
 
-                        .anyRequest().authenticated()
+
+                        .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
