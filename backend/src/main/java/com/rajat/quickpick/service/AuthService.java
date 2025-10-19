@@ -167,16 +167,16 @@ public class AuthService {
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-            if ("USER".equals(userType)) {
-                User user = userRepository.findByEmail(email)
-                        .orElseThrow(() -> new BadRequestException("Invalid credentials"));
+            var userOpt = userRepository.findByEmail(email);
+            if (userOpt.isPresent() && "STUDENT".equals(userType)) {
+                User user = userOpt.get();
 
                 if (!user.isEmailVerified()) {
                     throw new BadRequestException("Please verify your email first");
                 }
 
                 String token = jwtUtil.generateToken(userDetails, user.getId(), user.getRole().name());
-                RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId(), user.getEmail(), "USER");
+                RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId(), user.getEmail(), user.getRole().name());
 
                 AuthResponseDto response = new AuthResponseDto();
                 response.setToken(token);
@@ -188,17 +188,18 @@ public class AuthService {
                 response.setMessage("Login successful");
 
                 return response;
+            }
 
-            } else if ("VENDOR".equals(userType)) {
-                Vendor vendor = vendorRepository.findByEmail(email)
-                        .orElseThrow(() -> new BadRequestException("Invalid credentials"));
+            var vendorOpt = vendorRepository.findByEmail(email);
+            if (vendorOpt.isPresent() && "VENDOR".equals(userType)) {
+                Vendor vendor = vendorOpt.get();
 
                 if (!vendor.isEmailVerified()) {
                     throw new BadRequestException("Please verify your email first");
                 }
 
                 String token = jwtUtil.generateToken(userDetails, vendor.getId(), vendor.getRole().name());
-                RefreshToken refreshToken = refreshTokenService.createRefreshToken(vendor.getId(), vendor.getEmail(), "VENDOR");
+                RefreshToken refreshToken = refreshTokenService.createRefreshToken(vendor.getId(), vendor.getEmail(), vendor.getRole().name());
 
                 AuthResponseDto response = new AuthResponseDto();
                 response.setToken(token);
@@ -210,9 +211,9 @@ public class AuthService {
                 response.setMessage("Login successful");
 
                 return response;
-            } else {
-                throw new BadRequestException("Invalid user type");
             }
+
+            throw new BadRequestException("Invalid credentials or user type mismatch");
 
         } catch (Exception e) {
             throw new BadRequestException("Invalid credentials");
@@ -265,9 +266,10 @@ public class AuthService {
         Role userType = forgotPasswordDto.getUserType();
 
         boolean userExists = false;
-        if ("USER".equals(userType)) {
+
+        if (Role.STUDENT.equals(userType)) {
             userExists = userRepository.existsByEmail(email);
-        } else if ("VENDOR".equals(userType)) {
+        } else if (Role.VENDOR.equals(userType)) {
             userExists = vendorRepository.existsByEmail(email);
         }
 
@@ -275,7 +277,6 @@ public class AuthService {
             throw new ResourceNotFoundException("User not found with email: " + email);
         }
 
-        // Delete any existing reset tokens
         passwordResetTokenRepository.deleteByEmailAndUserType(email, userType);
 
         String token = UUID.randomUUID().toString();
@@ -303,19 +304,26 @@ public class AuthService {
             throw new BadRequestException("Token has expired");
         }
 
-        if (!resetToken.getUserType().equals(resetPasswordDto.getType())) {
+        Role typeRole;
+        try {
+            typeRole = Role.valueOf(resetPasswordDto.getType());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid user type");
+        }
+
+        if (!resetToken.getUserType().equals(typeRole)) {
             throw new BadRequestException("Invalid token type");
         }
 
         String encodedPassword = passwordEncoder.encode(resetPasswordDto.getNewPassword());
 
-        if ("USER".equals(resetPasswordDto.getType())) {
+        if (Role.STUDENT.equals(typeRole)) {
             User user = userRepository.findByEmail(resetToken.getEmail())
                     .orElseThrow(() -> new ResourceNotFoundException("User not found"));
             user.setPassword(encodedPassword);
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
-        } else if ("VENDOR".equals(resetPasswordDto.getType())) {
+        } else if (Role.VENDOR.equals(typeRole)) {
             Vendor vendor = vendorRepository.findByEmail(resetToken.getEmail())
                     .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
             vendor.setPassword(encodedPassword);
@@ -412,21 +420,30 @@ public class AuthService {
 
         AuthResponseDto response = new AuthResponseDto();
         response.setToken(newAccessToken);
-        response.setRefreshToken(refreshTokenValue); // Keep the same refresh token
+        response.setRefreshToken(refreshTokenValue);
         response.setUserId(refreshToken.getUserId());
         response.setEmail(refreshToken.getUserEmail());
         response.setMessage("Token refreshed successfully");
 
-        if ("USER".equals(refreshToken.getUserType())) {
+        Role userRole;
+        try {
+            userRole = Role.valueOf(refreshToken.getUserType());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid user type in refresh token");
+        }
+
+        if (Role.STUDENT.equals(userRole)) {
             User user = userRepository.findById(refreshToken.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("User not found"));
             response.setName(user.getFullName());
             response.setRole(user.getRole());
-        } else {
+        } else if (Role.VENDOR.equals(userRole)) {
             Vendor vendor = vendorRepository.findById(refreshToken.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
             response.setName(vendor.getVendorName());
             response.setRole(vendor.getRole());
+        } else {
+            throw new BadRequestException("Unsupported role type");
         }
 
         return response;
@@ -436,4 +453,3 @@ public class AuthService {
         refreshTokenService.revokeRefreshToken(refreshTokenValue);
     }
 }
-

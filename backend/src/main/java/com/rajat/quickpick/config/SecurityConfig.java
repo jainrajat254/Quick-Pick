@@ -56,6 +56,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin-management/**").authenticated()
 
 
+                        .requestMatchers("/ws/**").permitAll()
+
 
                         .anyRequest().authenticated()
                 )
