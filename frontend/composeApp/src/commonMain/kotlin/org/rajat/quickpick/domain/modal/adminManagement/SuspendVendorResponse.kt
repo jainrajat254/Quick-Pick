@@ -2,11 +2,12 @@ package org.rajat.quickpick.domain.modal.adminManagement
 
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class SuspendVendorResponse(
     val address: String,
-    @Contextual val adminNotes: Any,
+    val adminNotes: String?,
     val collegeName: String,
     val createdAt: String,
     val email: String,

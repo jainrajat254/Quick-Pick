@@ -2,6 +2,7 @@ package org.rajat.quickpick.domain.modal.adminManagement
 
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class UnsuspendUserResponse(
@@ -17,7 +18,7 @@ data class UnsuspendUserResponse(
     val role: String,
     val studentId: String,
     val suspended: Boolean,
-    @Contextual val suspendedAt: Any,
-    val suspensionReason: Any,
+    val suspendedAt: String?,
+    val suspensionReason: String?,
     val updatedAt: String
 )

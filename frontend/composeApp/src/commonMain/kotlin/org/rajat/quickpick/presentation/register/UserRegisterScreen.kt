@@ -57,7 +57,6 @@ import quickpick.composeapp.generated.resources.registerbackground
 fun UserRegisterScreen(
     onRegisterClick: () -> Unit = {},
     onLoginClick: () -> Unit = {},
-    vegetableImageAlpha: Float = 0.15f
 ) {
 
     var fullName by remember { mutableStateOf("") }

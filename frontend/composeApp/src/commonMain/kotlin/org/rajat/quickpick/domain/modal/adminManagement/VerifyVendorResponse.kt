@@ -2,11 +2,12 @@ package org.rajat.quickpick.domain.modal.adminManagement
 
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class VerifyVendorResponse(
     val address: String,
-    @Contextual val adminNotes: Any,
+    val adminNotes: String?,
     val collegeName: String,
     val createdAt: String,
     val email: String,
@@ -18,13 +19,13 @@ data class VerifyVendorResponse(
     val licenseNumber: String,
     val phone: String,
     val phoneVerified: Boolean,
-    val rejectedAt: Any,
-    val rejectionReason: Any,
+    val rejectedAt: String?,
+    val rejectionReason: String?,
     val role: String,
     val storeName: String,
     val suspended: Boolean,
-    val suspendedAt: Any,
-    val suspensionReason: Any,
+    val suspendedAt: String?,
+    val suspensionReason: String?,
     val updatedAt: String,
     val vendorDescription: String,
     val vendorName: String,
