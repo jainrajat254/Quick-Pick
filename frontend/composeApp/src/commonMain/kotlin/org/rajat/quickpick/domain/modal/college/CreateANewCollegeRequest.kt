@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CreateANewCollegeRequest(
-    val address: String?,
-    val city: String?,
-    val name: String?,
-    val state: String?
+    val address: String?=null,
+    val city: String?=null,
+    val name: String?=null,
+    val state: String?=null
 )
