@@ -4,12 +4,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RegisterUserRequest(
-    val collegeName: String?,
-    val department: String?,
-    val email: String?,
-    val fullName: String?,
-    val gender: String?,
-    val password: String?,
-    val phone: String?,
-    val studentId: String?
+    val collegeName: String?=null,
+    val department: String?=null,
+    val email: String?=null,
+    val fullName: String?=null,
+    val gender: String?=null,
+    val password: String?=null,
+    val phone: String?=null,
+    val studentId: String?=null
 )

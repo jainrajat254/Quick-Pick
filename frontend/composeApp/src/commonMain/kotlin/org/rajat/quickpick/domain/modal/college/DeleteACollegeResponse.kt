@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class DeleteACollegeResponse(
-    val message: String
+    val message: String?=null
 )
