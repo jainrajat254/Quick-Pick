@@ -4,11 +4,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RegisterUserResponse(
-    val email: String?,
-    val message: String?,
-    val name: String?,
-    val refreshToken: String?,
-    val role: String?,
-    val token: String?,
-    val userId: String?
+    val email: String?=null,
+    val message: String?=null,
+    val name: String?=null,
+    val refreshToken: String?=null,
+    val role: String?=null,
+    val token: String?=null,
+    val userId: String?=null
 )

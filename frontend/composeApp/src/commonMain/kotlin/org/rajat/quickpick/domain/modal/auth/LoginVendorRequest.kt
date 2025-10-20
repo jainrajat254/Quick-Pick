@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class LoginVendorRequest(
-    val email: String?,
-    val password: String?
+    val email: String?=null,
+    val password: String?=null
 )
