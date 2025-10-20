@@ -1,11 +1,12 @@
 package org.rajat.quickpick.domain.modal.adminManagement
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class VerifyVendorResponse(
     val address: String,
-    val adminNotes: Any,
+    @Contextual val adminNotes: Any,
     val collegeName: String,
     val createdAt: String,
     val email: String,

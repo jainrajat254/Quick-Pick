@@ -1,5 +1,6 @@
 package org.rajat.quickpick.domain.modal.adminManagement.getAllUsers
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -16,7 +17,7 @@ data class Content(
     val role: String,
     val studentId: String,
     val suspended: Boolean,
-    val suspendedAt: Any,
-    val suspensionReason: Any,
+    @Contextual val suspendedAt: Any,
+    @Contextual val suspensionReason: Any,
     val updatedAt: String
 )

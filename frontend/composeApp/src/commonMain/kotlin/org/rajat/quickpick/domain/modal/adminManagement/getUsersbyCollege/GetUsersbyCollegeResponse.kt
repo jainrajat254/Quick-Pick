@@ -1,10 +1,11 @@
 package org.rajat.quickpick.domain.modal.adminManagement.getUsersbyCollege
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class GetUsersbyCollegeResponse(
-    val content: List<Any?>,
+    @Contextual val content: List<Any?>,
     val empty: Boolean,
     val first: Boolean,
     val last: Boolean,

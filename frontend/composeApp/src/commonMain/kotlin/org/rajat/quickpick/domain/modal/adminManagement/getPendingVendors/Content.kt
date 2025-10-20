@@ -1,11 +1,12 @@
 package org.rajat.quickpick.domain.modal.adminManagement.getPendingVendors
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Content(
     val address: String,
-    val adminNotes: Any,
+    @Contextual val adminNotes: Any,
     val collegeName: String,
     val createdAt: String,
     val email: String,
@@ -17,8 +18,8 @@ data class Content(
     val licenseNumber: String,
     val phone: String,
     val phoneVerified: Boolean,
-    val rejectedAt: Any,
-    val rejectionReason: Any,
+    @Contextual val rejectedAt: Any,
+    @Contextual val rejectionReason: Any,
     val role: String,
     val storeName: String,
     val suspended: Boolean,
