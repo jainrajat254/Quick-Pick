@@ -48,7 +48,6 @@ public class SecurityConfig {
                         csrf -> csrf.disable()
                 )
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/change-password").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/colleges/public").permitAll()
                         .requestMatchers("/api/colleges/public/**").permitAll()

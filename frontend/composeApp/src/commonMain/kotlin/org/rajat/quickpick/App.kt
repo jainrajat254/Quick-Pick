@@ -3,7 +3,6 @@ package org.rajat.quickpick
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.rememberNavController
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.rajat.quickpick.presentation.register.UserRegisterScreen
 import org.rajat.quickpick.presentation.theme.AppTheme
 
 @Composable
@@ -11,9 +10,8 @@ import org.rajat.quickpick.presentation.theme.AppTheme
 fun App() {
     AppTheme {
         val navHostController = rememberNavController()
-//        AppNavigation(
-//            navController = navHostController
-//        )
-        UserRegisterScreen()
+        AppNavigation(
+            navController = navHostController
+        )
     }
 }

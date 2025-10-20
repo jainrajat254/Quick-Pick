@@ -1,10 +1,8 @@
 package com.rajat.quickpick.service;
 
 
-import com.rajat.quickpick.dto.college.CitiesResponseDto;
 import com.rajat.quickpick.dto.college.CreateCollegeDto;
 import com.rajat.quickpick.dto.college.CollegeResponseDto;
-import com.rajat.quickpick.dto.college.StatesResponseDto;
 import com.rajat.quickpick.exception.BadRequestException;
 import com.rajat.quickpick.exception.ResourceNotFoundException;
 import com.rajat.quickpick.model.College;
@@ -141,28 +139,23 @@ public class CollegeService {
         return collegeRepository.count();
     }
 
-    public CitiesResponseDto getAllCities() {
-        List<String> cities = collegeRepository.findAll()
+    //for stats if needed
+    public List<String> getAllCities() {
+        return collegeRepository.findAll()
                 .stream()
                 .map(College::getCity)
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
-        CitiesResponseDto dto = new CitiesResponseDto();
-        dto.setCities(cities);
-        return dto;
     }
 
-    public StatesResponseDto getAllStates() {
-        List<String> states = collegeRepository.findAll()
+    public List<String> getAllStates() {
+        return collegeRepository.findAll()
                 .stream()
                 .map(College::getState)
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
-        StatesResponseDto dto = new StatesResponseDto();
-        dto.setStates(states);
-        return dto;
     }
 
     private CollegeResponseDto mapToResponseDto(College college) {
