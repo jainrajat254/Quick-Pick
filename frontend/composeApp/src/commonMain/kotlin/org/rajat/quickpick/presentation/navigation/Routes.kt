@@ -9,4 +9,7 @@ sealed class Routes(val route: String) {
     data object VendorRegister : Routes("vendor_register")
     data object VendorLogin : Routes("vendor_login")
     data object Home : Routes("home")
+    data object VendorDetail : Routes("vendor_detail/{vendorId}") {
+        fun createRoute(vendorId: String) = "vendor_detail/$vendorId"
+    }
 }

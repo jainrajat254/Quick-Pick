@@ -6,10 +6,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import org.koin.compose.koinInject
 import org.rajat.quickpick.data.local.LocalDataStore
-import org.rajat.quickpick.presentation.feature.HomeScreen
+import org.rajat.quickpick.presentation.feature.homescreen.HomeScreen
 import org.rajat.quickpick.presentation.feature.SplashScreen
 import org.rajat.quickpick.presentation.feature.register.UserRegisterScreen
 import org.rajat.quickpick.presentation.feature.register.VendorRegisterScreen
+import org.rajat.quickpick.presentation.feature.vendordetail.VendorScreen
 import org.rajat.quickpick.presentation.navigation.Routes
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
@@ -53,7 +54,17 @@ fun AppNavigation(
         }
 
         composable(Routes.Home.route) {
-            HomeScreen()
+            HomeScreen(
+                navController = navController
+            )
+        }
+
+        composable("vendor_detail/{vendorId}") {
+
+            VendorScreen(
+                navController = navController,
+                vendorId = "v1"
+            )
         }
 
     }
