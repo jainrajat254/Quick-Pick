@@ -11,17 +11,15 @@ import org.rajat.quickpick.domain.modal.auth.LogoutResponse
 import org.rajat.quickpick.domain.modal.auth.RefreshTokenRequest
 import org.rajat.quickpick.domain.modal.auth.RefreshTokenResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterUserRequest
-import org.rajat.quickpick.domain.modal.auth.RegisterUserResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterVendorRequest
-import org.rajat.quickpick.domain.modal.auth.RegisterVendorResponse
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordResponse
 
 interface AuthRepository {
     suspend fun userLogin(loginUserRequest: LoginUserRequest): Result<LoginUserResponse>
     suspend fun vendorLogin(loginVendorRequest: LoginVendorRequest): Result<LoginVendorResponse>
-    suspend fun userRegister(registerUserRequest: RegisterUserRequest): Result<RegisterUserResponse>
-    suspend fun vendorRegister(registerVendorRequest: RegisterVendorRequest): Result<RegisterVendorResponse>
+    suspend fun userRegister(registerUserRequest: RegisterUserRequest): Result<LoginUserResponse>
+    suspend fun vendorRegister(registerVendorRequest: RegisterVendorRequest): Result<LoginVendorResponse>
     suspend fun refreshToken(refreshTokenRequest: RefreshTokenRequest): Result<RefreshTokenResponse>
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): Result<ForgotPasswordResponse>
     suspend fun resetPassword(resetPasswordRequest: ResetPasswordRequest): Result<ResetPasswordResponse>

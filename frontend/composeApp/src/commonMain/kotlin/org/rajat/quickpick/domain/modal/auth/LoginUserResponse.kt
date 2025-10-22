@@ -8,6 +8,7 @@ data class LoginUserResponse(
     val message: String? = null,
     val name: String? = null,
     val refreshToken: String? = null,
+    val role: String? = null,
     val token: String? = null,
     val userId: String? = null
 )

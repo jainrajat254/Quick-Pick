@@ -3,6 +3,7 @@ package org.rajat.quickpick.presentation.theme
 import androidx.compose.ui.graphics.Color
 
 object AppColors {
+
     val Primary = Color(0xFF4A7D5E)
     val PrimaryDark = Color(0xFF2F5A42)
     val PrimaryLight = Color(0xFF6B9B7F)
@@ -24,8 +25,6 @@ object AppColors {
     val TertiaryContainer = Color(0xFFE0EDE6)
 
     val Error = Color(0xFFD93636)
-    val ErrorDark = Color(0xFFB22222)
-    val ErrorLight = Color(0xFFFF6B6B)
     val ErrorContainer = Color(0xFFFFDAD6)
 
     val Success = Color(0xFF4A9D7D)
@@ -64,7 +63,6 @@ object AppColors {
         val Scrim = Color(0xFF000000)
     }
 
-    // Dark theme colors - Rich and vibrant
     object Dark {
         val Background = Color(0xFF0E1512)
         val Surface = Color(0xFF1A2620)
@@ -73,16 +71,16 @@ object AppColors {
         val SurfaceContainerHigh = Color(0xFF2A3F35)
         val SurfaceContainerLow = Color(0xFF151E1A)
 
-        val OnPrimary = Color(0xFF0E2419)
-        val OnSecondary = Color(0xFF0E2419)
-        val OnTertiary = Color(0xFF0E2419)
+        val OnPrimary = Color(0xFFFFFFFF)
+        val OnSecondary = Color(0xFFFFFFFF)
+        val OnTertiary = Color(0xFFFFFFFF)
         val OnBackground = Color(0xFFE6F2ED)
         val OnSurface = Color(0xFFE6F2ED)
         val OnSurfaceVariant = Color(0xFFBFD1C7)
-        val OnError = Color(0xFF0E1512)
+        val OnError = Color(0xFFFFFFFF)
 
         val Outline = Color(0xFF6B9B7F)
-        val OutlineVariant = Color(0xFF3F4945)
+        val OutlineVariant = Color(0xFF4E6B5D)
         val Scrim = Color(0xFF000000)
     }
 }

@@ -16,9 +16,7 @@ import org.rajat.quickpick.domain.modal.auth.LogoutResponse
 import org.rajat.quickpick.domain.modal.auth.RefreshTokenRequest
 import org.rajat.quickpick.domain.modal.auth.RefreshTokenResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterUserRequest
-import org.rajat.quickpick.domain.modal.auth.RegisterUserResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterVendorRequest
-import org.rajat.quickpick.domain.modal.auth.RegisterVendorResponse
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordResponse
 import org.rajat.quickpick.domain.repository.AuthRepository
@@ -34,12 +32,12 @@ class AuthViewModel(
     private val _vendorLoginState = MutableStateFlow<UiState<LoginVendorResponse>>(UiState.Empty)
     val vendorLoginState: StateFlow<UiState<LoginVendorResponse>> = _vendorLoginState
 
-    private val _userRegisterState = MutableStateFlow<UiState<RegisterUserResponse>>(UiState.Empty)
-    val userRegisterState: StateFlow<UiState<RegisterUserResponse>> = _userRegisterState
+    private val _userRegisterState = MutableStateFlow<UiState<LoginUserResponse>>(UiState.Empty)
+    val userRegisterState: StateFlow<UiState<LoginUserResponse>> = _userRegisterState
 
     private val _vendorRegisterState =
-        MutableStateFlow<UiState<RegisterVendorResponse>>(UiState.Empty)
-    val vendorRegisterState: StateFlow<UiState<RegisterVendorResponse>> = _vendorRegisterState
+        MutableStateFlow<UiState<LoginVendorResponse>>(UiState.Empty)
+    val vendorRegisterState: StateFlow<UiState<LoginVendorResponse>> = _vendorRegisterState
 
     private val _refreshTokenState = MutableStateFlow<UiState<RefreshTokenResponse>>(UiState.Empty)
     val refreshTokenState: StateFlow<UiState<RefreshTokenResponse>> = _refreshTokenState

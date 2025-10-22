@@ -11,9 +11,7 @@ import org.rajat.quickpick.domain.modal.auth.LogoutResponse
 import org.rajat.quickpick.domain.modal.auth.RefreshTokenRequest
 import org.rajat.quickpick.domain.modal.auth.RefreshTokenResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterUserRequest
-import org.rajat.quickpick.domain.modal.auth.RegisterUserResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterVendorRequest
-import org.rajat.quickpick.domain.modal.auth.RegisterVendorResponse
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordResponse
 
@@ -21,8 +19,8 @@ interface AuthApiService {
 
     suspend fun userLogin(loginUserRequest: LoginUserRequest): LoginUserResponse
     suspend fun vendorLogin(loginVendorRequest: LoginVendorRequest): LoginVendorResponse
-    suspend fun userRegister(registerUserRequest: RegisterUserRequest): RegisterUserResponse
-    suspend fun vendorRegister(registerVendorRequest: RegisterVendorRequest): RegisterVendorResponse
+    suspend fun userRegister(registerUserRequest: RegisterUserRequest): LoginUserResponse
+    suspend fun vendorRegister(registerVendorRequest: RegisterVendorRequest): LoginVendorResponse
     suspend fun refreshToken(refreshTokenRequest: RefreshTokenRequest): RefreshTokenResponse
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): ForgotPasswordResponse
     suspend fun resetPassword(resetPasswordRequest: ResetPasswordRequest): ResetPasswordResponse

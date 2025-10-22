@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CustomLoader(
     modifier: Modifier = Modifier,
-    color: Color = Color(0xFFFF9500),
+    color: Color = MaterialTheme.colorScheme.primary,
     strokeWidth: Dp = 4.dp,
     label: String? = null
 ) {
@@ -34,7 +34,7 @@ fun CustomLoader(
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = it,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                 style = MaterialTheme.typography.bodyMedium
             )
         }

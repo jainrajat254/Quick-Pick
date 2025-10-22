@@ -2,7 +2,7 @@ package org.rajat.quickpick.utils
 
 object Constants {
     const val DATASTORE_FILE_NAME = "quick_pick.preferences_pb"
-    const val BASE_URL = "https://your-api-url.com"
+    const val BASE_URL = "https://40132fcb3460.ngrok-free.app"
 
     object Endpoints {
         // Auth

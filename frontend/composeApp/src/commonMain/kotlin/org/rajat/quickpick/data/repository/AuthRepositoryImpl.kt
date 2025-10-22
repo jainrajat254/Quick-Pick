@@ -11,9 +11,7 @@ import org.rajat.quickpick.domain.modal.auth.LogoutResponse
 import org.rajat.quickpick.domain.modal.auth.RefreshTokenRequest
 import org.rajat.quickpick.domain.modal.auth.RefreshTokenResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterUserRequest
-import org.rajat.quickpick.domain.modal.auth.RegisterUserResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterVendorRequest
-import org.rajat.quickpick.domain.modal.auth.RegisterVendorResponse
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordResponse
 import org.rajat.quickpick.domain.repository.AuthRepository
@@ -32,13 +30,13 @@ class AuthRepositoryImpl(private val authApiService: AuthApiService) : AuthRepos
         }
     }
 
-    override suspend fun userRegister(registerUserRequest: RegisterUserRequest): Result<RegisterUserResponse> {
+    override suspend fun userRegister(registerUserRequest: RegisterUserRequest): Result<LoginUserResponse> {
         return runCatching {
             authApiService.userRegister(registerUserRequest = registerUserRequest)
         }
     }
 
-    override suspend fun vendorRegister(registerVendorRequest: RegisterVendorRequest): Result<RegisterVendorResponse> {
+    override suspend fun vendorRegister(registerVendorRequest: RegisterVendorRequest): Result<LoginVendorResponse> {
         return runCatching {
             authApiService.vendorRegister(registerVendorRequest = registerVendorRequest)
         }

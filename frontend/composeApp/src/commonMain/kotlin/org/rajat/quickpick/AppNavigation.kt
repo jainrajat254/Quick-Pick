@@ -8,6 +8,8 @@ import org.koin.compose.koinInject
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.feature.HomeScreen
 import org.rajat.quickpick.presentation.feature.SplashScreen
+import org.rajat.quickpick.presentation.feature.register.UserRegisterScreen
+import org.rajat.quickpick.presentation.feature.register.VendorRegisterScreen
 import org.rajat.quickpick.presentation.navigation.Routes
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
@@ -18,7 +20,6 @@ fun AppNavigation(
 ) {
 
     val authViewModel: AuthViewModel = koinInject()
-
     val dataStore: LocalDataStore = koinInject()
     val refreshTokenManager: RefreshTokenManager = koinInject()
 
@@ -26,11 +27,28 @@ fun AppNavigation(
         navController = navController,
         startDestination = Routes.Splash.route
     ) {
+
         composable(Routes.Splash.route) {
             SplashScreen(
                 navController = navController,
                 datastore = dataStore,
                 refreshTokenManager = refreshTokenManager
+            )
+        }
+
+        composable(Routes.UserRegister.route) {
+            UserRegisterScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                dataStore = dataStore
+            )
+        }
+
+        composable(Routes.VendorRegister.route) {
+            VendorRegisterScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                dataStore = dataStore
             )
         }
 

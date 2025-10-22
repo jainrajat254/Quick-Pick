@@ -12,9 +12,7 @@ import org.rajat.quickpick.domain.modal.auth.LogoutResponse
 import org.rajat.quickpick.domain.modal.auth.RefreshTokenRequest
 import org.rajat.quickpick.domain.modal.auth.RefreshTokenResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterUserRequest
-import org.rajat.quickpick.domain.modal.auth.RegisterUserResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterVendorRequest
-import org.rajat.quickpick.domain.modal.auth.RegisterVendorResponse
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordResponse
 import org.rajat.quickpick.domain.service.AuthApiService
@@ -37,14 +35,14 @@ class AuthApiServiceImpl(private val httpClient: HttpClient) : AuthApiService {
         )
     }
 
-    override suspend fun userRegister(registerUserRequest: RegisterUserRequest): RegisterUserResponse {
+    override suspend fun userRegister(registerUserRequest: RegisterUserRequest): LoginUserResponse {
         return httpClient.safePost(
             endpoint = "${Constants.BASE_URL}${Constants.Endpoints.USER_REGISTER}",
             body = registerUserRequest
         )
     }
 
-    override suspend fun vendorRegister(registerVendorRequest: RegisterVendorRequest): RegisterVendorResponse {
+    override suspend fun vendorRegister(registerVendorRequest: RegisterVendorRequest): LoginVendorResponse {
         return httpClient.safePost(
             endpoint = "${Constants.BASE_URL}${Constants.Endpoints.VENDOR_REGISTER}",
             body = registerVendorRequest

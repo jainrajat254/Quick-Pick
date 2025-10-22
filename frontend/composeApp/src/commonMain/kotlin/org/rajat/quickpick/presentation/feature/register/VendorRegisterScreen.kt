@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,15 +14,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,18 +42,33 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import co.touchlab.kermit.Logger
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.data.dummy.DummyData
-import org.rajat.quickpick.presentation.components.RegisterComponents
+import org.rajat.quickpick.data.local.LocalDataStore
+import org.rajat.quickpick.di.TokenProvider
+import org.rajat.quickpick.domain.modal.auth.LoginVendorResponse
+import org.rajat.quickpick.domain.modal.auth.RegisterVendorRequest
+import org.rajat.quickpick.presentation.components.CustomDropdown
+import org.rajat.quickpick.presentation.components.CustomLoader
+import org.rajat.quickpick.presentation.components.CustomTextField
+import org.rajat.quickpick.presentation.feature.register.components.RegisterButton
+import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
+import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.Validators
+import org.rajat.quickpick.utils.toast.showToast
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.registerbackground
 
-
 @Composable
 fun VendorRegisterScreen(
-    onRegisterClick: () -> Unit = {},
-    onLoginClick: () -> Unit = {},
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    dataStore: LocalDataStore
 ) {
+    val logger = Logger.withTag("VendorRegisterScreen")
 
     var vendorName by remember { mutableStateOf("") }
     var storeName by remember { mutableStateOf("") }
@@ -61,8 +80,47 @@ fun VendorRegisterScreen(
     var licenseNumber by remember { mutableStateOf("") }
     var foodLicenseNumber by remember { mutableStateOf("") }
     var vendorDescription by remember { mutableStateOf("") }
-    var foodCategories by remember { mutableStateOf<List<String>>(emptyList()) } //multiple selectable chips
+    var foodCategories by remember { mutableStateOf<List<String>>(emptyList()) }
     var selectedCollege by remember { mutableStateOf("") }
+
+    val isFormValid = Validators.isVendorFormValid(
+        vendorName,
+        storeName,
+        email,
+        phone,
+        password,
+        address,
+        gstNumber,
+        licenseNumber,
+        foodLicenseNumber,
+        selectedCollege
+    )
+
+    val vendorRegisterState by authViewModel.vendorRegisterState.collectAsState()
+
+    LaunchedEffect(vendorRegisterState) {
+        when (vendorRegisterState) {
+            is UiState.Success -> {
+                val response = (vendorRegisterState as UiState.Success<LoginVendorResponse>).data
+                TokenProvider.token = response.token
+                dataStore.saveToken(response.token ?: "")
+                dataStore.saveId(response.userId ?: "")
+                dataStore.saveVendorProfile(response)
+                showToast("Vendor Registered Successfully")
+                navController.navigate(Routes.Home.route) {
+                    popUpTo(Routes.VendorRegister.route) { inclusive = true }
+                }
+            }
+
+            is UiState.Error -> {
+                val message = (vendorRegisterState as UiState.Error).message ?: "Unknown error"
+                showToast(message)
+                logger.e { message }
+            }
+
+            else -> Unit
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -77,37 +135,23 @@ fun VendorRegisterScreen(
             )
     ) {
         Image(
-            painter = painterResource(
-                resource = Res.drawable.registerbackground
-            ),
+            painter = painterResource(resource = Res.drawable.registerbackground),
             contentDescription = "Background Image",
             contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
 
-            )
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 180.dp)
                 .shadow(
                     elevation = 32.dp,
-                    shape = RoundedCornerShape(
-                        topStart = 40.dp,
-                        topEnd = 40.dp,
-                        bottomStart = 0.dp,
-                        bottomEnd = 0.dp
-                    ),
-
-                    ),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-            shape = RoundedCornerShape(
-                topStart = 40.dp,
-                topEnd = 40.dp,
-                bottomStart = 0.dp,
-                bottomEnd = 0.dp
-            )
+                    shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
+                ),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
         ) {
-
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -120,52 +164,47 @@ fun VendorRegisterScreen(
                         modifier = Modifier
                             .width(240.dp)
                             .height(56.dp),
-
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                            containerColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxSize(),
+                            modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "Create Account",
                                 style = MaterialTheme.typography.headlineMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onPrimary
                                 ),
                                 textAlign = TextAlign.Center
                             )
                         }
                     }
-
                 }
 
                 item {
-                    RegisterComponents.CustomTextField(
+                    CustomTextField(
                         value = vendorName,
                         onValueChange = { vendorName = it },
                         label = "Full Name",
-                        leadingIcon = Icons.Filled.Person,
-                        keyboardType = KeyboardType.Text
+                        leadingIcon = Icons.Filled.Person
                     )
                 }
 
                 item {
-                    RegisterComponents.CustomTextField(
+                    CustomTextField(
                         value = storeName,
                         onValueChange = { storeName = it },
                         label = "Store Name",
-                        leadingIcon = Icons.Filled.School,
-                        keyboardType = KeyboardType.Text
+                        leadingIcon = Icons.Filled.Store
                     )
                 }
 
                 item {
-                    RegisterComponents.CustomTextField(
+                    CustomTextField(
                         value = email,
                         onValueChange = { email = it },
                         label = "Email Address",
@@ -175,17 +214,18 @@ fun VendorRegisterScreen(
                 }
 
                 item {
-                    RegisterComponents.CustomTextField(
+                    CustomTextField(
                         value = phone,
                         onValueChange = { phone = it },
                         label = "Phone Number",
                         leadingIcon = Icons.Filled.Phone,
-                        keyboardType = KeyboardType.Phone
+                        keyboardType = KeyboardType.Phone,
+                        maxLength = 10
                     )
                 }
 
                 item {
-                    RegisterComponents.CustomTextField(
+                    CustomTextField(
                         value = password,
                         onValueChange = { password = it },
                         label = "Password",
@@ -197,95 +237,90 @@ fun VendorRegisterScreen(
                 }
 
                 item {
-                    RegisterComponents.CustomTextField(
+                    CustomTextField(
                         value = address,
                         onValueChange = { address = it },
                         label = "Address",
-                        leadingIcon = Icons.Filled.Badge,
-                        keyboardType = KeyboardType.Text
+                        leadingIcon = Icons.Filled.Home
                     )
                 }
 
                 item {
-                    RegisterComponents.CustomTextField(
+                    CustomTextField(
                         value = gstNumber,
                         onValueChange = { gstNumber = it },
                         label = "GST Number",
-                        leadingIcon = Icons.Filled.Badge,
-                        keyboardType = KeyboardType.Text
+                        leadingIcon = Icons.Filled.Badge
                     )
                 }
 
                 item {
-                    RegisterComponents.CustomTextField(
+                    CustomTextField(
                         value = licenseNumber,
                         onValueChange = { licenseNumber = it },
                         label = "License Number",
-                        leadingIcon = Icons.Filled.Badge,
-                        keyboardType = KeyboardType.Text
+                        leadingIcon = Icons.Filled.Badge
                     )
                 }
 
                 item {
-                    RegisterComponents.CustomTextField(
+                    CustomTextField(
                         value = foodLicenseNumber,
                         onValueChange = { foodLicenseNumber = it },
                         label = "Food License Number",
-                        leadingIcon = Icons.Filled.Badge,
-                        keyboardType = KeyboardType.Text
+                        leadingIcon = Icons.Filled.Badge
                     )
                 }
 
                 item {
-                    RegisterComponents.CustomDropdown(
+                    CustomDropdown(
                         value = selectedCollege,
                         onValueChange = { selectedCollege = it },
                         label = "Select College",
                         leadingIcon = Icons.Filled.School,
                         options = DummyData.colleges.map { it.name }
                     )
-
                 }
 
                 item {
-                    RegisterComponents.CustomTextField(
+                    CustomTextField(
                         value = vendorDescription,
                         onValueChange = { vendorDescription = it },
                         label = "Vendor Description",
-                        leadingIcon = Icons.Filled.Badge,
-                        keyboardType = KeyboardType.Text
+                        leadingIcon = Icons.Filled.Info
                     )
                 }
 
-
-
-
-
                 item {
-                    RegisterComponents.RegisterButton(
+                    RegisterButton(
                         onClick = {
-                            onRegisterClick()
+                            val registerVendorRequest = RegisterVendorRequest(
+                                vendorName = vendorName,
+                                storeName = storeName,
+                                email = email,
+                                phone = phone,
+                                password = password,
+                                address = address,
+                                gstNumber = gstNumber,
+                                licenseNumber = licenseNumber,
+                                foodLicenseNumber = foodLicenseNumber,
+                                collegeName = selectedCollege,
+                                foodCategories = foodCategories,
+                                vendorDescription = vendorDescription
+                            )
+                            authViewModel.registerVendor(registerVendorRequest)
                         },
-                        enabled = vendorName.isNotBlank()
-                                && storeName.isNotBlank()
-                                && email.isNotBlank() &&
-                                phone.isNotBlank() &&
-                                password.isNotBlank()
-                                && address.isNotBlank()
-                                && gstNumber.isNotBlank()
-                                && licenseNumber.isNotBlank()
-                                && foodLicenseNumber.isNotBlank()
-                                && selectedCollege.isNotBlank()
+                        enabled = isFormValid,
+                        isLoading = vendorRegisterState is UiState.Loading,
+                        text = "REGISTER",
+                        loadingText = "Registering..."
                     )
-
                 }
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-
             }
+        }
+
+        if (vendorRegisterState is UiState.Loading) {
+            CustomLoader()
         }
     }
 }
-

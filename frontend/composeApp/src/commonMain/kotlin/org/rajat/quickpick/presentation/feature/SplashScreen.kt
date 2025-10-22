@@ -10,6 +10,7 @@ import androidx.navigation.NavController
 import co.touchlab.kermit.Logger
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.components.CustomLoader
+import org.rajat.quickpick.presentation.feature.register.VendorRegisterScreen
 import org.rajat.quickpick.presentation.navigation.Routes
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
 
@@ -29,7 +30,7 @@ fun SplashScreen(
             token == null -> {
                 logger.i { "No token found. Navigating to Login." }
                 //NEED TO CHANGE THIS
-                navController.navigate(Routes.Home.route) {
+                navController.navigate(Routes.UserRegister.route) {
                     popUpTo(0) { inclusive = true }
                 }
             }
@@ -38,12 +39,12 @@ fun SplashScreen(
                 val valid = refreshTokenManager.ensureValidToken()
                 if (valid) {
                     logger.i { "Token valid (or refreshed). Navigating to Home." }
-                    navController.navigate(Routes.Home.route) {
+                    navController.navigate(Routes.UserRegister.route) {
                         popUpTo(0) { inclusive = true }
                     }
                 } else {
                     logger.i { "Token refresh failed. Navigating to Login." }
-                    navController.navigate(Routes.GetOtpLogin.route) {
+                    navController.navigate(Routes.UserRegister.route) {
                         popUpTo(0) { inclusive = true }
                     }
                 }
