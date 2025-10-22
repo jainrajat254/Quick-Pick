@@ -1,9 +1,10 @@
 package org.rajat.quickpick.domain.modal.search
 
-import com.example.dummyproject.data.menuitems.MenuItem
-import com.example.dummyproject.data.menuitems.getMyMenuItemsPaginated.Pageable
-import com.example.dummyproject.data.menuitems.getMyMenuItemsPaginated.SortX
+
 import kotlinx.serialization.Serializable
+import org.rajat.quickpick.domain.modal.adminManagement.getAllUsers.Pageable
+import org.rajat.quickpick.domain.modal.adminManagement.getAllUsers.SortX
+import org.rajat.quickpick.domain.modal.menuitems.MenuItem
 
 @Serializable
 data class StrictSearchMenuItemsResponse(
