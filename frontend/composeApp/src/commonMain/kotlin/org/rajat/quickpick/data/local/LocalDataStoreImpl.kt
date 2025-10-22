@@ -2,9 +2,11 @@ package org.rajat.quickpick.data.local
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -25,6 +27,8 @@ class LocalDataStoreImpl(
         private val ID_KEY = stringPreferencesKey("user_or_vendor_id")
         private val VENDOR_PROFILE_KEY = stringPreferencesKey("vendor_profile")
         private val USER_PROFILE_KEY = stringPreferencesKey("user_profile")
+
+        private val HAS_ONBOARDED_KEY = booleanPreferencesKey("has_onboarded")
 
         private val json = Json { ignoreUnknownKeys = true }
     }
@@ -90,6 +94,19 @@ class LocalDataStoreImpl(
             json.decodeFromString<LoginUserResponse>(jsonString)
         }.getOrNull()
     }
+
+    override suspend fun setHasOnboarded(bool: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[HAS_ONBOARDED_KEY] = bool
+        }
+    }
+
+    override val hasOnboarded: Flow<Boolean> =
+        dataStore.data.map { prefs ->
+//            prefs[HAS_ONBOARDED_KEY] ?: false
+            false
+        }
+
 
     override suspend fun clearAll() {
         dataStore.edit { it.clear() }

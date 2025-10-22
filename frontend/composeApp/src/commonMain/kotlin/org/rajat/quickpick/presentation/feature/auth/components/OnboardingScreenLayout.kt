@@ -1,4 +1,5 @@
 package org.rajat.quickpick.presentation.feature.auth.components
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,7 +24,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.dummyproject.theme.AppColors
+import org.rajat.quickpick.presentation.theme.AppColors
 
 @Composable
 fun OnboardingScreenLayout(

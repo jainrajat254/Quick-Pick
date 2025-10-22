@@ -1,5 +1,6 @@
 package org.rajat.quickpick.data.local
 
+import kotlinx.coroutines.flow.Flow
 import org.rajat.quickpick.domain.modal.auth.LoginUserResponse
 import org.rajat.quickpick.domain.modal.auth.LoginVendorResponse
 
@@ -24,6 +25,9 @@ interface LocalDataStore {
 
     suspend fun saveUserProfile(loginUserResponse: LoginUserResponse)
     suspend fun getUserProfile(): LoginUserResponse?
+
+    suspend fun setHasOnboarded(bool: Boolean)
+    val hasOnboarded: Flow<Boolean>
 
     suspend fun clearAll()
 }
