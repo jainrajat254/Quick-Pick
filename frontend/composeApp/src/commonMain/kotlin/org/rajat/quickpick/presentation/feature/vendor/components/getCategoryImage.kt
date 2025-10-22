@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.feature.vendordetail.components
+package org.rajat.quickpick.presentation.feature.vendor.components
 
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.fcpizza

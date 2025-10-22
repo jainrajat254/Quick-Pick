@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.feature.register
+package org.rajat.quickpick.presentation.feature.auth.register
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,12 +48,12 @@ import org.rajat.quickpick.data.dummy.DummyData
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.domain.modal.auth.LoginUserResponse
-import org.rajat.quickpick.domain.modal.auth.LoginVendorResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterUserRequest
 import org.rajat.quickpick.presentation.components.CustomDropdown
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.components.CustomTextField
-import org.rajat.quickpick.presentation.feature.register.components.RegisterButton
+import org.rajat.quickpick.presentation.feature.auth.components.InlineClickableText
+import org.rajat.quickpick.presentation.feature.auth.components.RegisterButton
 import org.rajat.quickpick.presentation.navigation.Routes
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
@@ -291,11 +291,17 @@ fun UserRegisterScreen(
                     )
 
                 }
-
                 item {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    InlineClickableText(
+                        normalText = "Already have an account?",
+                        clickableText = "Sign in",
+                        onClick = {
+                            navController.navigate(Routes.UserLogin.route) {
+                                popUpTo(Routes.UserRegister.route) { inclusive = true }
+                            }
+                        }
+                    )
                 }
-
             }
         }
         if (userRegisterState is UiState.Loading) {

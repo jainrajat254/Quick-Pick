@@ -49,4 +49,12 @@ object Validators {
                 branch.isNotBlank()
     }
 
+    fun isLoginFormValid(
+        email: String,
+        password: String
+    ): Boolean {
+        return email.isNotBlank() && email.matches(emailRegex) &&
+                password.isNotBlank()
+    }
+
 }

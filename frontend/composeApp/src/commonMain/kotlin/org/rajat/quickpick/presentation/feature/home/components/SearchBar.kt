@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.feature.homescreen.components
+package org.rajat.quickpick.presentation.feature.home.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search

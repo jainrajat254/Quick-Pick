@@ -1,9 +1,10 @@
-package org.rajat.quickpick.presentation.feature.register
+package org.rajat.quickpick.presentation.feature.auth.register
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,7 +54,8 @@ import org.rajat.quickpick.domain.modal.auth.RegisterVendorRequest
 import org.rajat.quickpick.presentation.components.CustomDropdown
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.components.CustomTextField
-import org.rajat.quickpick.presentation.feature.register.components.RegisterButton
+import org.rajat.quickpick.presentation.feature.auth.components.InlineClickableText
+import org.rajat.quickpick.presentation.feature.auth.components.RegisterButton
 import org.rajat.quickpick.presentation.navigation.Routes
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
@@ -314,6 +316,17 @@ fun VendorRegisterScreen(
                         isLoading = vendorRegisterState is UiState.Loading,
                         text = "REGISTER",
                         loadingText = "Registering..."
+                    )
+                }
+                item {
+                    InlineClickableText(
+                        normalText = "Already have an account?",
+                        clickableText = "Sign in",
+                        onClick = {
+                            navController.navigate(Routes.VendorLogin.route) {
+                                popUpTo(Routes.VendorRegister.route) { inclusive = true }
+                            }
+                        }
                     )
                 }
             }

@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.feature.register.components
+package org.rajat.quickpick.presentation.feature.auth.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

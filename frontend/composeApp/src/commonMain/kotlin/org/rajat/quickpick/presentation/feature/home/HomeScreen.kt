@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.feature.homescreen
+package org.rajat.quickpick.presentation.feature.home
 
 
 import androidx.compose.foundation.layout.*
@@ -8,8 +8,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.rajat.quickpick.data.dummy.DummyData
 import org.rajat.quickpick.presentation.components.BasePage
-import org.rajat.quickpick.presentation.feature.homescreen.components.*
-import org.rajat.quickpick.presentation.feature.vendordetail.VendorScreen
+import org.rajat.quickpick.presentation.feature.home.components.*
+import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
 
 
 @Composable

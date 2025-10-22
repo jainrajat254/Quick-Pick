@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.feature.vendordetail
+package org.rajat.quickpick.presentation.feature.vendor
 
 
 import androidx.compose.foundation.layout.*
@@ -13,11 +13,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.rajat.quickpick.data.dummy.DummyData
-import org.rajat.quickpick.presentation.feature.vendordetail.components.CategoryCard
-import org.rajat.quickpick.presentation.feature.vendordetail.components.CategoriesSection
-import org.rajat.quickpick.presentation.feature.vendordetail.components.OffersSection
-import org.rajat.quickpick.presentation.feature.vendordetail.components.VendorHeaderSection
-import org.rajat.quickpick.presentation.feature.vendordetail.components.VendorNotFound
+import org.rajat.quickpick.presentation.feature.vendor.components.CategoryCard
+import org.rajat.quickpick.presentation.feature.vendor.components.OffersSection
+import org.rajat.quickpick.presentation.feature.vendor.components.VendorHeaderSection
+import org.rajat.quickpick.presentation.feature.vendor.components.VendorNotFound
 
 
 @OptIn(ExperimentalMaterial3Api::class)

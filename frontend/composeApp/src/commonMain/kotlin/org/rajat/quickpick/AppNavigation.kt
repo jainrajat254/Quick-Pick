@@ -6,11 +6,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import org.koin.compose.koinInject
 import org.rajat.quickpick.data.local.LocalDataStore
-import org.rajat.quickpick.presentation.feature.homescreen.HomeScreen
+import org.rajat.quickpick.presentation.feature.home.HomeScreen
 import org.rajat.quickpick.presentation.feature.SplashScreen
-import org.rajat.quickpick.presentation.feature.register.UserRegisterScreen
-import org.rajat.quickpick.presentation.feature.register.VendorRegisterScreen
-import org.rajat.quickpick.presentation.feature.vendordetail.VendorScreen
+import org.rajat.quickpick.presentation.feature.auth.login.UserLoginScreen
+import org.rajat.quickpick.presentation.feature.auth.login.VendorLoginScreen
+import org.rajat.quickpick.presentation.feature.auth.register.UserRegisterScreen
+import org.rajat.quickpick.presentation.feature.auth.register.VendorRegisterScreen
+import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
 import org.rajat.quickpick.presentation.navigation.Routes
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
@@ -53,6 +55,22 @@ fun AppNavigation(
             )
         }
 
+        composable(Routes.UserLogin.route) {
+            UserLoginScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                dataStore = dataStore
+            )
+        }
+
+        composable(Routes.VendorLogin.route) {
+            VendorLoginScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                dataStore = dataStore
+            )
+        }
+
         composable(Routes.Home.route) {
             HomeScreen(
                 navController = navController
@@ -60,7 +78,6 @@ fun AppNavigation(
         }
 
         composable("vendor_detail/{vendorId}") {
-
             VendorScreen(
                 navController = navController,
                 vendorId = "v1"

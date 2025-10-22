@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.feature.homescreen.components
+package org.rajat.quickpick.presentation.feature.home.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.feature.vendordetail.components
+package org.rajat.quickpick.presentation.feature.vendor.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
