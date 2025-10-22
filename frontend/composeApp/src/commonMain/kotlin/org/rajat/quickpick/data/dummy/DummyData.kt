@@ -30,13 +30,12 @@ object DummyData {
     val genders = listOf("Male", "Female", "Prefer not to say")
 
 
-    // Dummy Vendors for Vendor List Screen
     val vendors = listOf(
         GetVendorByIDResponse(
             id = "v1",
             storeName = "Pizza Paradise",
             vendorName = "Rajesh Kumar",
-            profileImageUrl = "https://example.com/pizza-paradise.jpg",
+            profileImageUrl = null,
             collegeName = "Indian Institute of Technology, Delhi",
             foodCategories = listOf("Pizza", "Pasta", "Garlic Bread"),
             email = "rajesh@pizzaparadise.com",
@@ -51,7 +50,7 @@ object DummyData {
             id = "v2",
             storeName = "Chai & Snacks Corner",
             vendorName = "Amit Sharma",
-            profileImageUrl = "https://example.com/chai-corner.jpg",
+            profileImageUrl = null,
             collegeName = "Indian Institute of Technology, Delhi",
             foodCategories = listOf("Tea", "Coffee", "Snacks", "Samosa"),
             email = "amit@chaicorner.com",
@@ -81,7 +80,7 @@ object DummyData {
             id = "v4",
             storeName = "South Indian Delights",
             vendorName = "Venkatesh Iyer",
-            profileImageUrl = "https://example.com/south-indian.jpg",
+            profileImageUrl = null,
             collegeName = "Indian Institute of Technology, Delhi",
             foodCategories = listOf("Dosa", "Idli", "Vada", "Uttapam"),
             email = "venkat@southindian.com",
@@ -96,7 +95,7 @@ object DummyData {
             id = "v5",
             storeName = "The Sandwich Shop",
             vendorName = "Neha Gupta",
-            profileImageUrl = "https://example.com/sandwich-shop.jpg",
+            profileImageUrl = null,
             collegeName = "Indian Institute of Technology, Delhi",
             foodCategories = listOf("Sandwiches", "Wraps", "Salads"),
             email = "neha@sandwichshop.com",
