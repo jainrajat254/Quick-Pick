@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CreateReviewStudentRequest(
-    val comment: String?=null,
-    val orderId: String?=null,
-    val rating: Int?=null,
-    val vendorId: String?=null
+    val comment: String? = null,
+    val orderId: String? = null,
+    val rating: Int? = null,
+    val vendorId: String? = null
 )

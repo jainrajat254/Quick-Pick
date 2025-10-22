@@ -1,8 +1,6 @@
 package org.rajat.quickpick.domain.modal.adminManagement.getUsersbyCollege
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class GetUsersbyCollegeResponse(

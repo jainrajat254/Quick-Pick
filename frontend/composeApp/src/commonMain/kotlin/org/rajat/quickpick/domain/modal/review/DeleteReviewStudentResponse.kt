@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class DeleteReviewStudentResponse(
-    val message: String?=null
+    val message: String? = null
 )

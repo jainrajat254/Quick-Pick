@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SuspendVendorRequest(
-    val reason: String?=null
+    val reason: String? = null
 )

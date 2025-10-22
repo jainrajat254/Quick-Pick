@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.register
+package org.rajat.quickpick.presentation.feature.register
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -46,25 +46,20 @@ import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.registerbackground
 
 
-
 @Composable
-fun VendorRegisterScreen(
+fun UserRegisterScreen(
     onRegisterClick: () -> Unit = {},
     onLoginClick: () -> Unit = {},
 ) {
 
-    var vendorName by remember { mutableStateOf("") }
-    var storeName by remember { mutableStateOf("") }
+    var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
+    var studentId by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-    var gstNumber by remember { mutableStateOf("") }
-    var licenseNumber by remember { mutableStateOf("") }
-    var foodLicenseNumber by remember { mutableStateOf("") }
-    var vendorDescription by remember { mutableStateOf("") }
-    var foodCategories by remember { mutableStateOf<List<String>>(emptyList()) } //multiple selectable chips
     var selectedCollege by remember { mutableStateOf("") }
+    var selectedGender by remember { mutableStateOf("") }
+    var selectedBranch by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
@@ -127,12 +122,12 @@ fun VendorRegisterScreen(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
                         )
-                    ){
+                    ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize(),
                             contentAlignment = Alignment.Center
-                        ){
+                        ) {
                             Text(
                                 text = "Create Account",
                                 style = MaterialTheme.typography.headlineMedium.copy(
@@ -148,25 +143,17 @@ fun VendorRegisterScreen(
 
                 item {
                     RegisterComponents.CustomTextField(
-                        value = vendorName,
-                        onValueChange = { vendorName = it },
+                        value = fullName,
+                        onValueChange = { fullName = it },
                         label = "Full Name",
                         leadingIcon = Icons.Filled.Person,
                         keyboardType = KeyboardType.Text
                     )
+
                 }
 
                 item {
-                    RegisterComponents.CustomTextField(
-                        value = storeName,
-                        onValueChange = { storeName = it },
-                        label = "Store Name",
-                        leadingIcon = Icons.Filled.School,
-                        keyboardType = KeyboardType.Text
-                    )
-                }
 
-                item {
                     RegisterComponents.CustomTextField(
                         value = email,
                         onValueChange = { email = it },
@@ -174,9 +161,11 @@ fun VendorRegisterScreen(
                         leadingIcon = Icons.Filled.Email,
                         keyboardType = KeyboardType.Email
                     )
-                }
 
+                }
                 item {
+
+
                     RegisterComponents.CustomTextField(
                         value = phone,
                         onValueChange = { phone = it },
@@ -184,9 +173,22 @@ fun VendorRegisterScreen(
                         leadingIcon = Icons.Filled.Phone,
                         keyboardType = KeyboardType.Phone
                     )
-                }
 
+                }
                 item {
+
+
+                    RegisterComponents.CustomTextField(
+                        value = studentId,
+                        onValueChange = { studentId = it },
+                        label = "Student ID",
+                        leadingIcon = Icons.Filled.Badge,
+                        keyboardType = KeyboardType.Text
+                    )
+                }
+                item {
+
+
                     RegisterComponents.CustomTextField(
                         value = password,
                         onValueChange = { password = it },
@@ -196,49 +198,11 @@ fun VendorRegisterScreen(
                         isPassword = true,
                         imeAction = ImeAction.Done
                     )
-                }
 
-                item{
-                    RegisterComponents.CustomTextField(
-                        value = address,
-                        onValueChange = { address = it },
-                        label = "Address",
-                        leadingIcon = Icons.Filled.Badge,
-                        keyboardType = KeyboardType.Text
-                    )
-                }
-
-                item{
-                    RegisterComponents.CustomTextField(
-                        value = gstNumber,
-                        onValueChange = { gstNumber = it },
-                        label = "GST Number",
-                        leadingIcon = Icons.Filled.Badge,
-                        keyboardType = KeyboardType.Text
-                    )
-                }
-
-                item{
-                    RegisterComponents.CustomTextField(
-                        value = licenseNumber,
-                        onValueChange = { licenseNumber = it },
-                        label = "License Number",
-                        leadingIcon = Icons.Filled.Badge,
-                        keyboardType = KeyboardType.Text
-                    )
-                }
-
-                item{
-                    RegisterComponents.CustomTextField(
-                        value = foodLicenseNumber,
-                        onValueChange = { foodLicenseNumber = it },
-                        label = "Food License Number",
-                        leadingIcon = Icons.Filled.Badge,
-                        keyboardType = KeyboardType.Text
-                    )
                 }
 
                 item {
+
                     RegisterComponents.CustomDropdown(
                         value = selectedCollege,
                         onValueChange = { selectedCollege = it },
@@ -250,38 +214,49 @@ fun VendorRegisterScreen(
                 }
 
                 item {
-                    RegisterComponents.CustomTextField(
-                        value = vendorDescription,
-                        onValueChange = { vendorDescription = it },
-                        label = "Vendor Description",
-                        leadingIcon = Icons.Filled.Badge,
-                        keyboardType = KeyboardType.Text
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        RegisterComponents.CustomDropdown(
+                            value = selectedGender,
+                            onValueChange = { selectedGender = it },
+                            label = "Gender",
+                            leadingIcon = Icons.Filled.Person,
+                            options = DummyData.genders,
+                            modifier = Modifier.weight(1f),
+
+                            )
+
+                        RegisterComponents.CustomDropdown(
+                            value = selectedBranch,
+                            onValueChange = { selectedBranch = it },
+                            label = "Branch",
+                            leadingIcon = Icons.Filled.School,
+                            options = DummyData.branches.map { it.name },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
                 }
-
-
-
-
 
                 item {
                     RegisterComponents.RegisterButton(
                         onClick = {
                             onRegisterClick()
                         },
-                        enabled = vendorName.isNotBlank()
-                                && storeName.isNotBlank()
-                                && email.isNotBlank() &&
+                        enabled = fullName.isNotBlank() &&
+                                email.isNotBlank() &&
                                 phone.isNotBlank() &&
-                                password.isNotBlank()
-                                && address.isNotBlank()
-                                && gstNumber.isNotBlank()
-                                && licenseNumber.isNotBlank()
-                                && foodLicenseNumber.isNotBlank()
-                                && selectedCollege.isNotBlank()
+                                studentId.isNotBlank() &&
+                                password.isNotBlank() &&
+                                selectedCollege.isNotBlank() &&
+                                selectedGender.isNotBlank() &&
+                                selectedBranch.isNotBlank()
                     )
 
                 }
-                item{
+                item {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
@@ -290,4 +265,3 @@ fun VendorRegisterScreen(
         }
     }
 }
-

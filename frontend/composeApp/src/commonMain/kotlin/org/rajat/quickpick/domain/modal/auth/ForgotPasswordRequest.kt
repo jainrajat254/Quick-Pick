@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ForgotPasswordRequest(
-    val email: String?=null,
-    val userType: String?=null
+    val email: String? = null,
+    val userType: String? = null
 )

@@ -34,5 +34,13 @@ object Constants {
         const val USERS = "/api/admin-management/users"
         const val VENDORS = "/api/admin-management/vendors"
         const val PENDING_VENDORS = "/api/admin-management/vendors/pending"
+
+        const val GET_STUDENT_PROFILE = "/api/profile/user"
+        const val GET_VENDOR_PROFILE = "/api/profile/vendor"
+
+        const val GET_DEFAULT_VENDOR_CATEGORIES = "/api/vendor-categories/default"
+        const val RESET_VENDOR_CATEGORIES_TO_DEFAULT = "/api/vendor-categories/reset"
+        const val UPDATE_VENDOR_CATEGORIES = "/api/vendor-categories"
+
     }
 }

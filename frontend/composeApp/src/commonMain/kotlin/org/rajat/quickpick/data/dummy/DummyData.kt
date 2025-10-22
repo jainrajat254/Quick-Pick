@@ -24,13 +24,14 @@ object DummyData {
         Branch("8", "Arts & Humanities")
     )
 
-    val genders = listOf("Male", "Female","Prefer not to say")
+    val genders = listOf("Male", "Female", "Prefer not to say")
 }
 
 data class College(
     val id: String,
     val name: String
 )
+
 data class Branch(
     val id: String,
     val name: String

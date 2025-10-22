@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class GetReviewCountByVendorResponse(
-    val count: Int?=null
+    val count: Int? = null
 )

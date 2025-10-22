@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UpdateVendorCategoriesRequest(
-    val categories: List<String?>?=null,
+    val categories: List<String?>? = null,
 )

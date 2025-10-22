@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class GetVendorRatingStatsResponse(
-    val averageRating: Double?=null,
-    val ratingDistribution: RatingDistributionX?=null,
-    val totalReviews: Int?=null,
-    val vendorId: String?=null
+    val averageRating: Double? = null,
+    val ratingDistribution: RatingDistributionX? = null,
+    val totalReviews: Int? = null,
+    val vendorId: String? = null
 )

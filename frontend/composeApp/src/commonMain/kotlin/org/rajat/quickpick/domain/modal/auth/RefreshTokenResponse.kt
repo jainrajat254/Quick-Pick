@@ -4,11 +4,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RefreshTokenResponse(
-    val email: String?=null,
-    val message: String?=null,
-    val name: String?=null,
-    val refreshToken: String?=null,
-    val role: String?=null,
-    val token: String?=null,
-    val userId: String?=null
+    val email: String? = null,
+    val message: String? = null,
+    val name: String? = null,
+    val refreshToken: String? = null,
+    val role: String? = null,
+    val token: String? = null,
+    val userId: String? = null
 )

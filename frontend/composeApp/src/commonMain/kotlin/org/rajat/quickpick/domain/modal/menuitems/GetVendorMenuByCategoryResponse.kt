@@ -1,5 +1,6 @@
 package org.rajat.quickpick.domain.modal.menuitems
+
 import kotlinx.serialization.Serializable
 
 @Serializable
-class GetVendorMenuByCategoryResponse :ArrayList<CreateMenuItemResponse>()
+class GetVendorMenuByCategoryResponse : ArrayList<CreateMenuItemResponse>()

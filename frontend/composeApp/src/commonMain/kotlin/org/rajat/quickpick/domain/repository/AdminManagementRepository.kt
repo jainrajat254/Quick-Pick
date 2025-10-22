@@ -16,12 +16,28 @@ import org.rajat.quickpick.domain.modal.adminManagement.getPendingVendors.GetPen
 import org.rajat.quickpick.domain.modal.adminManagement.getUsersbyCollege.GetUsersbyCollegeResponse
 
 interface AdminManagementRepository {
-    suspend fun rejectVendor(vendorId: String, rejectVendorRequest: RejectVendorRequest): Result<RejectVendorResponse>
-    suspend fun suspendUser(userId: String,suspendUserRequest: SuspendUserRequest): Result<SuspendUserResponse>
-    suspend fun suspendVendor(vendorId: String,suspendVendorRequest: SuspendVendorRequest): Result<SuspendVendorResponse>
+    suspend fun rejectVendor(
+        vendorId: String,
+        rejectVendorRequest: RejectVendorRequest
+    ): Result<RejectVendorResponse>
+
+    suspend fun suspendUser(
+        userId: String,
+        suspendUserRequest: SuspendUserRequest
+    ): Result<SuspendUserResponse>
+
+    suspend fun suspendVendor(
+        vendorId: String,
+        suspendVendorRequest: SuspendVendorRequest
+    ): Result<SuspendVendorResponse>
+
     suspend fun unSuspendUser(userId: String): Result<UnsuspendUserResponse>
     suspend fun unSuspendVendor(vendorId: String): Result<UnsuspendVendorResponse>
-    suspend fun verifyVendor(vendorId: String, verifyVendorRequest: VerifyVendorRequest): Result<VerifyVendorResponse>
+    suspend fun verifyVendor(
+        vendorId: String,
+        verifyVendorRequest: VerifyVendorRequest
+    ): Result<VerifyVendorResponse>
+
     suspend fun getAllUsers(page: Int, size: Int): Result<GetAllUsersResponse>
     suspend fun getAllVendors(page: Int, size: Int): Result<GetAllVendorsResponse>
     suspend fun getPendingVendors(page: Int, size: Int): Result<GetPendingVendorsResponse>

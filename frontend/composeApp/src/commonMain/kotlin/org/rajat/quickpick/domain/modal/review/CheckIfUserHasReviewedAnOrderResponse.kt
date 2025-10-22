@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CheckIfUserHasReviewedAnOrderResponse(
-    val hasReviewed: Boolean?=null
+    val hasReviewed: Boolean? = null
 )

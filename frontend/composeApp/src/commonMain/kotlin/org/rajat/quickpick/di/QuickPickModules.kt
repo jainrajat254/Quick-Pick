@@ -7,6 +7,7 @@ import org.rajat.quickpick.di.modules.authModule
 import org.rajat.quickpick.di.modules.collegeModule
 import org.rajat.quickpick.di.modules.dataStoreModule
 import org.rajat.quickpick.di.modules.networkModule
+import org.rajat.quickpick.di.modules.profileModule
 import org.rajat.quickpick.utils.Constants.DATASTORE_FILE_NAME
 
 val quickPickModules = listOf(
@@ -16,6 +17,6 @@ val quickPickModules = listOf(
     authModule,
     adminModule,
     collegeModule,
-    adminManagementModule
-
+    adminManagementModule,
+    profileModule
 )

@@ -16,12 +16,28 @@ import org.rajat.quickpick.domain.modal.adminManagement.getPendingVendors.GetPen
 import org.rajat.quickpick.domain.modal.adminManagement.getUsersbyCollege.GetUsersbyCollegeResponse
 
 interface AdminManagementApiService {
-    suspend fun rejectVendor(vendorId: String, rejectVendorRequest: RejectVendorRequest): RejectVendorResponse
-    suspend fun suspendUser(userId: String,suspendUserRequest: SuspendUserRequest): SuspendUserResponse
-    suspend fun suspendVendor(vendorId: String,suspendVendorRequest: SuspendVendorRequest): SuspendVendorResponse
+    suspend fun rejectVendor(
+        vendorId: String,
+        rejectVendorRequest: RejectVendorRequest
+    ): RejectVendorResponse
+
+    suspend fun suspendUser(
+        userId: String,
+        suspendUserRequest: SuspendUserRequest
+    ): SuspendUserResponse
+
+    suspend fun suspendVendor(
+        vendorId: String,
+        suspendVendorRequest: SuspendVendorRequest
+    ): SuspendVendorResponse
+
     suspend fun unSuspendUser(userId: String): UnsuspendUserResponse
     suspend fun unSuspendVendor(vendorId: String): UnsuspendVendorResponse
-    suspend fun verifyVendor(vendorId: String, verifyVendorRequest: VerifyVendorRequest): VerifyVendorResponse
+    suspend fun verifyVendor(
+        vendorId: String,
+        verifyVendorRequest: VerifyVendorRequest
+    ): VerifyVendorResponse
+
     suspend fun getAllUsers(page: Int, size: Int): GetAllUsersResponse
     suspend fun getAllVendors(page: Int, size: Int): GetAllVendorsResponse
     suspend fun getPendingVendors(page: Int, size: Int): GetPendingVendorsResponse

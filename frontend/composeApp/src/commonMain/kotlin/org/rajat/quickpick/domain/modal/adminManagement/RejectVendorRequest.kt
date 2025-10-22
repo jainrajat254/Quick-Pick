@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RejectVendorRequest(
-    val rejectionReason: String?= null
+    val rejectionReason: String? = null
 )

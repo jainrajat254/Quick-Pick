@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RatingDistributionX(
-    val `5`: Int?=null
+    val `5`: Int? = null
 )

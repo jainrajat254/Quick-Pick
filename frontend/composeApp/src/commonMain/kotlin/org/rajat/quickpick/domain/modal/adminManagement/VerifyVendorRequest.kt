@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class VerifyVendorRequest(
-    val notes: String?=null
+    val notes: String? = null
 )

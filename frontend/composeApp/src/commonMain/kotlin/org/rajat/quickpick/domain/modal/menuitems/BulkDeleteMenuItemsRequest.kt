@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BulkDeleteMenuItemsRequest(
-    val menuItemIds: List<String?>?=null
+    val menuItemIds: List<String?>? = null
 )
