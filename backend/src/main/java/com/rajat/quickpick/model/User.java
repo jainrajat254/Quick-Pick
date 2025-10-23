@@ -29,7 +29,6 @@ public class User {
     private String password;
 
     private String collegeName;
-    private String department;
     private String studentId;
 
     private LocalDateTime createdAt;

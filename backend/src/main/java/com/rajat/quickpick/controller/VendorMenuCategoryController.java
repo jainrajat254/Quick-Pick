@@ -2,6 +2,7 @@ package com.rajat.quickpick.controller;
 
 
 import com.rajat.quickpick.dto.menu.VendorCategoryUpdateDto;
+import com.rajat.quickpick.dto.menu.CategoriesResponseDto;
 import com.rajat.quickpick.security.JwtUtil;
 import com.rajat.quickpick.service.MenuItemService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,28 +32,32 @@ public class VendorMenuCategoryController {
 
     @GetMapping("/default")
     @PreAuthorize("hasRole('VENDOR')")
-    public ResponseEntity<List<String>> getDefaultCategories() {
-        return ResponseEntity.ok(DEFAULT_CATEGORIES);
+    public ResponseEntity<CategoriesResponseDto> getDefaultCategories() {
+        CategoriesResponseDto response = CategoriesResponseDto.builder()
+                .categories(DEFAULT_CATEGORIES)
+                .count(DEFAULT_CATEGORIES.size())
+                .build();
+        return ResponseEntity.ok(response);
     }
 
 
     @PutMapping
     @PreAuthorize("hasRole('VENDOR')")
-    public ResponseEntity<List<String>> updateVendorCategories(
+    public ResponseEntity<CategoriesResponseDto> updateVendorCategories(
             @RequestBody VendorCategoryUpdateDto updateDto,
             HttpServletRequest request) {
         String vendorId = extractUserIdFromToken(request);
-        List<String> updatedCategories = vendorMenuCategoryService.updateVendorCategories(vendorId, updateDto.getCategories());
-        return ResponseEntity.ok(updatedCategories);
+        CategoriesResponseDto response = vendorMenuCategoryService.updateVendorCategories(vendorId, updateDto.getCategories());
+        return ResponseEntity.ok(response);
     }
 
 
     @PostMapping("/reset")
     @PreAuthorize("hasRole('VENDOR')")
-    public ResponseEntity<List<String>> resetVendorCategories(HttpServletRequest request) {
+    public ResponseEntity<CategoriesResponseDto> resetVendorCategories(HttpServletRequest request) {
         String vendorId = extractUserIdFromToken(request);
-        List<String> updatedCategories = vendorMenuCategoryService.updateVendorCategories(vendorId, DEFAULT_CATEGORIES);
-        return ResponseEntity.ok(updatedCategories);
+        CategoriesResponseDto response = vendorMenuCategoryService.updateVendorCategories(vendorId, DEFAULT_CATEGORIES);
+        return ResponseEntity.ok(response);
     }
 
     private String extractUserIdFromToken(HttpServletRequest request) {

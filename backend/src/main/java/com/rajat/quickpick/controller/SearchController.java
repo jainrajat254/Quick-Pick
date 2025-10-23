@@ -33,21 +33,21 @@ public class SearchController {
     }
 
     @GetMapping("/vendors")
-    public ResponseEntity<List<VendorResponseDto>> searchVendors(
+    public ResponseEntity<VendorsResponseDto> searchVendors(
             @RequestParam(required = false) String query,
             HttpServletRequest request) {
 
         String userId = extractUserIdFromRequest(request);
-        List<VendorResponseDto> result = searchService.searchVendors(userId, query);
+        VendorsResponseDto result = searchService.searchVendors(userId, query);
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/vendors/college")
-    public ResponseEntity<List<VendorResponseDto>> getAllVendorsInCollege(
+    public ResponseEntity<VendorsResponseDto> getAllVendorsInCollege(
             HttpServletRequest request) {
 
         String userId = extractUserIdFromRequest(request);
-        List<VendorResponseDto> result = searchService.searchVendors(userId, null);
+        VendorsResponseDto result = searchService.searchVendors(userId, null);
         return ResponseEntity.ok(result);
     }
 

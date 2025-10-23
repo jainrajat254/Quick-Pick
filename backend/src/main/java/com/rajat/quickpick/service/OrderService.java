@@ -153,15 +153,19 @@ public class OrderService {
         return mapToResponseDto(order, user, vendor);
     }
 
-    public List<OrderResponseDto> getUserOrders(String userId) {
+    public OrdersResponseDto getUserOrders(String userId) {
         List<Order> orders = orderRepository.findByUserIdOrderByCreatedAtDesc(userId);
-        return orders.stream()
+        List<OrderResponseDto> orderDtos = orders.stream()
                 .map(order -> {
                     User user = userRepository.findById(userId).orElse(null);
                     Vendor vendor = vendorRepository.findById(order.getVendorId()).orElse(null);
                     return mapToResponseDto(order, user, vendor);
                 })
                 .collect(Collectors.toList());
+        return OrdersResponseDto.builder()
+                .orders(orderDtos)
+                .count(orderDtos.size())
+                .build();
     }
 
 
@@ -177,26 +181,34 @@ public class OrderService {
         });
     }
 
-    public List<OrderResponseDto> getOrdersByStatus(String userId, OrderStatus status) {
+    public OrdersResponseDto getOrdersByStatus(String userId, OrderStatus status) {
         List<Order> orders = orderRepository.findByUserIdAndOrderStatus(userId, status);
-        return orders.stream()
+        List<OrderResponseDto> orderDtos = orders.stream()
                 .map(order -> {
                     User user = userRepository.findById(userId).orElse(null);
                     Vendor vendor = vendorRepository.findById(order.getVendorId()).orElse(null);
                     return mapToResponseDto(order, user, vendor);
                 })
                 .collect(Collectors.toList());
+        return OrdersResponseDto.builder()
+                .orders(orderDtos)
+                .count(orderDtos.size())
+                .build();
     }
 
-    public List<OrderResponseDto> getVendorOrdersByStatus(String vendorId, OrderStatus status) {
+    public OrdersResponseDto getVendorOrdersByStatus(String vendorId, OrderStatus status) {
         List<Order> orders = orderRepository.findByVendorIdAndOrderStatus(vendorId, status);
-        return orders.stream()
+        List<OrderResponseDto> orderDtos = orders.stream()
                 .map(order -> {
                     User user = userRepository.findById(order.getUserId()).orElse(null);
                     Vendor vendor = vendorRepository.findById(vendorId).orElse(null);
                     return mapToResponseDto(order, user, vendor);
                 })
                 .collect(Collectors.toList());
+        return OrdersResponseDto.builder()
+                .orders(orderDtos)
+                .count(orderDtos.size())
+                .build();
     }
 
     public void cancelOrder(String userId, String orderId) {

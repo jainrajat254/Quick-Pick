@@ -38,10 +38,13 @@ public class SearchService {
     }
 
 
-    public List<VendorResponseDto> searchVendors(String userId, String searchQuery) {
+    public VendorsResponseDto searchVendors(String userId, String searchQuery) {
         String userCollege = getUserCollege(userId);
         if (userCollege == null) {
-            return List.of();
+            return VendorsResponseDto.builder()
+                    .vendors(List.of())
+                    .count(0)
+                    .build();
         }
 
         List<Vendor> vendors;
@@ -57,9 +60,14 @@ public class SearchService {
                 .filter(vendor -> !vendor.isSuspended())
                 .collect(Collectors.toList());
 
-        return vendors.stream()
+        List<VendorResponseDto> vendorDtos = vendors.stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+
+        return VendorsResponseDto.builder()
+                .vendors(vendorDtos)
+                .count(vendorDtos.size())
+                .build();
     }
 
     public Page<MenuItemResponseDto> searchMenuItems(String userId, MenuItemSearchDto criteria, Pageable pageable) {

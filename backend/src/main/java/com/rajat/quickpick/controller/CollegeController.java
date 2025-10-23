@@ -3,6 +3,9 @@ package com.rajat.quickpick.controller;
 
 import com.rajat.quickpick.dto.college.CreateCollegeDto;
 import com.rajat.quickpick.dto.college.CollegeResponseDto;
+import com.rajat.quickpick.dto.college.CollegesResponseDto;
+import com.rajat.quickpick.dto.college.CitiesResponseDto;
+import com.rajat.quickpick.dto.college.StatesResponseDto;
 import com.rajat.quickpick.service.CollegeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +27,6 @@ public class CollegeController {
     @Autowired
     private CollegeService collegeService;
 
-    // public endpoints
 
 
     @GetMapping("/public/count")
@@ -35,34 +37,34 @@ public class CollegeController {
 
 
     @GetMapping("/public/search")
-    public ResponseEntity<List<CollegeResponseDto>> searchColleges(@RequestParam String query) {
-        List<CollegeResponseDto> colleges = collegeService.searchColleges(query);
-        return ResponseEntity.ok(colleges);
+    public ResponseEntity<CollegesResponseDto> searchColleges(@RequestParam String query) {
+        CollegesResponseDto response = collegeService.searchColleges(query);
+        return ResponseEntity.ok(response);
     }
 
 
     @GetMapping("/public/cities")
-    public ResponseEntity<List<String>> getAllCities() {
-        List<String> cities = collegeService.getAllCities();
-        return ResponseEntity.ok(cities);
+    public ResponseEntity<CitiesResponseDto> getAllCities() {
+        CitiesResponseDto response = collegeService.getAllCities();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/public/states")
-    public ResponseEntity<List<String>> getAllStates() {
-        List<String> states = collegeService.getAllStates();
-        return ResponseEntity.ok(states);
+    public ResponseEntity<StatesResponseDto> getAllStates() {
+        StatesResponseDto response = collegeService.getAllStates();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/public/city/{city}")
-    public ResponseEntity<List<CollegeResponseDto>> getCollegesByCity(@PathVariable String city) {
-        List<CollegeResponseDto> colleges = collegeService.getCollegesByCity(city);
-        return ResponseEntity.ok(colleges);
+    public ResponseEntity<CollegesResponseDto> getCollegesByCity(@PathVariable String city) {
+        CollegesResponseDto response = collegeService.getCollegesByCity(city);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/public/state/{state}")
-    public ResponseEntity<List<CollegeResponseDto>> getCollegesByState(@PathVariable String state) {
-        List<CollegeResponseDto> colleges = collegeService.getCollegesByState(state);
-        return ResponseEntity.ok(colleges);
+    public ResponseEntity<CollegesResponseDto> getCollegesByState(@PathVariable String state) {
+        CollegesResponseDto response = collegeService.getCollegesByState(state);
+        return ResponseEntity.ok(response);
     }
 
 

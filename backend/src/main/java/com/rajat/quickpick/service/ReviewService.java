@@ -2,6 +2,7 @@ package com.rajat.quickpick.service;
 
 import com.rajat.quickpick.dto.review.CreateReviewDto;
 import com.rajat.quickpick.dto.review.ReviewResponseDto;
+import com.rajat.quickpick.dto.review.ReviewsResponseDto;
 import com.rajat.quickpick.dto.vendor.VendorRatingDto;
 import com.rajat.quickpick.enums.OrderStatus;
 import com.rajat.quickpick.exception.BadRequestException;
@@ -101,9 +102,13 @@ public class ReviewService {
         return mapToResponseDto(review, user.getFullName());
     }
 
-    public List<ReviewResponseDto> getReviewsByVendor(String vendorId) {
+    public ReviewsResponseDto getReviewsByVendor(String vendorId) {
         List<Review> reviews = reviewRepository.findByVendorIdOrderByCreatedAtDesc(vendorId);
-        return mapToResponseDtoList(reviews);
+        List<ReviewResponseDto> reviewDtos = mapToResponseDtoList(reviews);
+        return ReviewsResponseDto.builder()
+                .reviews(reviewDtos)
+                .count(reviewDtos.size())
+                .build();
     }
 
     public Page<ReviewResponseDto> getReviewsByVendorPaginated(String vendorId, int page, int size) {
@@ -117,18 +122,30 @@ public class ReviewService {
         });
     }
 
-    public List<ReviewResponseDto> getReviewsByUser(String userId) {
+    public ReviewsResponseDto getReviewsByUser(String userId) {
         List<Review> reviews = reviewRepository.findByUserIdOrderByCreatedAtDesc(userId);
-        return mapToResponseDtoList(reviews);
+        List<ReviewResponseDto> reviewDtos = mapToResponseDtoList(reviews);
+        return ReviewsResponseDto.builder()
+                .reviews(reviewDtos)
+                .count(reviewDtos.size())
+                .build();
     }
 
-    public List<ReviewResponseDto> getReviewsByRating(String vendorId, int rating) {
+    public ReviewsResponseDto getReviewsByRating(String vendorId, int rating) {
         List<Review> reviews = reviewRepository.findByVendorIdAndRating(vendorId, rating);
-        return mapToResponseDtoList(reviews);
+        List<ReviewResponseDto> reviewDtos = mapToResponseDtoList(reviews);
+        return ReviewsResponseDto.builder()
+                .reviews(reviewDtos)
+                .count(reviewDtos.size())
+                .build();
     }
-    public List<ReviewResponseDto> getReviewsByRatingRange(String vendorId, int minRating) {
+    public ReviewsResponseDto getReviewsByRatingRange(String vendorId, int minRating) {
         List<Review> reviews = reviewRepository.findByVendorIdAndRatingGreaterThanEqual(vendorId, minRating);
-        return mapToResponseDtoList(reviews);
+        List<ReviewResponseDto> reviewDtos = mapToResponseDtoList(reviews);
+        return ReviewsResponseDto.builder()
+                .reviews(reviewDtos)
+                .count(reviewDtos.size())
+                .build();
     }
 
     @Cacheable(value = "vendorRatings", key = "#vendorId")

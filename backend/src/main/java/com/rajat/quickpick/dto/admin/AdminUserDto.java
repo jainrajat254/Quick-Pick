@@ -11,7 +11,6 @@ public class AdminUserDto {
     private String email;
     private String phone;
     private String collegeName;
-    private String department;
     private String studentId;
     private Role role;
     private boolean emailVerified;

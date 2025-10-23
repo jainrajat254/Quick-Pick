@@ -89,7 +89,6 @@ public class AuthService {
         user.setEmail(registrationDto.getEmail());
         user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
         user.setCollegeName(registrationDto.getCollegeName());
-        user.setDepartment(registrationDto.getDepartment());
         user.setStudentId(registrationDto.getStudentId());
         user.setRole(Role.STUDENT);
         user.setEmailVerified(false);

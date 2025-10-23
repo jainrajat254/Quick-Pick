@@ -172,7 +172,6 @@ public class AdminManagementService {
         dto.setEmail(user.getEmail());
         dto.setPhone(user.getPhone());
         dto.setCollegeName(user.getCollegeName());
-        dto.setDepartment(user.getDepartment());
         dto.setStudentId(user.getStudentId());
         dto.setRole(user.getRole());
         dto.setEmailVerified(user.isEmailVerified());
