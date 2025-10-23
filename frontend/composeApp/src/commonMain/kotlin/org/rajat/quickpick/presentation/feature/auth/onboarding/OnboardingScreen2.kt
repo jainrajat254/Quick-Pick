@@ -2,9 +2,11 @@ package org.rajat.quickpick.presentation.feature.auth.onboarding
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -32,10 +34,11 @@ fun OnboardingScreen2(
             Image(
                 painter = painterResource(resource = Res.drawable.pizza),
                 contentDescription = "Pizza",
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(8.dp))
+                    .padding(top = 53.dp)
+                    .fillMaxSize(),
+                alignment = Alignment.TopCenter
             )
         },
         cardIcon = painterResource(resource = Res.drawable.payment),

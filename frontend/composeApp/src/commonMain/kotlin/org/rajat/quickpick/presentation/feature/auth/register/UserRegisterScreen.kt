@@ -169,7 +169,7 @@ fun UserRegisterScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Create Account",
+                                text = "User Register",
                                 style = MaterialTheme.typography.headlineMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimary
