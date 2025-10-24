@@ -17,6 +17,7 @@ import org.rajat.quickpick.presentation.feature.auth.onboarding.WelcomeScreen
 import org.rajat.quickpick.presentation.feature.auth.register.UserRegisterScreen
 import org.rajat.quickpick.presentation.feature.auth.register.VendorRegisterScreen
 import org.rajat.quickpick.presentation.feature.home.HomeScreen
+import org.rajat.quickpick.presentation.feature.menuitem.MenuItemScreen
 import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
 import org.rajat.quickpick.presentation.navigation.Routes
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
@@ -115,105 +116,8 @@ fun AppNavigation(
                 vendorId = "v1"
             )
         }
-        composable(Routes.Orders.route) {
-            MyOrderScreen(
-                paddingValues = paddingValues,
-                activeOrders = dummyActiveOrders,
-                completedOrders = dummyCompletedOrders,
-                cancelledOrders = dummyCancelledOrders,
-                isLoading = false,
-                onTabSelected = { },
-                onOrderCancel = {
-                    navController.navigate(Routes.CancelOrder.createRoute(it))
-                },
-                onOrderRate = {
-                    navController.navigate(Routes.ReviewOrder.createRoute(it))
-                },
-                onOrderAgain = { },
-                onOrderViewDetails = { clickOrder ->
-                    navController.navigate(Routes.OrderDetail.createRoute(clickOrder))
-                },
-                onclick = { clickOrder ->
-                    navController.navigate(Routes.OrderDetail.createRoute(clickOrder))
-                }
-            )
-        }
-        composable(Routes.ReviewOrder.route){
-            val orderId="1"
-            val order=allOrders.find{it.id==orderId}
-            if (order != null) {
-                val itemName = order.orderItems?.firstOrNull()?.menuItemName ?: "Unknown Item"
-                val orderIdStr = order.id ?: "Unknown ID"
-                OrderReviewScreen(
-                    paddingValues = paddingValues,
-                    orderId = orderIdStr,
-                    itemName = itemName,
-                    itemImageUrl = "",
-                    onSubmitReview = { _, _, _ -> /* TODO: Handle review submission */
-                        navController.navigate(Routes.ReviewOrderConfirmation.route)
-                    },
-                    onCancel = { navController.navigate(Routes.Orders.route) }
-                )
-            } else {
-                PlaceholderScreen(name = "Order not found", paddingValues)
-            }
-        }
-        composable(Routes.OrderDetail.route){
-            val orderId ="1"
-            val orderToShow = allOrders.find { it.id == orderId }
-            if (orderToShow != null) {
-                OrderDetailScreen(
-                    paddingValues,
-                    order = orderToShow,
-                    isLoading = false
-                )
-            } else {
-                PlaceholderScreen(name = "Order not found", paddingValues)
-            }
-        }
-        composable(Routes.CancelOrder.route){
-            val orderID= "1"
-            val order=allOrders.find{it.id==orderID}
-            if (order != null) {
-                CancelOrderScreen(
-                    basePaddingValues = paddingValues, orderId = order.id.toString(),
-                    onConfirmCancel =//Here
-                        { _, _ ->
-                            navController.navigate(Routes.CancelOrderConfirmation.route)
-                        },
-                    isLoading = false,
-                    onNavigateToConfirmation = {
-                        navController.navigate(Routes.CancelOrderConfirmation.route)
-                    },
-                )
 
-            }
-        }
-        composable(Routes.ReviewOrderConfirmation.route) {
-            ReviewOrderConfirmationScreen(
-                paddingValues,
-                onBackToOrders = {
-                    navController.navigate(Routes.Orders.route)
-                }
-            )
-        }
-        composable(Routes.CancelOrderConfirmation.route){
-            OrderCancelledConfirmationScreen(
-                paddingValues,
-                onBackToOrders = { navController.navigate(Routes.Orders.route) }
-            )
-        }
-        composable(Routes.Profile.route) {
-            ProfileScreen(
-                paddingValues = paddingValues,
-                onClickMyProfile = {},
-                onClickPaymentMethods = {},
-                onClickMyReviews = {},
-                onClickContactUs = {},
-                onClickHelpFAQs = {},
-                onClickSettings = {},
-                onClickLogOut = {},
-            )
-        }
+
+
     }
 }
