@@ -103,8 +103,7 @@ class LocalDataStoreImpl(
 
     override val hasOnboarded: Flow<Boolean> =
         dataStore.data.map { prefs ->
-//            prefs[HAS_ONBOARDED_KEY] ?: false
-            false
+            prefs[HAS_ONBOARDED_KEY] ?: false
         }
 
 

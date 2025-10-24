@@ -270,11 +270,11 @@ fun UserRegisterScreen(
                         onClick = {
                             if (isFormValid) {
                                 val registerUserRequest = RegisterUserRequest(
-                                    fullName = fullName,
-                                    email = email,
-                                    phone = phone,
-                                    studentId = studentId,
-                                    password = password,
+                                    fullName = fullName.trim(),
+                                    email = email.trim().lowercase(),
+                                    password = password.trim(),
+                                    phone = phone.trim(),
+                                    studentId = studentId.trim(),
                                     collegeName = selectedCollege,
                                     gender = selectedGender,
                                     department = selectedBranch

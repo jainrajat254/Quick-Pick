@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -55,7 +54,6 @@ import org.rajat.quickpick.utils.Validators.isLoginFormValid
 import org.rajat.quickpick.utils.toast.showToast
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.burger
-import quickpick.composeapp.generated.resources.registerbackground
 
 @Composable
 fun VendorLoginScreen(
@@ -182,7 +180,10 @@ fun VendorLoginScreen(
                         onClick = {
                             if (isFormValid) {
                                 val loginVendorRequest =
-                                    LoginVendorRequest(email = email, password = password)
+                                    LoginVendorRequest(
+                                        email = email.trim().lowercase(),
+                                        password = password.trim()
+                                    )
                                 authViewModel.loginVendor(request = loginVendorRequest)
                             } else {
                                 showToast("Invalid email or password")

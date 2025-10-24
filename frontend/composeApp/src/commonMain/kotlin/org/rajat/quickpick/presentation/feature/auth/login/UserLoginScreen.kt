@@ -183,7 +183,10 @@ fun UserLoginScreen(
                         onClick = {
                             if (isFormValid) {
                                 val loginUserRequest =
-                                    LoginUserRequest(email = email, password = password)
+                                    LoginUserRequest(
+                                        email = email.trim().lowercase(),
+                                        password = password.trim()
+                                    )
                                 authViewModel.loginUser(request = loginUserRequest)
                             } else {
                                 showToast("Invalid email or password")

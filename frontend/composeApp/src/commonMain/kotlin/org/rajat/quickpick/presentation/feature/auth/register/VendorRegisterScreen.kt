@@ -297,15 +297,15 @@ fun VendorRegisterScreen(
                     RegisterButton(
                         onClick = {
                             val registerVendorRequest = RegisterVendorRequest(
-                                vendorName = vendorName,
-                                storeName = storeName,
-                                email = email,
-                                phone = phone,
-                                password = password,
-                                address = address,
-                                gstNumber = gstNumber,
-                                licenseNumber = licenseNumber,
-                                foodLicenseNumber = foodLicenseNumber,
+                                vendorName = vendorName.trim(),
+                                storeName = storeName.trim(),
+                                email = email.trim().lowercase(),
+                                password = password.trim(),
+                                phone = phone.trim(),
+                                address = address.trim(),
+                                gstNumber = gstNumber.trim(),
+                                licenseNumber = licenseNumber.trim(),
+                                foodLicenseNumber = foodLicenseNumber.trim(),
                                 collegeName = selectedCollege,
                                 foodCategories = foodCategories,
                                 vendorDescription = vendorDescription

@@ -13,6 +13,7 @@ import co.touchlab.kermit.Logger
 import kotlinx.coroutines.delay
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.components.CustomLoader
+import org.rajat.quickpick.presentation.feature.auth.onboarding.WelcomeScreen
 import org.rajat.quickpick.presentation.navigation.Routes
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
 
@@ -64,7 +65,7 @@ fun SplashScreen(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        CustomLoader()
+        WelcomeScreen()
     }
 }
 
