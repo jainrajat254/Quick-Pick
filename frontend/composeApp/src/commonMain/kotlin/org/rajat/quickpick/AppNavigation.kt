@@ -118,9 +118,9 @@ fun AppNavigation(
         composable(Routes.Orders.route) {
             MyOrderScreen(
                 paddingValues = paddingValues,
-                activeOrders = emptyList(),
-                completedOrders = emptyList(),
-                cancelledOrders = emptyList(),
+                activeOrders = dummyActiveOrders,
+                completedOrders = dummyCompletedOrders,
+                cancelledOrders = dummyCancelledOrders,
                 isLoading = false,
                 onTabSelected = { },
                 onOrderCancel = {
@@ -138,9 +138,28 @@ fun AppNavigation(
                 }
             )
         }
-        composable(Routes.OrderDetail.route, arguments = listOf(navArgument("orderId"){type=
-            NavType.StringType})) { backStackEntry ->
-            val orderId = backStackEntry.arguments?.getString("orderId")
+        composable(Routes.ReviewOrder.route){
+            val orderId="1"
+            val order=allOrders.find{it.id==orderId}
+            if (order != null) {
+                val itemName = order.orderItems?.firstOrNull()?.menuItemName ?: "Unknown Item"
+                val orderIdStr = order.id ?: "Unknown ID"
+                OrderReviewScreen(
+                    paddingValues = paddingValues,
+                    orderId = orderIdStr,
+                    itemName = itemName,
+                    itemImageUrl = "",
+                    onSubmitReview = { _, _, _ -> /* TODO: Handle review submission */
+                        navController.navigate(Routes.ReviewOrderConfirmation.route)
+                    },
+                    onCancel = { navController.navigate(Routes.Orders.route) }
+                )
+            } else {
+                PlaceholderScreen(name = "Order not found", paddingValues)
+            }
+        }
+        composable(Routes.OrderDetail.route){
+            val orderId ="1"
             val orderToShow = allOrders.find { it.id == orderId }
             if (orderToShow != null) {
                 OrderDetailScreen(
@@ -152,9 +171,8 @@ fun AppNavigation(
                 PlaceholderScreen(name = "Order not found", paddingValues)
             }
         }
-        composable(Routes.CancelOrder.route, arguments = listOf(navArgument("orderId"){type=
-            NavType.StringType})){backStackEntry ->
-            val orderID= backStackEntry.arguments?.getString("orderId")
+        composable(Routes.CancelOrder.route){
+            val orderID= "1"
             val order=allOrders.find{it.id==orderID}
             if (order != null) {
                 CancelOrderScreen(

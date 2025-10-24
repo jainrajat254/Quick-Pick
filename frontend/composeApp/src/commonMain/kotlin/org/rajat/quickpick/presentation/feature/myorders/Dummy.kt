@@ -48,3 +48,4 @@ val dummyCancelledOrders = listOf(
         orderItems = listOf(OrderItemX(menuItemName = "Strawberry Cheesecake", quantity = 1))
     )
 )
+val allOrders = dummyActiveOrders + dummyCompletedOrders + dummyCancelledOrders
