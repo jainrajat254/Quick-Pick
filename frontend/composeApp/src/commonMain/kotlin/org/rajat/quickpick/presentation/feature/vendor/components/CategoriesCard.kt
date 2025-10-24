@@ -28,7 +28,9 @@ fun CategoryCard(
 ) {
     Card(
         modifier = modifier
-            .clickable(onClick = onClick)
+            .clickable(onClick =
+                onClick
+            )
             .aspectRatio(1f),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer

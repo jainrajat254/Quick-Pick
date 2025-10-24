@@ -17,6 +17,7 @@ import org.rajat.quickpick.presentation.feature.auth.onboarding.WelcomeScreen
 import org.rajat.quickpick.presentation.feature.auth.register.UserRegisterScreen
 import org.rajat.quickpick.presentation.feature.auth.register.VendorRegisterScreen
 import org.rajat.quickpick.presentation.feature.home.HomeScreen
+import org.rajat.quickpick.presentation.feature.menuitem.MenuItemScreen
 import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
 import org.rajat.quickpick.presentation.navigation.Routes
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
@@ -115,5 +116,8 @@ fun AppNavigation(
                 vendorId = "v1"
             )
         }
+
+
+
     }
 }

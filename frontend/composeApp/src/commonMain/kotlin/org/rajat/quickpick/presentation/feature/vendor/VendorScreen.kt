@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.rajat.quickpick.data.dummy.DummyData
+import org.rajat.quickpick.presentation.feature.menuitem.MenuItemScreen
 import org.rajat.quickpick.presentation.feature.vendor.components.CategoryCard
 import org.rajat.quickpick.presentation.feature.vendor.components.OffersSection
 import org.rajat.quickpick.presentation.feature.vendor.components.VendorHeaderSection
@@ -39,9 +40,24 @@ fun VendorScreen(
         DummyData.getCategoriesByVendorId(vendorId)
     }
 
+    var selectedCategoryId by remember { mutableStateOf<String?>(null) }
+
+
     if (vendor == null) {
         VendorNotFound(
             onBackClick = onBackClick
+        )
+        return
+    }
+    if (selectedCategoryId != null) {
+
+        MenuItemScreen(
+            navController = navController,
+            vendorId = vendorId,
+            category = selectedCategoryId!!,
+            onBackClick = {
+                selectedCategoryId = null
+            }
         )
         return
     }
@@ -111,7 +127,7 @@ fun VendorScreen(
                         CategoryCard(
                             category = rowCategories[0],
                             onClick = {
-                                navController.navigate("menu_items/$vendorId/${rowCategories[0]}")
+                                selectedCategoryId = rowCategories[0]
                             },
                             modifier = Modifier.weight(1f)
                         )
@@ -121,7 +137,7 @@ fun VendorScreen(
                         CategoryCard(
                             category = rowCategories[1],
                             onClick = {
-                                navController.navigate("menu_items/$vendorId/${rowCategories[1]}")
+                                selectedCategoryId = rowCategories[1]
                             },
                             modifier = Modifier.weight(1f)
                         )

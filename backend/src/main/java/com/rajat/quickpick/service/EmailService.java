@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class EmailService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
