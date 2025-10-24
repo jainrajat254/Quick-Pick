@@ -2,10 +2,13 @@ package org.rajat.quickpick.presentation.feature.auth.onboarding
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Modifier.Companion.all
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -33,15 +36,17 @@ fun OnboardingScreen1(
             Image(
                 painter = painterResource(resource = Res.drawable.burger),
                 contentDescription = "Burger",
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(8.dp))
+                    .padding(top = 53.dp)
+                    .fillMaxSize(),
+                alignment = Alignment.TopCenter
             )
         },
         cardIcon = painterResource(resource = Res.drawable.orders),
         cardTitle = "Order For Food",
-        cardDescription = "Craving something delicious?...",
+        cardDescription =
+            "Craving something delicious?...\n"+ "Browse your campus eateries, hostel kitchens \n "+" Tap choose and order in seconds!",
         buttonText = "Next",
         onButtonClick = {
             coroutineScope.launch {

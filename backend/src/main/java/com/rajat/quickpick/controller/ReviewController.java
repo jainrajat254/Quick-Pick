@@ -2,6 +2,7 @@ package com.rajat.quickpick.controller;
 
 import com.rajat.quickpick.dto.review.CreateReviewDto;
 import com.rajat.quickpick.dto.review.ReviewResponseDto;
+import com.rajat.quickpick.dto.review.ReviewsResponseDto;
 import com.rajat.quickpick.dto.vendor.VendorRatingDto;
 import com.rajat.quickpick.security.JwtUtil;
 import com.rajat.quickpick.service.ReviewService;
@@ -46,9 +47,9 @@ public class ReviewController {
     }
 
     @GetMapping("/vendor/{vendorId}")
-    public ResponseEntity<List<ReviewResponseDto>> getReviewsByVendor(@PathVariable String vendorId) {
-        List<ReviewResponseDto> reviews = reviewService.getReviewsByVendor(vendorId);
-        return ResponseEntity.ok(reviews);
+    public ResponseEntity<ReviewsResponseDto> getReviewsByVendor(@PathVariable String vendorId) {
+        ReviewsResponseDto response = reviewService.getReviewsByVendor(vendorId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/vendor/{vendorId}/paginated")
@@ -62,24 +63,24 @@ public class ReviewController {
 
     @GetMapping("/user/my-reviews")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<ReviewResponseDto>> getMyReviews(HttpServletRequest request) {
+    public ResponseEntity<ReviewsResponseDto> getMyReviews(HttpServletRequest request) {
         String userId = extractUserIdFromToken(request);
-        List<ReviewResponseDto> reviews = reviewService.getReviewsByUser(userId);
-        return ResponseEntity.ok(reviews);
+        ReviewsResponseDto response = reviewService.getReviewsByUser(userId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/vendor/{vendorId}/rating/{rating}")
-    public ResponseEntity<List<ReviewResponseDto>> getReviewsByRating(@PathVariable String vendorId,
+    public ResponseEntity<ReviewsResponseDto> getReviewsByRating(@PathVariable String vendorId,
                                                                       @PathVariable int rating) {
-        List<ReviewResponseDto> reviews = reviewService.getReviewsByRating(vendorId, rating);
-        return ResponseEntity.ok(reviews);
+        ReviewsResponseDto response = reviewService.getReviewsByRating(vendorId, rating);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/vendor/{vendorId}/rating-above/{minRating}")
-    public ResponseEntity<List<ReviewResponseDto>> getReviewsByRatingRange(@PathVariable String vendorId,
+    public ResponseEntity<ReviewsResponseDto> getReviewsByRatingRange(@PathVariable String vendorId,
                                                                            @PathVariable int minRating) {
-        List<ReviewResponseDto> reviews = reviewService.getReviewsByRatingRange(vendorId, minRating);
-        return ResponseEntity.ok(reviews);
+        ReviewsResponseDto response = reviewService.getReviewsByRatingRange(vendorId, minRating);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/vendor/{vendorId}/statistics")

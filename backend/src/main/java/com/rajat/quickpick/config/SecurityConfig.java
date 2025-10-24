@@ -49,19 +49,12 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/colleges/public").permitAll()
-                        .requestMatchers("/api/colleges/public/**").permitAll()
-                        .requestMatchers("/api/admin/create").permitAll()
-                        .requestMatchers("api/admin/login").permitAll()
-                        .requestMatchers("/api/admin-management/**").authenticated()
-                        .requestMatchers("/api/menu-items/vendor/{vendorId}").permitAll()
-                        .requestMatchers("/api/orders/**").authenticated()
 
 
-                        .requestMatchers("/ws/**").permitAll()
+//                        .requestMatchers("/ws/**").permitAll()
 
 
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)

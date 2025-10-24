@@ -1,5 +1,6 @@
 package org.rajat.quickpick.presentation.feature.auth.login
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -36,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import co.touchlab.kermit.Logger
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.di.TokenProvider
@@ -50,6 +53,8 @@ import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators.isLoginFormValid
 import org.rajat.quickpick.utils.toast.showToast
+import quickpick.composeapp.generated.resources.Res
+import quickpick.composeapp.generated.resources.burger
 
 @Preview
 @Composable
@@ -105,16 +110,23 @@ fun UserLoginScreen(
                     )
                 )
         ) {
+
+            Image(
+                painter = painterResource(resource = Res.drawable.burger),
+                contentDescription = "Background Image",
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier.fillMaxSize()
+            )
             Card(
                 Modifier
                     .fillMaxWidth()
-                    .padding(top = 150.dp, start = 16.dp, end = 16.dp)
+                    .padding(top = 480.dp)
                     .shadow(
-                        elevation = 16.dp,
-                        shape = RoundedCornerShape(16.dp)
+                        elevation = 32.dp,
+                        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
                     ),
-                RoundedCornerShape(16.dp),
-                CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
             ) {
                 Column(
                     modifier = Modifier

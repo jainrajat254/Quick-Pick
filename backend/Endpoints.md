@@ -60,7 +60,7 @@
 ### Update User Profile
 - **PUT /api/profile/user**
   - Header: Authorization: Bearer {jwt_token}
-  - Fields: fullName, phone, department, profileImageUrl
+  - Fields: fullName, phone, ~~~~department, profileImageUrl
 
 ### Update Vendor Profile
 - **PUT /api/profile/vendor**

@@ -49,21 +49,21 @@ public class OrderController {
 
     @GetMapping("/my-orders")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<OrderResponseDto>> getMyOrders(HttpServletRequest request) {
+    public ResponseEntity<OrdersResponseDto> getMyOrders(HttpServletRequest request) {
         String userId = extractUserIdFromToken(request);
-        List<OrderResponseDto> orders = orderService.getUserOrders(userId);
-        return ResponseEntity.ok(orders);
+        OrdersResponseDto response = orderService.getUserOrders(userId);
+        return ResponseEntity.ok(response);
     }
 
 
 
     @GetMapping("/my-orders/status/{status}")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<OrderResponseDto>> getMyOrdersByStatus(@PathVariable OrderStatus status,
+    public ResponseEntity<OrdersResponseDto> getMyOrdersByStatus(@PathVariable OrderStatus status,
                                                                       HttpServletRequest request) {
         String userId = extractUserIdFromToken(request);
-        List<OrderResponseDto> orders = orderService.getOrdersByStatus(userId, status);
-        return ResponseEntity.ok(orders);
+        OrdersResponseDto response = orderService.getOrdersByStatus(userId, status);
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{orderId}/cancel")
@@ -107,11 +107,11 @@ public class OrderController {
 
     @GetMapping("/vendor/orders/status/{status}")
     @PreAuthorize("hasRole('VENDOR')")
-    public ResponseEntity<List<OrderResponseDto>> getVendorOrdersByStatus(@PathVariable OrderStatus status,
+    public ResponseEntity<OrdersResponseDto> getVendorOrdersByStatus(@PathVariable OrderStatus status,
                                                                           HttpServletRequest request) {
         String vendorId = extractUserIdFromToken(request);
-        List<OrderResponseDto> orders = orderService.getVendorOrdersByStatus(vendorId, status);
-        return ResponseEntity.ok(orders);
+        OrdersResponseDto response = orderService.getVendorOrdersByStatus(vendorId, status);
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/vendor/orders/{orderId}/status")

@@ -2,6 +2,8 @@ package com.rajat.quickpick.service;
 
 import com.rajat.quickpick.dto.menu.MenuItemCreateDto;
 import com.rajat.quickpick.dto.menu.MenuItemResponseDto;
+import com.rajat.quickpick.dto.menu.MenuItemsResponseDto;
+import com.rajat.quickpick.dto.menu.CategoriesResponseDto;
 import com.rajat.quickpick.dto.menu.UpdateMenuItemDto;
 import com.rajat.quickpick.enums.VendorVerificationStatus;
 import com.rajat.quickpick.exception.BadRequestException;
@@ -70,12 +72,15 @@ public class MenuItemService {
         return dto;
     }
 
-    public List<String> updateVendorCategories(String vendorId, List<String> categories) {
+    public CategoriesResponseDto updateVendorCategories(String vendorId, List<String> categories) {
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
         vendor.setFoodCategories(categories);
         vendorRepository.save(vendor);
-        return categories;
+        return CategoriesResponseDto.builder()
+                .categories(categories)
+                .count(categories.size())
+                .build();
     }
 
     public MenuItemResponseDto createMenuItem(String vendorId, MenuItemCreateDto createDto) {
@@ -116,42 +121,62 @@ public class MenuItemService {
         return menuItemPage.map(this::mapToResponseDto);
     }
 
-    public List<MenuItemResponseDto> getAvailableMenuItemsByVendor(String vendorId) {
+    public MenuItemsResponseDto getAvailableMenuItemsByVendor(String vendorId) {
         List<MenuItem> menuItems = menuItemRepository.findByVendorIdAndIsAvailable(vendorId, true);
-        return menuItems.stream()
+        List<MenuItemResponseDto> menuItemDtos = menuItems.stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+        return MenuItemsResponseDto.builder()
+                .menuItems(menuItemDtos)
+                .count(menuItemDtos.size())
+                .build();
     }
 
-    public List<MenuItemResponseDto> getMenuItemsByCategory(String vendorId, String category) {
+    public MenuItemsResponseDto getMenuItemsByCategory(String vendorId, String category) {
         List<MenuItem> menuItems = menuItemRepository.findByVendorIdAndCategory(vendorId, category);
-        return menuItems.stream()
+        List<MenuItemResponseDto> menuItemDtos = menuItems.stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+        return MenuItemsResponseDto.builder()
+                .menuItems(menuItemDtos)
+                .count(menuItemDtos.size())
+                .build();
     }
 
-    public List<MenuItemResponseDto> searchMenuItems(String vendorId, String searchTerm) {
+    public MenuItemsResponseDto searchMenuItems(String vendorId, String searchTerm) {
         List<MenuItem> menuItems = menuItemRepository.findByVendorIdAndNameContainingIgnoreCase(vendorId, searchTerm);
-        return menuItems.stream()
+        List<MenuItemResponseDto> menuItemDtos = menuItems.stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+        return MenuItemsResponseDto.builder()
+                .menuItems(menuItemDtos)
+                .count(menuItemDtos.size())
+                .build();
     }
 
-    public List<MenuItemResponseDto> getMenuItemsByPriceRange(String vendorId, double minPrice, double maxPrice) {
+    public MenuItemsResponseDto getMenuItemsByPriceRange(String vendorId, double minPrice, double maxPrice) {
         List<MenuItem> menuItems = menuItemRepository.findByVendorIdAndPriceBetween(vendorId, minPrice, maxPrice);
-        return menuItems.stream()
+        List<MenuItemResponseDto> menuItemDtos = menuItems.stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+        return MenuItemsResponseDto.builder()
+                .menuItems(menuItemDtos)
+                .count(menuItemDtos.size())
+                .build();
     }
 
 
-    public List<String> getMenuCategories(String vendorId) {
+    public CategoriesResponseDto getMenuCategories(String vendorId) {
         List<MenuItem> menuItems = menuItemRepository.findByVendorId(vendorId);
-        return menuItems.stream()
+        List<String> categories = menuItems.stream()
                 .map(MenuItem::getCategory)
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
+        return CategoriesResponseDto.builder()
+                .categories(categories)
+                .count(categories.size())
+                .build();
     }
 
     public MenuItemResponseDto updateMenuItem(String vendorId, String menuItemId, UpdateMenuItemDto updateDto) {
@@ -251,7 +276,7 @@ public class MenuItemService {
         );
     }
 
-    public List<MenuItemResponseDto> getPublicMenuByVendor(String vendorId) {
+    public MenuItemsResponseDto getPublicMenuByVendor(String vendorId) {
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
 
@@ -260,13 +285,17 @@ public class MenuItemService {
         }
 
         List<MenuItem> menuItems = menuItemRepository.findByVendorIdAndIsAvailable(vendorId, true);
-        return menuItems.stream()
+        List<MenuItemResponseDto> menuItemDtos = menuItems.stream()
                 .filter(item -> item.getQuantity() > 0)
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+        return MenuItemsResponseDto.builder()
+                .menuItems(menuItemDtos)
+                .count(menuItemDtos.size())
+                .build();
     }
 
-    public List<MenuItemResponseDto> getPublicMenuByCategory(String vendorId, String category) {
+    public MenuItemsResponseDto getPublicMenuByCategory(String vendorId, String category) {
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
 
@@ -275,10 +304,14 @@ public class MenuItemService {
         }
 
         List<MenuItem> menuItems = menuItemRepository.findByVendorIdAndCategory(vendorId, category);
-        return menuItems.stream()
+        List<MenuItemResponseDto> menuItemDtos = menuItems.stream()
                 .filter(item -> item.getIsAvailable() && item.getQuantity() > 0)
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+        return MenuItemsResponseDto.builder()
+                .menuItems(menuItemDtos)
+                .count(menuItemDtos.size())
+                .build();
     }
 
 }

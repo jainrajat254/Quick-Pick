@@ -3,6 +3,9 @@ package com.rajat.quickpick.service;
 
 import com.rajat.quickpick.dto.college.CreateCollegeDto;
 import com.rajat.quickpick.dto.college.CollegeResponseDto;
+import com.rajat.quickpick.dto.college.CollegesResponseDto;
+import com.rajat.quickpick.dto.college.CitiesResponseDto;
+import com.rajat.quickpick.dto.college.StatesResponseDto;
 import com.rajat.quickpick.exception.BadRequestException;
 import com.rajat.quickpick.exception.ResourceNotFoundException;
 import com.rajat.quickpick.model.College;
@@ -53,25 +56,37 @@ public class CollegeService {
 
     }
 
-    public List<CollegeResponseDto> getAllColleges() {
+    public CollegesResponseDto getAllColleges() {
         List<College> colleges = collegeRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
-        return colleges.stream()
+        List<CollegeResponseDto> collegeDtos = colleges.stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+        return CollegesResponseDto.builder()
+                .colleges(collegeDtos)
+                .count(collegeDtos.size())
+                .build();
     }
 
-    public List<CollegeResponseDto> getCollegesByCity(String city) {
+    public CollegesResponseDto getCollegesByCity(String city) {
         List<College> colleges = collegeRepository.findByCity(city);
-        return colleges.stream()
+        List<CollegeResponseDto> collegeDtos = colleges.stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+        return CollegesResponseDto.builder()
+                .colleges(collegeDtos)
+                .count(collegeDtos.size())
+                .build();
     }
 
-    public List<CollegeResponseDto> getCollegesByState(String state) {
+    public CollegesResponseDto getCollegesByState(String state) {
         List<College> colleges = collegeRepository.findByState(state);
-        return colleges.stream()
+        List<CollegeResponseDto> collegeDtos = colleges.stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+        return CollegesResponseDto.builder()
+                .colleges(collegeDtos)
+                .count(collegeDtos.size())
+                .build();
     }
 
 
@@ -97,11 +112,15 @@ public class CollegeService {
         return collegePage.map(this::mapToResponseDto);
     }
 
-    public List<CollegeResponseDto> searchColleges(String query) {
+    public CollegesResponseDto searchColleges(String query) {
         List<College> colleges = collegeRepository.findByNameContainingIgnoreCase(query);
-        return colleges.stream()
+        List<CollegeResponseDto> collegeDtos = colleges.stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+        return CollegesResponseDto.builder()
+                .colleges(collegeDtos)
+                .count(collegeDtos.size())
+                .build();
     }
 
 
@@ -140,22 +159,30 @@ public class CollegeService {
     }
 
     //for stats if needed
-    public List<String> getAllCities() {
-        return collegeRepository.findAll()
+    public CitiesResponseDto getAllCities() {
+        List<String> cities = collegeRepository.findAll()
                 .stream()
                 .map(College::getCity)
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
+        return CitiesResponseDto.builder()
+                .cities(cities)
+                .count(cities.size())
+                .build();
     }
 
-    public List<String> getAllStates() {
-        return collegeRepository.findAll()
+    public StatesResponseDto getAllStates() {
+        List<String> states = collegeRepository.findAll()
                 .stream()
                 .map(College::getState)
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
+        return StatesResponseDto.builder()
+                .states(states)
+                .count(states.size())
+                .build();
     }
 
     private CollegeResponseDto mapToResponseDto(College college) {
@@ -168,3 +195,4 @@ public class CollegeService {
         return dto;
     }
 }
+

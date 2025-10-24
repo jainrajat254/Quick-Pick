@@ -2,6 +2,8 @@ package com.rajat.quickpick.controller;
 
 import com.rajat.quickpick.dto.menu.MenuItemCreateDto;
 import com.rajat.quickpick.dto.menu.MenuItemResponseDto;
+import com.rajat.quickpick.dto.menu.MenuItemsResponseDto;
+import com.rajat.quickpick.dto.menu.CategoriesResponseDto;
 import com.rajat.quickpick.dto.menu.UpdateMenuItemDto;
 import com.rajat.quickpick.security.JwtUtil;
 import com.rajat.quickpick.service.MenuItemService;
@@ -48,47 +50,47 @@ public class MenuItemController {
 
     @GetMapping("/my-menu/available")
     @PreAuthorize("hasRole('VENDOR')")
-    public ResponseEntity<List<MenuItemResponseDto>> getMyAvailableMenuItems(HttpServletRequest request) {
+    public ResponseEntity<MenuItemsResponseDto> getMyAvailableMenuItems(HttpServletRequest request) {
         String vendorId = extractUserIdFromToken(request);
-        List<MenuItemResponseDto> menuItems = menuItemService.getAvailableMenuItemsByVendor(vendorId);
-        return ResponseEntity.ok(menuItems);
+        MenuItemsResponseDto response = menuItemService.getAvailableMenuItemsByVendor(vendorId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/my-menu/category/{category}")
     @PreAuthorize("hasRole('VENDOR')")
-    public ResponseEntity<List<MenuItemResponseDto>> getMyMenuItemsByCategory(@PathVariable String category,
+    public ResponseEntity<MenuItemsResponseDto> getMyMenuItemsByCategory(@PathVariable String category,
                                                                               HttpServletRequest request) {
         String vendorId = extractUserIdFromToken(request);
-        List<MenuItemResponseDto> menuItems = menuItemService.getMenuItemsByCategory(vendorId, category);
-        return ResponseEntity.ok(menuItems);
+        MenuItemsResponseDto response = menuItemService.getMenuItemsByCategory(vendorId, category);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/my-menu/search")
     @PreAuthorize("hasRole('VENDOR')")
-    public ResponseEntity<List<MenuItemResponseDto>> searchMyMenuItems(@RequestParam String query,
+    public ResponseEntity<MenuItemsResponseDto> searchMyMenuItems(@RequestParam String query,
                                                                        HttpServletRequest request) {
         String vendorId = extractUserIdFromToken(request);
-        List<MenuItemResponseDto> menuItems = menuItemService.searchMenuItems(vendorId, query);
-        return ResponseEntity.ok(menuItems);
+        MenuItemsResponseDto response = menuItemService.searchMenuItems(vendorId, query);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/my-menu/price-range")
     @PreAuthorize("hasRole('VENDOR')")
-    public ResponseEntity<List<MenuItemResponseDto>> getMyMenuItemsByPriceRange(
+    public ResponseEntity<MenuItemsResponseDto> getMyMenuItemsByPriceRange(
             @RequestParam double minPrice,
             @RequestParam double maxPrice,
             HttpServletRequest request) {
         String vendorId = extractUserIdFromToken(request);
-        List<MenuItemResponseDto> menuItems = menuItemService.getMenuItemsByPriceRange(vendorId, minPrice, maxPrice);
-        return ResponseEntity.ok(menuItems);
+        MenuItemsResponseDto response = menuItemService.getMenuItemsByPriceRange(vendorId, minPrice, maxPrice);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/my-menu/categories")
     @PreAuthorize("hasRole('VENDOR')")
-    public ResponseEntity<List<String>> getMyMenuCategories(HttpServletRequest request) {
+    public ResponseEntity<CategoriesResponseDto> getMyMenuCategories(HttpServletRequest request) {
         String vendorId = extractUserIdFromToken(request);
-        List<String> categories = menuItemService.getMenuCategories(vendorId);
-        return ResponseEntity.ok(categories);
+        CategoriesResponseDto response = menuItemService.getMenuCategories(vendorId);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{menuItemId}")
@@ -148,16 +150,16 @@ public class MenuItemController {
     }
 
     @GetMapping("/vendor/{vendorId}")
-    public ResponseEntity<List<MenuItemResponseDto>> getVendorMenu(@PathVariable String vendorId) {
-        List<MenuItemResponseDto> menuItems = menuItemService.getPublicMenuByVendor(vendorId);
-        return ResponseEntity.ok(menuItems);
+    public ResponseEntity<MenuItemsResponseDto> getVendorMenu(@PathVariable String vendorId) {
+        MenuItemsResponseDto response = menuItemService.getPublicMenuByVendor(vendorId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/vendor/{vendorId}/category/{category}")
-    public ResponseEntity<List<MenuItemResponseDto>> getVendorMenuByCategory(@PathVariable String vendorId,
+    public ResponseEntity<MenuItemsResponseDto> getVendorMenuByCategory(@PathVariable String vendorId,
                                                                              @PathVariable String category) {
-        List<MenuItemResponseDto> menuItems = menuItemService.getPublicMenuByCategory(vendorId, category);
-        return ResponseEntity.ok(menuItems);
+        MenuItemsResponseDto response = menuItemService.getPublicMenuByCategory(vendorId, category);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{menuItemId}")

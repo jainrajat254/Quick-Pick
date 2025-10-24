@@ -38,7 +38,6 @@ public class ProfileService {
         response.setEmail(user.getEmail());
         response.setPhone(user.getPhone());
         response.setCollegeName(user.getCollegeName());
-        response.setDepartment(user.getDepartment());
         response.setProfileImageUrl(user.getProfileImageUrl());
         response.setRole(user.getRole());
         response.setPhoneVerified(user.isPhoneVerified());
@@ -79,9 +78,7 @@ public class ProfileService {
         if (updateDto.getPhone() != null) {
             user.setPhone(updateDto.getPhone());
         }
-        if (updateDto.getDepartment() != null) {
-            user.setDepartment(updateDto.getDepartment());
-        }
+
         if (updateDto.getProfileImageUrl() != null) {
             user.setProfileImageUrl(updateDto.getProfileImageUrl());
         }
