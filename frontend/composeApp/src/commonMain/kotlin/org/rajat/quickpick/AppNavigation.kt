@@ -115,5 +115,87 @@ fun AppNavigation(
                 vendorId = "v1"
             )
         }
+        composable(Routes.Orders.route) {
+            MyOrderScreen(
+                paddingValues = paddingValues,
+                activeOrders = emptyList(),
+                completedOrders = emptyList(),
+                cancelledOrders = emptyList(),
+                isLoading = false,
+                onTabSelected = { },
+                onOrderCancel = {
+                    navController.navigate(Routes.CancelOrder.createRoute(it))
+                },
+                onOrderRate = {
+                    navController.navigate(Routes.ReviewOrder.createRoute(it))
+                },
+                onOrderAgain = { },
+                onOrderViewDetails = { clickOrder ->
+                    navController.navigate(Routes.OrderDetail.createRoute(clickOrder))
+                },
+                onclick = { clickOrder ->
+                    navController.navigate(Routes.OrderDetail.createRoute(clickOrder))
+                }
+            )
+        }
+        composable(Routes.OrderDetail.route, arguments = listOf(navArgument("orderId"){type=
+            NavType.StringType})) { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getString("orderId")
+            val orderToShow = allOrders.find { it.id == orderId }
+            if (orderToShow != null) {
+                OrderDetailScreen(
+                    paddingValues,
+                    order = orderToShow,
+                    isLoading = false
+                )
+            } else {
+                PlaceholderScreen(name = "Order not found", paddingValues)
+            }
+        }
+        composable(Routes.CancelOrder.route, arguments = listOf(navArgument("orderId"){type=
+            NavType.StringType})){backStackEntry ->
+            val orderID= backStackEntry.arguments?.getString("orderId")
+            val order=allOrders.find{it.id==orderID}
+            if (order != null) {
+                CancelOrderScreen(
+                    basePaddingValues = paddingValues, orderId = order.id.toString(),
+                    onConfirmCancel =//Here
+                        { _, _ ->
+                            navController.navigate(Routes.CancelOrderConfirmation.route)
+                        },
+                    isLoading = false,
+                    onNavigateToConfirmation = {
+                        navController.navigate(Routes.CancelOrderConfirmation.route)
+                    },
+                )
+
+            }
+        }
+        composable(Routes.ReviewOrderConfirmation.route) {
+            ReviewOrderConfirmationScreen(
+                paddingValues,
+                onBackToOrders = {
+                    navController.navigate(Routes.Orders.route)
+                }
+            )
+        }
+        composable(Routes.CancelOrderConfirmation.route){
+            OrderCancelledConfirmationScreen(
+                paddingValues,
+                onBackToOrders = { navController.navigate(Routes.Orders.route) }
+            )
+        }
+        composable(Routes.Profile.route) {
+            ProfileScreen(
+                paddingValues = paddingValues,
+                onClickMyProfile = {},
+                onClickPaymentMethods = {},
+                onClickMyReviews = {},
+                onClickContactUs = {},
+                onClickHelpFAQs = {},
+                onClickSettings = {},
+                onClickLogOut = {},
+            )
+        }
     }
 }
