@@ -43,11 +43,9 @@ fun HomeScreen(
         return
     }
 
-    // Otherwise show HomeScreen
     BasePage(
         currentRoute = "home",
         onNavigate = { route ->
-            // Handle other navigation if needed, but not vendor navigation
         }
     ) { paddingValues ->
         Column(
