@@ -1,6 +1,6 @@
 package org.rajat.quickpick.presentation.feature.myorders
-import com.example.dummyproject.data.ordermanagement.getOrderById.GetOrderByIdResponse
-import com.example.dummyproject.data.ordermanagement.getOrderById.OrderItemX
+import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.GetOrderByIdResponse
+import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.OrderItemX
 
 val dummyActiveOrders = listOf(
     GetOrderByIdResponse(

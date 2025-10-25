@@ -1,4 +1,5 @@
 package org.rajat.quickpick.presentation.feature.myorders
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,18 +12,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.dummyproject.theme.AppTheme
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch // Needed for Snackbar
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.theme.AppTheme
 
 @Composable
 fun CancelOrderScreen(
-    basePaddingValues: PaddingValues,
     orderId: String,
     isLoading: Boolean,
-    onConfirmCancel: (orderId: String, reason: String?) -> Unit,
-    onNavigateToConfirmation: () -> Unit
+    navController: NavHostController,
+    paddingValues: PaddingValues
 ) {
     val reasons = listOf(
         "Order placed by mistake",
@@ -37,22 +40,15 @@ fun CancelOrderScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    Scaffold(
-        snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.padding(bottom = basePaddingValues.calculateBottomPadding())
-            )
-        },
-        containerColor = Color.Transparent
-    ) { innerPadding ->
-
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(basePaddingValues)
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.surface)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -61,7 +57,6 @@ fun CancelOrderScreen(
             Text(
                 "Please select a reason for cancellation:",
                 style = MaterialTheme.typography.bodyLarge,
-                // --- THEME UPDATE: Use onSurfaceVariant ---
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
                     .padding(bottom = 16.dp)
@@ -108,8 +103,12 @@ fun CancelOrderScreen(
                         focusedLabelColor = MaterialTheme.colorScheme.primary,
                         unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         cursorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f),
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f)
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                            alpha = 0.3f
+                        ),
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                            alpha = 0.3f
+                        )
                     ),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -119,7 +118,8 @@ fun CancelOrderScreen(
 
             Button(
                 onClick = {
-                    val finalReason = if (isOtherSelected) otherReasonText.takeIf { it.isNotBlank() } else selectedReason
+                    val finalReason =
+                        if (isOtherSelected) otherReasonText.takeIf { it.isNotBlank() } else selectedReason
                     scope.launch {
                         val result = snackbarHostState.showSnackbar(
                             message = "Are you sure you want to cancel this order?",
@@ -127,7 +127,8 @@ fun CancelOrderScreen(
                             duration = SnackbarDuration.Short
                         )
                         if (result == SnackbarResult.ActionPerformed) {
-                            onConfirmCancel(orderId, finalReason)
+                            //Viewmodel method to update the order state to cancel with orderId, finalReason
+                            navController.navigate(Routes.CancelOrderConfirmation.route)
                         }
                     }
                 },
@@ -153,6 +154,22 @@ fun CancelOrderScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp),
+            snackbar = { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.inverseSurface,
+                    contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+                    actionColor = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(12.dp)
+                )
+            }
+        )
     }
 }
 
@@ -184,7 +201,7 @@ private fun ReasonRow(
         Text(
             text = text,
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant // Text inside card
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -197,11 +214,10 @@ fun CancelOrderScreenLightPreview() {
     AppTheme(darkTheme = false) {
         Surface(modifier = Modifier.fillMaxSize()) {
             CancelOrderScreen(
-                basePaddingValues = PaddingValues(bottom = 80.dp), // Simulate BasePage padding
                 orderId = "QKPK123",
                 isLoading = false,
-                onConfirmCancel = { _, _ ->  },
-                onNavigateToConfirmation = {}
+                navController = rememberNavController(),
+                PaddingValues(0.dp)
             )
         }
     }
@@ -213,11 +229,10 @@ fun CancelOrderScreenDarkPreview() {
     AppTheme(darkTheme = true) {
         Surface(modifier = Modifier.fillMaxSize()) {
             CancelOrderScreen(
-                basePaddingValues = PaddingValues(bottom = 80.dp),
                 orderId = "QKPK123",
                 isLoading = false,
-                onConfirmCancel = { _, _ ->  },
-                onNavigateToConfirmation = {}
+                navController = rememberNavController(),
+                PaddingValues(0.dp)
             )
         }
     }
@@ -229,11 +244,10 @@ fun CancelOrderScreenLoadingPreview() {
     AppTheme(darkTheme = true) {
         Surface(modifier = Modifier.fillMaxSize()) {
             CancelOrderScreen(
-                basePaddingValues = PaddingValues(bottom = 80.dp),
                 orderId = "QKPK123",
                 isLoading = true,
-                onConfirmCancel = { _, _ ->  },
-                onNavigateToConfirmation = {}
+                navController = rememberNavController(),
+                PaddingValues(0.dp)
             )
         }
     }

@@ -1,6 +1,8 @@
 package org.rajat.quickpick.domain.modal.ordermanagement
-import com.example.dummyproject.data.ordermanagement.getOrderById.GetOrderByIdResponse
-import kotlinx.serialization.Serializable
 
-@Serializable
-class GetMyOrderByStatusResponse : ArrayList<GetOrderByIdResponse>()
+import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.GetOrderByIdResponse
+
+data class GetMyOrderByStatusResponse(
+    val count: Int?=null,
+    val orders: List<GetOrderByIdResponse?>?=null
+)

@@ -1,4 +1,5 @@
 package org.rajat.quickpick.presentation.feature.myorders
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,24 +11,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import com.example.dummyproject.R
-import com.example.dummyproject.screens.myorders.components.StarRatingSelector
-import com.example.dummyproject.theme.AppTheme
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.coil3.CoilImage
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.rajat.quickpick.presentation.components.BasePage
+import org.rajat.quickpick.presentation.feature.myorders.components.StarRatingSelector
+import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.theme.AppTheme
 
 @Composable
 fun OrderReviewScreen(
-    paddingValues: PaddingValues,
     orderId: String,
     itemName: String,
     itemImageUrl: String?,
-    onSubmitReview: (orderId: String, rating: Int, comment: String) -> Unit,
-    onCancel: () -> Unit
+    navController: NavHostController,
+    paddingValues: PaddingValues
 ) {
     var rating by remember { mutableIntStateOf(0) }
     var comment by remember { mutableStateOf("") }
@@ -41,15 +44,18 @@ fun OrderReviewScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AsyncImage(
-            model = itemImageUrl ?: "",
-            fallback = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentDescription = itemName,
+        CoilImage(
+            imageModel = { itemImageUrl },
+            imageOptions = ImageOptions(contentScale = ContentScale.Crop),
             modifier = Modifier
                 .fillMaxWidth(0.8f)
                 .height(180.dp)
                 .clip(RoundedCornerShape(16.dp)),
-            contentScale = ContentScale.Crop
+            loading = {
+                Box(
+                    modifier = Modifier.matchParentSize()
+                )
+            }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -95,8 +101,10 @@ fun OrderReviewScreen(
                 focusedLabelColor = MaterialTheme.colorScheme.primary,
                 unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 cursorColor = MaterialTheme.colorScheme.primary,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f),
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f)
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                    alpha = 0.3f
+                ),
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
             ),
             shape = RoundedCornerShape(12.dp)
         )
@@ -108,13 +116,16 @@ fun OrderReviewScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedButton(
-                onClick = onCancel,
+                onClick = { navController.navigate(Routes.Orders.route) },
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Cancel")
             }
             Button(
-                onClick = { onSubmitReview(orderId, rating, comment) },
+                onClick = {
+                    //Viewmodel method to submit review using orderId, rating, comment
+                    navController.navigate(Routes.ReviewOrderConfirmation.route)
+                          },
                 modifier = Modifier.weight(1f),
                 enabled = rating > 0
             ) {
@@ -133,12 +144,11 @@ fun OrderReviewScreenLightPreview() {
     AppTheme(darkTheme = false) {
         Surface(modifier = Modifier.fillMaxSize()) {
             OrderReviewScreen(
-                paddingValues = PaddingValues(0.dp),
                 orderId = "QKPK12345",
                 itemName = "Paneer Curry",
                 itemImageUrl = null,
-                onSubmitReview = { _, _, _ -> },
-                onCancel = {}
+                navController = rememberNavController(),
+                PaddingValues(0.dp)
             )
         }
     }
@@ -150,13 +160,13 @@ fun OrderReviewScreenDarkPreview() {
     AppTheme(darkTheme = true) {
         Surface(modifier = Modifier.fillMaxSize()) {
             OrderReviewScreen(
-                paddingValues = PaddingValues(0.dp),
                 orderId = "QKPK12345",
                 itemName = "Paneer Curry",
                 itemImageUrl = null,
-                onSubmitReview = { _, _, _ -> },
-                onCancel = {}
+                navController = rememberNavController(),
+                PaddingValues(0.dp)
             )
         }
     }
 }
+

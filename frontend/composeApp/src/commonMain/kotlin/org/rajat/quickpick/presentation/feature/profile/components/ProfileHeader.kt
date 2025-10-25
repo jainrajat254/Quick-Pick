@@ -16,10 +16,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.key.Key.Companion.R
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.coil3.CoilImage
+import org.jetbrains.compose.resources.painterResource
+import quickpick.composeapp.generated.resources.Res
+import quickpick.composeapp.generated.resources.delivery
 
 @Composable
 fun ProfileHeader(
@@ -31,16 +36,26 @@ fun ProfileHeader(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = profileUrl,
-            contentDescription = "Profile Picture",
-            contentScale = ContentScale.Crop,
+        CoilImage(
+            imageModel = { profileUrl },
+            imageOptions = ImageOptions(
+                contentScale = ContentScale.Crop
+            ),
             modifier = Modifier
                 .size(64.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
-            placeholder = rememberVectorPainter(Icons.Default.Person),
-            error = rememberVectorPainter(Icons.Default.Person)
+            // Placeholder and error
+            previewPlaceholder = painterResource( Res.drawable.delivery), // optional drawable
+            failure = {
+                androidx.compose.foundation.Image(
+                    painter = rememberVectorPainter(Icons.Default.Person),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                )
+            }
         )
 
         Spacer(modifier = Modifier.width(16.dp))
