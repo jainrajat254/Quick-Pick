@@ -1,6 +1,5 @@
 package org.rajat.quickpick.presentation.feature.home
 
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -10,7 +9,6 @@ import org.rajat.quickpick.data.dummy.DummyData
 import org.rajat.quickpick.presentation.components.BasePage
 import org.rajat.quickpick.presentation.feature.home.components.*
 import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
-
 
 @Composable
 fun HomeScreen(

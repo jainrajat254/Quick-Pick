@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.feature.auth.onboarding.WelcomeScreen
@@ -41,21 +42,25 @@ fun SplashScreen(
         logger.d { "SplashScreen Token: $token" }
 
         if (token.isNullOrEmpty()) {
-            logger.i { "No token. Go to LaunchWelcome." }
+            logger.i { "No token found. Navigating to LaunchWelcome." }
             navController.navigate(Routes.LaunchWelcome.route) {
                 popUpTo(0) { inclusive = true }
             }
         } else {
-            val valid = refreshTokenManager.ensureValidToken()
-            if (valid) {
-                logger.i { "Token valid. Navigate to Home." }
-                navController.navigate(Routes.Home.route) {
-                    popUpTo(0) { inclusive = true }
-                }
-            } else {
-                logger.i { "Token refresh failed. Go to LaunchWelcome." }
-                navController.navigate(Routes.LaunchWelcome.route) {
-                    popUpTo(0) { inclusive = true }
+            logger.i { "Token found. Navigating directly to Home." }
+            navController.navigate(Routes.Home.route) {
+                popUpTo(0) { inclusive = true }
+            }
+            launch {
+                try {
+                    val refreshed = refreshTokenManager.ensureValidToken()
+                    if (refreshed) {
+                        logger.i { "Background token refresh successful." }
+                    } else {
+                        logger.w { "Background token refresh failed." }
+                    }
+                } catch (e: Exception) {
+                    logger.e(e) { "Error during background token refresh." }
                 }
             }
         }
@@ -68,4 +73,5 @@ fun SplashScreen(
         WelcomeScreen()
     }
 }
+
 
