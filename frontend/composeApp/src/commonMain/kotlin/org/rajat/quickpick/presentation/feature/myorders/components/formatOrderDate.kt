@@ -1,18 +1,34 @@
 package org.rajat.quickpick.presentation.feature.myorders.components
 
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
+import androidx.compose.ui.text.intl.Locale
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format.MonthNames
+import kotlinx.datetime.format.char
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
+
+@OptIn(ExperimentalTime::class)
 fun formatOrderDate(dateString: String): String {
     return try {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
-        inputFormat.timeZone = TimeZone.getTimeZone("UTC")
-        val date = inputFormat.parse(dateString)
-
-        val outputFormat = SimpleDateFormat("dd MMM, yyyy 'at' hh:mm a", Locale.getDefault())
-        outputFormat.timeZone = TimeZone.getDefault() // Convert to local time
-        date?.let { outputFormat.format(it) } ?: "Invalid Date"
+        val instant = Instant.parse(dateString)
+        val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+        val formatter = LocalDateTime.Format {
+            dayOfMonth()
+            char(' ')
+            monthName(MonthNames.ENGLISH_ABBREVIATED)
+            chars(", ")
+            year()
+            chars(" at ")
+            hour()
+            char(':')
+            minute()
+            char(' ')
+            amPmMarker("AM", "PM")
+        }
+        formatter.format(localDateTime)
     } catch (e: Exception) {
         "Invalid Date"
     }

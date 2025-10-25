@@ -1,6 +1,6 @@
 package org.rajat.quickpick.domain.modal.ordermanagement
-import com.example.dummyproject.data.ordermanagement.getOrderById.OrderItemX
 import kotlinx.serialization.Serializable
+import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.OrderItemX
 
 @Serializable
 data class GetVendorOrderByIdResponse(

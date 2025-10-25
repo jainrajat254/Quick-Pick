@@ -1,5 +1,6 @@
 package org.rajat.quickpick.presentation.feature.myorders
-import com.example.dummyproject.data.ordermanagement.OrderStatus
+
+import org.rajat.quickpick.domain.modal.ordermanagement.OrderStatus
 
 sealed class OrderTab(val title: String, val statuses: List<OrderStatus>) {
     object Active : OrderTab("Active", listOf(

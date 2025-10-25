@@ -1,4 +1,5 @@
 package org.rajat.quickpick.presentation.feature.profile
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,28 +21,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.dummyproject.screens.profile.components.ProfileHeader
-import com.example.dummyproject.screens.profile.components.ProfileMenuItem
-import com.example.dummyproject.theme.AppTheme
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.rajat.quickpick.presentation.components.BasePage
+import org.rajat.quickpick.presentation.feature.profile.components.ProfileHeader
+import org.rajat.quickpick.presentation.feature.profile.components.ProfileMenuItem
+import org.rajat.quickpick.presentation.theme.AppTheme
 
 @Composable
-fun ProfileScreen(paddingValues: PaddingValues,
-                  onClickMyProfile :() -> Unit,
-                  onClickPaymentMethods : () -> Unit,
-                  onClickMyReviews : () ->  Unit,
-                  onClickContactUs : () ->  Unit,
-                  onClickHelpFAQs : () ->  Unit,
-                  onClickSettings : () ->  Unit,
-                  onClickLogOut : () ->  Unit
+fun ProfileScreen(
+    navController: NavHostController,
+    paddingValues: PaddingValues
 ) {
     val userName = "John Smith"
     val userEmail = "Loremipsum@email.com"
-    val profileUrl= ""
+    val profileUrl = ""
 
 
-    Column(
+        Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
@@ -65,7 +64,7 @@ fun ProfileScreen(paddingValues: PaddingValues,
                     text = "My Profile",
                     icon = Icons.Default.Person,
                     onClick = {
-                        onClickMyProfile()
+
                     }
                 )
             }
@@ -123,33 +122,22 @@ fun ProfileScreenLightPreview() {
     AppTheme(darkTheme = false) {
         Surface(modifier = Modifier.fillMaxSize()) {
             ProfileScreen(
-                paddingValues = PaddingValues(0.dp),
-                onClickMyProfile = {},
-                onClickPaymentMethods = {},
-                onClickMyReviews = {},
-                onClickContactUs = {},
-                onClickHelpFAQs = {},
-                onClickSettings = {},
-                onClickLogOut = {},
+                navController = rememberNavController(),
+                PaddingValues(0.dp)
             )
         }
     }
 }
 
-@Preview(showBackground = true, name = "Profile Screen Dark")
-@Composable
-fun ProfileScreenDarkPreview() {
-    AppTheme(darkTheme = true) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            ProfileScreen(paddingValues = PaddingValues(0.dp),
-                onClickMyProfile = {},
-                onClickPaymentMethods = {},
-                onClickMyReviews = {},
-                onClickContactUs = {},
-                onClickHelpFAQs = {},
-                onClickSettings = {},
-                onClickLogOut = {},
+    @Preview(showBackground = true, name = "Profile Screen Dark")
+    @Composable
+    fun ProfileScreenDarkPreview() {
+        AppTheme(darkTheme = true) {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                ProfileScreen(
+                    navController = rememberNavController(),
+                    PaddingValues(0.dp)
                 )
+            }
         }
     }
-}

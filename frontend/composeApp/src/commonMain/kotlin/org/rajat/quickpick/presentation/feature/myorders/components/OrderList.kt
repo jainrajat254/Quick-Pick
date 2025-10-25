@@ -6,9 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.dummyproject.data.ordermanagement.getOrderById.GetOrderByIdResponse
-import com.example.dummyproject.screens.EmptyOrderCard
-import com.example.dummyproject.screens.OrderItemCard
+import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.GetOrderByIdResponse
 
 @Composable
 fun OrderList(

@@ -2,6 +2,9 @@ package org.rajat.quickpick.presentation.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -11,20 +14,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import org.rajat.quickpick.presentation.navigation.BottomNavItem
+import org.rajat.quickpick.presentation.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasePage(
 
     currentRoute: String = "home",
+    onBackClick: () -> Unit,
     onNavigate: (String) -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
+    val rootScreens = listOf("home", "cart", "orders", "profile")
+    val showBackButton = currentRoute !in rootScreens && currentRoute.isNotEmpty()
     //change it later with fetched data
-    val userName: String = "Current User";
-    val userEmail: String = "currentuser@gmail.com";
+    val userName: String = "Current User"
+    val userEmail: String = "currentuser@gmail.com"
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -43,13 +51,13 @@ fun BasePage(
             unselectedIcon = Icons.Outlined.ShoppingCart
         ),
         BottomNavItem(
-            route = "orders",
+            route = Routes.Orders.route,
             label = "Orders",
-            selectedIcon = Icons.Filled.List,
-            unselectedIcon = Icons.Outlined.List
+            selectedIcon = Icons.AutoMirrored.Filled.List,
+            unselectedIcon = Icons.AutoMirrored.Filled.List
         ),
         BottomNavItem(
-            route = "profile",
+            route = Routes.Profile.route,
             label = "Profile",
             selectedIcon = Icons.Filled.Person,
             unselectedIcon = Icons.Outlined.Person
@@ -84,21 +92,30 @@ fun BasePage(
                         )
                     },
                     navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-                                    if (drawerState.isClosed) {
-                                        drawerState.open()
-                                    } else {
-                                        drawerState.close()
+                        if (showBackButton) {
+                            IconButton(onClick = onBackClick) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back"
+                                )
+                            }
+                        }else {
+                            IconButton(
+                                onClick = {
+                                    scope.launch {
+                                        if (drawerState.isClosed) {
+                                            drawerState.open()
+                                        } else {
+                                            drawerState.close()
+                                        }
                                     }
                                 }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Menu,
+                                    contentDescription = "Menu"
+                                )
                             }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Menu"
-                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -234,7 +251,7 @@ private fun DrawerContent(
             DrawerMenuItem(
                 route = "logout",
                 label = "Logout",
-                icon = Icons.Default.ExitToApp
+                icon = Icons.AutoMirrored.Filled.ExitToApp
             )
         )
 
@@ -321,8 +338,13 @@ private fun getScreenTitle(route: String): String {
     return when (route) {
         "home" -> "QuickPick"
         "cart" -> "My Cart"
-        "orders" -> "Order History"
+        "orders" -> "My Orders"
         "profile" -> "Profile"
+        "order_details/{orderId}" -> "Order Details"
+        "my_profile" -> "My Profile"
+        "my_orders" -> "My Orders"
+        "review_order/{order_Id}" -> "Review Order"
+        "cancel_order/{orderId}" -> "Cancel Order"
         else -> "QuickPick"
     }
 }

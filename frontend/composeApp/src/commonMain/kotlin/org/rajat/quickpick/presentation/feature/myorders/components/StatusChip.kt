@@ -18,8 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.dummyproject.data.ordermanagement.OrderStatus
-import com.example.dummyproject.theme.AppColors
+import org.rajat.quickpick.domain.modal.ordermanagement.OrderStatus
+import org.rajat.quickpick.presentation.theme.AppColors
 
 @Composable
 fun StatusChip(status: OrderStatus) {
