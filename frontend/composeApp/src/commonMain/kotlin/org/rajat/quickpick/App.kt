@@ -14,8 +14,5 @@ fun App() {
         AppNavigation(
             navController = navHostController
         )
-//        HomeScreen(
-//            navController = navHostController
-//        )
     }
 }

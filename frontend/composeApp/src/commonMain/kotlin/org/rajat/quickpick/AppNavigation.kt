@@ -36,6 +36,7 @@ import org.rajat.quickpick.presentation.feature.profile.components.PlaceholderSc
 import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
 import org.rajat.quickpick.presentation.navigation.Routes
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
+import org.rajat.quickpick.presentation.viewmodel.HomeViewModel
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
 
 @Composable
@@ -43,6 +44,7 @@ fun AppNavigation(
     navController: NavHostController,
 ) {
     val authViewModel: AuthViewModel = koinInject()
+    val homeViewModel : HomeViewModel = koinInject()
     val dataStore: LocalDataStore = koinInject()
     val refreshTokenManager: RefreshTokenManager = koinInject()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -77,10 +79,10 @@ fun AppNavigation(
                 navController.popBackStack()
             }
         ) { paddingValues ->
-            AppNavHost(navController, authViewModel, dataStore, refreshTokenManager, paddingValues)
+            AppNavHost(navController, authViewModel, homeViewModel, dataStore, refreshTokenManager, paddingValues)
         }
     } else {
-        AppNavHost(navController, authViewModel, dataStore, refreshTokenManager, PaddingValues())
+        AppNavHost(navController, authViewModel, homeViewModel, dataStore, refreshTokenManager, PaddingValues())
     }
 }
 
@@ -88,6 +90,7 @@ fun AppNavigation(
 private fun AppNavHost(
     navController: NavHostController,
     authViewModel: AuthViewModel,
+    homeViewModel: HomeViewModel,
     dataStore: LocalDataStore,
     refreshTokenManager: RefreshTokenManager,
     appPaddingValues: PaddingValues
@@ -169,7 +172,9 @@ private fun AppNavHost(
 
         composable(Routes.Home.route) {
             HomeScreen(navController = navController,
-                paddingValues = appPaddingValues)
+                paddingValues = appPaddingValues,
+                homeViewModel = homeViewModel
+            )
         }
 
         composable("vendor_detail/{vendorId}") {
