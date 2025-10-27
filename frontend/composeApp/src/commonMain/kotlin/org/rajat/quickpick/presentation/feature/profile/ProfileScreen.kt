@@ -15,20 +15,20 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.rajat.quickpick.presentation.components.BasePage
+import org.rajat.quickpick.presentation.feature.profile.components.LogoutConfirmationDialog
 import org.rajat.quickpick.presentation.feature.profile.components.ProfileHeader
 import org.rajat.quickpick.presentation.feature.profile.components.ProfileMenuItem
-import org.rajat.quickpick.presentation.theme.AppTheme
+import org.rajat.quickpick.presentation.navigation.Routes
 
 @Composable
 fun ProfileScreen(
@@ -39,14 +39,16 @@ fun ProfileScreen(
     val userEmail = "Loremipsum@email.com"
     val profileUrl = ""
 
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
-        Column(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
+
         ProfileHeader(
             userName = userName,
             userEmail = userEmail,
@@ -64,7 +66,7 @@ fun ProfileScreen(
                     text = "My Profile",
                     icon = Icons.Default.Person,
                     onClick = {
-
+                        navController.navigate(Routes.MyProfile.route)
                     }
                 )
             }
@@ -72,21 +74,18 @@ fun ProfileScreen(
                 ProfileMenuItem(
                     text = "Payment Methods",
                     icon = Icons.Default.ShoppingCart,
-                    onClick = { /* TODO: Handle click */ }
-                )
-            }
-            item {
-                ProfileMenuItem(
-                    text = "My Reviews",
-                    icon = Icons.Default.Star,
-                    onClick = { /* TODO: Handle click */ }
+                    onClick = {
+
+                    }
                 )
             }
             item {
                 ProfileMenuItem(
                     text = "Contact Us",
                     icon = Icons.Outlined.Call,
-                    onClick = { /* TODO: Handle click */ }
+                    onClick = {
+                        navController.navigate(Routes.ContactUs.route)
+                    }
                 )
             }
             item {
@@ -100,7 +99,9 @@ fun ProfileScreen(
                 ProfileMenuItem(
                     text = "Settings",
                     icon = Icons.Default.Settings,
-                    onClick = { /* TODO: Handle click */ }
+                    onClick = {
+                        navController.navigate(Routes.Settings.route)
+                    }
                 )
             }
         }
@@ -110,34 +111,25 @@ fun ProfileScreen(
         ProfileMenuItem(
             text = "Log Out",
             icon = Icons.AutoMirrored.Filled.ExitToApp,
-            onClick = { /* TODO: Handle click */ },
+            onClick = {
+                // --- SHOW THE DIALOG ---
+                showLogoutDialog = true
+            },
             isLogout = true
         )
     }
-}
-// Preview for Profile Screen
-@Preview(showBackground = true, name = "Profile Screen Light")
-@Composable
-fun ProfileScreenLightPreview() {
-    AppTheme(darkTheme = false) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            ProfileScreen(
-                navController = rememberNavController(),
-                PaddingValues(0.dp)
-            )
-        }
-    }
-}
 
-    @Preview(showBackground = true, name = "Profile Screen Dark")
-    @Composable
-    fun ProfileScreenDarkPreview() {
-        AppTheme(darkTheme = true) {
-            Surface(modifier = Modifier.fillMaxSize()) {
-                ProfileScreen(
-                    navController = rememberNavController(),
-                    PaddingValues(0.dp)
-                )
+    //DIALOG COMPOSABLE
+    if (showLogoutDialog) {
+        LogoutConfirmationDialog(
+            onDismiss = {
+                showLogoutDialog = false // Hide dialog when dismissed
+            },
+            onConfirmLogout = {
+                showLogoutDialog = false
+//                navController.navigate(Routes.Welcome.route)
+                //Logout logic here
             }
-        }
+        )
     }
+}

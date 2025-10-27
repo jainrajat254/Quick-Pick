@@ -13,10 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.rajat.quickpick.presentation.navigation.Routes
-import org.rajat.quickpick.presentation.theme.AppTheme
 
 @Composable
 fun ReviewOrderConfirmationScreen(
@@ -72,33 +69,6 @@ fun ReviewOrderConfirmationScreen(
             )
         ) {
             Text("Back to Orders", fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-// --- PREVIEWS ---
-@Preview(showBackground = true, name = "Review Confirm Light")
-@Composable
-fun ReviewSubmittedScreenLightPreview() {
-    AppTheme(darkTheme = false) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            ReviewOrderConfirmationScreen(
-                navController = rememberNavController(),
-                PaddingValues(0.dp)
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Review Confirm Dark")
-@Composable
-fun ReviewSubmittedScreenDarkPreview() {
-    AppTheme(darkTheme = true) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            ReviewOrderConfirmationScreen(
-                navController = rememberNavController(),
-                PaddingValues(0.dp)
-            )
         }
     }
 }

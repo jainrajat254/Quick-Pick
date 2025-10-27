@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,14 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.GetOrderByIdResponse
-import org.rajat.quickpick.presentation.components.BasePage
 import org.rajat.quickpick.presentation.feature.myorders.components.OrderList
+import org.rajat.quickpick.presentation.feature.myorders.components.OrderTab
 import org.rajat.quickpick.presentation.feature.myorders.components.StyledTabRow
 import org.rajat.quickpick.presentation.navigation.Routes
-import org.rajat.quickpick.presentation.theme.AppTheme
 
 
 @Composable
@@ -124,22 +120,3 @@ fun MyOrderScreen(
         }
 
 }
-
-//PREVIEW
-@Preview(showBackground = true)
-@Composable
-fun MyOrderScreenPreview() {
-    AppTheme(darkTheme = false) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            MyOrderScreen(
-                activeOrders = emptyList(),
-                completedOrders = dummyCompletedOrders,
-                cancelledOrders = dummyCancelledOrders,
-                isLoading = false,
-                navController = rememberNavController(),
-                PaddingValues(0.dp)
-            )
-        }
-    }
-}
-

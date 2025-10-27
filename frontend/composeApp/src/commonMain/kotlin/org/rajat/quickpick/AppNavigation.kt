@@ -8,6 +8,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import org.koin.compose.koinInject
+import org.rajat.quickpick.data.dummy.allOrders
+import org.rajat.quickpick.data.dummy.dummyActiveOrders
+import org.rajat.quickpick.data.dummy.dummyCancelledOrders
+import org.rajat.quickpick.data.dummy.dummyCompletedOrders
+import org.rajat.quickpick.data.dummy.profile
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.components.BasePage
 import org.rajat.quickpick.presentation.feature.SplashScreen
@@ -27,11 +32,12 @@ import org.rajat.quickpick.presentation.feature.myorders.OrderCancelledConfirmat
 import org.rajat.quickpick.presentation.feature.myorders.OrderDetailScreen
 import org.rajat.quickpick.presentation.feature.myorders.OrderReviewScreen
 import org.rajat.quickpick.presentation.feature.myorders.ReviewOrderConfirmationScreen
-import org.rajat.quickpick.presentation.feature.myorders.allOrders
-import org.rajat.quickpick.presentation.feature.myorders.dummyActiveOrders
-import org.rajat.quickpick.presentation.feature.myorders.dummyCancelledOrders
-import org.rajat.quickpick.presentation.feature.myorders.dummyCompletedOrders
+import org.rajat.quickpick.presentation.feature.profile.ChangePasswordScreen
+import org.rajat.quickpick.presentation.feature.profile.ContactUsScreen
+import org.rajat.quickpick.presentation.feature.profile.MyProfileScreen
+import org.rajat.quickpick.presentation.feature.profile.NotificationSettingsScreen
 import org.rajat.quickpick.presentation.feature.profile.ProfileScreen
+import org.rajat.quickpick.presentation.feature.profile.SettingsScreen
 import org.rajat.quickpick.presentation.feature.profile.components.PlaceholderScreen
 import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
 import org.rajat.quickpick.presentation.navigation.Routes
@@ -67,7 +73,7 @@ fun AppNavigation(
     val showBasePage = currentRoute !in screensWithoutBasePage
 
     if (showBasePage) {
-        // --- MAIN APP (with Scaffold, TopBar, BottomBar) ---
+        //MAIN APP (with Scaffold, TopBar, BottomBar)
         BasePage(
             currentRoute = currentRoute,
             onNavigate = { route ->
@@ -248,6 +254,37 @@ private fun AppNavHost(
             ProfileScreen(
                 navController = navController,
                 paddingValues = appPaddingValues
+            )
+        }
+        composable(Routes.MyProfile.route) {
+            MyProfileScreen(navController=navController,
+                paddingValues = appPaddingValues,
+                isLoading = false,
+                profile = profile
+            )
+        }
+        composable(Routes.ContactUs.route) {
+            ContactUsScreen(
+                navController=navController,
+                paddingValues = appPaddingValues,
+            )
+        }
+        composable(Routes.ChangePassword.route){
+            ChangePasswordScreen(
+                paddingValues = appPaddingValues,
+                isLoading = false,
+                navController = navController
+            )
+        }
+        composable(Routes.NotificationSetting.route){
+            NotificationSettingsScreen(
+                paddingValues = appPaddingValues,
+                navController=navController)
+        }
+        composable(Routes.Settings.route){
+            SettingsScreen(
+                paddingValues = appPaddingValues,
+                navController = navController
             )
         }
     }

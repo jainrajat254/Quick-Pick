@@ -13,19 +13,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import org.rajat.quickpick.presentation.feature.myorders.format
 
 @Composable
 fun OrderCardHeader(title: String, totalAmount: Double, itemCount: Int) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top // Align to top
+        verticalAlignment = Alignment.Top
     ) {
         // Title
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            // --- THEME UPDATE: Use onSurface for text ---
             color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f),

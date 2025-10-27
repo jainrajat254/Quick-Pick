@@ -1,5 +1,7 @@
 package org.rajat.quickpick.presentation.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -14,10 +16,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.presentation.navigation.BottomNavItem
 import org.rajat.quickpick.presentation.navigation.Routes
+import quickpick.composeapp.generated.resources.Res
+import quickpick.composeapp.generated.resources.bgrem
+import quickpick.composeapp.generated.resources.bgremlight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,11 +92,32 @@ fun BasePage(
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(
-                            text = getScreenTitle(currentRoute),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+
+                            if(!showBackButton){
+                                Icon(
+                                    painter = if (isSystemInDarkTheme()) {
+                                        painterResource(resource = Res.drawable.bgremlight)
+                                    } else {
+
+                                        painterResource(resource = Res.drawable.bgrem)
+                                    },
+                                    contentDescription = null,
+                                    modifier = Modifier.size(35.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.width(5.dp))
+                            }
+                            Text(
+                                text = getScreenTitle(currentRoute),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 28.sp,
+                            )
+                        }
                     },
                     navigationIcon = {
                         if (showBackButton) {
@@ -97,23 +125,6 @@ fun BasePage(
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Back"
-                                )
-                            }
-                        }else {
-                            IconButton(
-                                onClick = {
-                                    scope.launch {
-                                        if (drawerState.isClosed) {
-                                            drawerState.open()
-                                        } else {
-                                            drawerState.close()
-                                        }
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Menu,
-                                    contentDescription = "Menu"
                                 )
                             }
                         }
@@ -341,13 +352,30 @@ private fun getScreenTitle(route: String): String {
         "orders" -> "My Orders"
         "profile" -> "Profile"
         "order_details/{orderId}" -> "Order Details"
-        "my_profile" -> "My Profile"
         "my_orders" -> "My Orders"
         "review_order/{order_Id}" -> "Review Order"
         "cancel_order/{orderId}" -> "Cancel Order"
+        "my_profile" -> "My Profile"
+        "contact_us" -> "Get In Touch"
+        "change_password"->"Change Password"
+        "notification_setting"->"Notification Setting"
+        "settings"->"Settings"
+
+
         else -> "QuickPick"
     }
 }
+//data object ReviewOrder : Routes("review_order/{orderId}") {
+//    fun createRoute(orderId: String) = "review_order/$orderId"
+//}
+//data object CancelOrderConfirmation : Routes("cancel_order_confirmation")
+//data object ReviewOrderConfirmation : Routes("review_order_confirmation")
+//data object MyProfile : Routes("my_profile")
+//data object ContactUs : Routes("contact_us")
+////    data object AboutUs : Routes("about_us")
+//data object ChangePassword : Routes("change_password")
+//data object NotificationSetting : Routes("notification_setting")
+//data object Settings : Routes("settings")
 
 
 
