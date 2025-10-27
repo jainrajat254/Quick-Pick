@@ -1,15 +1,14 @@
 package org.rajat.quickpick.presentation.feature.home
 
-import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil3.util.Logger
 import org.rajat.quickpick.domain.modal.search.GetAllVendorsInCollegeResponse
 import org.rajat.quickpick.presentation.components.CustomLoader
+import org.rajat.quickpick.presentation.components.ErrorState
 import org.rajat.quickpick.presentation.feature.home.components.*
 import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
 import org.rajat.quickpick.presentation.viewmodel.HomeViewModel
@@ -20,14 +19,13 @@ import org.rajat.quickpick.utils.toast.showToast
 fun HomeScreen(
     navController: NavController,
     paddingValues: PaddingValues,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    vendorViewModel: org.rajat.quickpick.presentation.viewmodel.VendorViewModel
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedVendorId by remember { mutableStateOf<String?>(null) }
-
-    val logger = co.touchlab.kermit.Logger.withTag("HOME_SCREEN")
 
     val vendorsState by homeViewModel.vendorsInCollegeState.collectAsState()
+    val selectedVendorId by homeViewModel.selectedVendorId.collectAsState()
 
     LaunchedEffect(Unit) {
         homeViewModel.getVendorsInCollege()
@@ -46,8 +44,11 @@ fun HomeScreen(
     if (selectedVendorId != null) {
         VendorScreen(
             navController = navController,
+            vendorViewModel = vendorViewModel,
             vendorId = selectedVendorId!!,
-            onBackClick = { selectedVendorId = null }
+            onBackClick = {
+                homeViewModel.setSelectedVendorId(null)
+            }
         )
         return
     }
@@ -65,7 +66,7 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         )
 
-        when(vendorsState){
+        when (vendorsState) {
             is UiState.Loading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -90,16 +91,14 @@ fun HomeScreen(
             }
 
             is UiState.Success -> {
-
                 val vendors = (vendorsState as UiState.Success<GetAllVendorsInCollegeResponse>).data
 
                 VendorsList(
                     vendors = vendors.filterNotNull(),
                     onVendorClick = { vendorId ->
-                        selectedVendorId = vendorId
+                        homeViewModel.setSelectedVendorId(vendorId)
                     },
                     modifier = Modifier.fillMaxSize()
-
                 )
             }
         }

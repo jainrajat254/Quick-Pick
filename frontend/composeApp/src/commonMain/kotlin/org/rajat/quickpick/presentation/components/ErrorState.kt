@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.feature.home.components
+package org.rajat.quickpick.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
