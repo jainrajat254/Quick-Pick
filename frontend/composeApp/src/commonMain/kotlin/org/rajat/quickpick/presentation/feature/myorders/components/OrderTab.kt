@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.feature.myorders
+package org.rajat.quickpick.presentation.feature.myorders.components
 
 import org.rajat.quickpick.domain.modal.ordermanagement.OrderStatus
 

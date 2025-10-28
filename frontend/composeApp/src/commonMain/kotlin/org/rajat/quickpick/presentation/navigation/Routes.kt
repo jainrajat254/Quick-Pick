@@ -30,4 +30,10 @@ sealed class Routes(val route: String) {
     }
     data object CancelOrderConfirmation : Routes("cancel_order_confirmation")
     data object ReviewOrderConfirmation : Routes("review_order_confirmation")
+    data object MyProfile : Routes("my_profile")
+    data object ContactUs : Routes("contact_us")
+//    data object AboutUs : Routes("about_us")
+    data object ChangePassword : Routes("change_password")
+    data object NotificationSetting : Routes("notification_setting")
+    data object Settings : Routes("settings")
 }

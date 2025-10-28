@@ -17,7 +17,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,12 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.rajat.quickpick.presentation.components.BasePage
 import org.rajat.quickpick.presentation.navigation.Routes
 import org.rajat.quickpick.presentation.theme.AppColors
-import org.rajat.quickpick.presentation.theme.AppTheme
 
 @Composable
 fun OrderCancelledConfirmationScreen(
@@ -100,31 +95,4 @@ fun OrderCancelledConfirmationScreen(
         )
     }
 
-}
-
-// PREVIEWS
-@Preview(showBackground = true, name = "Cancel Confirm Light")
-@Composable
-fun OrderCancelledConfirmationScreenLightPreview() {
-    AppTheme(darkTheme = false) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            OrderCancelledConfirmationScreen(
-                navController = rememberNavController(),
-                PaddingValues(0.dp)
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Cancel Confirm Dark")
-@Composable
-fun OrderCancelledConfirmationScreenDarkPreview() {
-    AppTheme(darkTheme = true) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            OrderCancelledConfirmationScreen(
-                navController = rememberNavController(),
-                PaddingValues(0.dp)
-            )
-        }
-    }
 }

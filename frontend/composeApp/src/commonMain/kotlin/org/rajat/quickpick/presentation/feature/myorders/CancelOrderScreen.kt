@@ -3,22 +3,18 @@ package org.rajat.quickpick.presentation.feature.myorders
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.launch // Needed for Snackbar
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.launch
+import org.rajat.quickpick.presentation.feature.myorders.components.ReasonRow
 import org.rajat.quickpick.presentation.navigation.Routes
-import org.rajat.quickpick.presentation.theme.AppTheme
 
 @Composable
 fun CancelOrderScreen(
@@ -36,10 +32,8 @@ fun CancelOrderScreen(
     var selectedReason by remember { mutableStateOf<String?>(null) }
     var otherReasonText by remember { mutableStateOf("") }
     val isOtherSelected = selectedReason == "Others"
-
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -154,7 +148,6 @@ fun CancelOrderScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
-
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
@@ -173,82 +166,3 @@ fun CancelOrderScreen(
     }
 }
 
-@Composable
-private fun ReasonRow(
-    text: String,
-    isSelected: Boolean,
-    onSelected: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .selectable(
-                selected = isSelected,
-                onClick = { onSelected() }
-            )
-            .padding(vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RadioButton(
-            selected = isSelected,
-            onClick = { onSelected() },
-            colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colorScheme.primary,
-                unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-
-//PREVIEWS
-@Preview(showBackground = true, name = "Cancel Order Light")
-@Composable
-fun CancelOrderScreenLightPreview() {
-    AppTheme(darkTheme = false) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            CancelOrderScreen(
-                orderId = "QKPK123",
-                isLoading = false,
-                navController = rememberNavController(),
-                PaddingValues(0.dp)
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Cancel Order Dark")
-@Composable
-fun CancelOrderScreenDarkPreview() {
-    AppTheme(darkTheme = true) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            CancelOrderScreen(
-                orderId = "QKPK123",
-                isLoading = false,
-                navController = rememberNavController(),
-                PaddingValues(0.dp)
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Cancel Order Loading")
-@Composable
-fun CancelOrderScreenLoadingPreview() {
-    AppTheme(darkTheme = true) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            CancelOrderScreen(
-                orderId = "QKPK123",
-                isLoading = true,
-                navController = rememberNavController(),
-                PaddingValues(0.dp)
-            )
-        }
-    }
-}
