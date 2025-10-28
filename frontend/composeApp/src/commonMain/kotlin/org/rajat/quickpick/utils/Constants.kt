@@ -2,9 +2,10 @@ package org.rajat.quickpick.utils
 
 object Constants {
     const val DATASTORE_FILE_NAME = "quick_pick.preferences_pb"
-    const val BASE_URL = "https://0771701c2b50.ngrok-free.app"
+//    const val BASE_URL = "https://0771701c2b50.ngrok-free.app"
+    const val BASE_URL = "https://jessika-interganglionic-goggly.ngrok-free.dev"
 
-    object Endpoints {
+object Endpoints {
         // Auth
         const val USER_LOGIN = "/api/auth/login/user"
         const val VENDOR_LOGIN = "/api/auth/login/vendor"
@@ -72,5 +73,11 @@ object Constants {
         const val GET_MY_REVIEW_COUNT = "/api/reviews/user/count"
         const val HAS_USER_REVIEWED_ORDER = "/api/reviews/order/" // + {orderId} + "/exists"
 
+        // Search endpoints
+        const val SEARCH_VENDORS = "/api/search/vendors"
+        const val SEARCH_VENDORS_COLLEGE = "/api/search/vendors/college"
+        const val SEARCH_VENDOR_BY_ID = "/api/search/vendors/" // + {vendorId}
+        const val SEARCH_MENU_ITEMS = "/api/search/menu-items"
+        const val STRICT_SEARCH_MENU_ITEMS = "/api/search/menu-items/strict-search"
     }
 }
