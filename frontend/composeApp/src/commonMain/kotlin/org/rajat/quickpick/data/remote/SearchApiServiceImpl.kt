@@ -10,20 +10,20 @@ class SearchApiServiceImpl(private val httpClient: HttpClient) : SearchApiServic
     override suspend fun searchVendors(query: String?): SearchVendorsResponse {
         val queryParams = if (!query.isNullOrBlank()) mapOf("query" to query) else emptyMap()
         return httpClient.safeGet(
-            endpoint = Constants.Endpoints.SEARCH_VENDORS,
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.SEARCH_VENDORS}",
             queryParams = queryParams
         )
     }
 
     override suspend fun getAllVendorsInCollege(): GetAllVendorsInCollegeResponse {
         return httpClient.safeGet(
-            endpoint = Constants.Endpoints.SEARCH_VENDORS_COLLEGE
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.SEARCH_VENDORS_COLLEGE}"
         )
     }
 
     override suspend fun getVendorById(vendorId: String): GetVendorByIDResponse {
         return httpClient.safeGet(
-            endpoint = Constants.Endpoints.SEARCH_VENDOR_BY_ID + vendorId
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.SEARCH_VENDOR_BY_ID + vendorId}"
         )
     }
 
@@ -52,7 +52,7 @@ class SearchApiServiceImpl(private val httpClient: HttpClient) : SearchApiServic
             put("size", size.toString())
         }
         return httpClient.safeGet(
-            endpoint = Constants.Endpoints.SEARCH_MENU_ITEMS,
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.SEARCH_MENU_ITEMS}",
             queryParams = queryParams
         )
     }
@@ -82,7 +82,7 @@ class SearchApiServiceImpl(private val httpClient: HttpClient) : SearchApiServic
             put("size", size.toString())
         }
         return httpClient.safeGet(
-            endpoint = Constants.Endpoints.STRICT_SEARCH_MENU_ITEMS,
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.STRICT_SEARCH_MENU_ITEMS}",
             queryParams = queryParams
         )
     }
