@@ -4,6 +4,7 @@ import com.rajat.quickpick.dto.auth.AuthResponseDto;
 import com.rajat.quickpick.dto.auth.ChangePasswordDto;
 import com.rajat.quickpick.dto.auth.ForgotPasswordDto;
 import com.rajat.quickpick.dto.auth.ResetPasswordDto;
+import com.rajat.quickpick.dto.auth.TokensDto;
 import com.rajat.quickpick.dto.user.RegisterUserDto;
 import com.rajat.quickpick.dto.vendor.RegisterVendor;
 import com.rajat.quickpick.exception.BadRequestException;
@@ -181,8 +182,16 @@ public class AuthService {
                 RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId(), user.getEmail(), user.getRole().name());
 
                 AuthResponseDto response = new AuthResponseDto();
-                response.setToken(token);
-                response.setRefreshToken(refreshToken.getToken());
+
+                // Create tokens object
+                TokensDto tokens = TokensDto.builder()
+                        .accessToken(token)
+                        .refreshToken(refreshToken.getToken())
+                        .expiresIn(Secrets.JWT_EXPIRATION / 1000) // Convert milliseconds to seconds
+                        .tokenType("Bearer")
+                        .build();
+
+                response.setTokens(tokens);
                 response.setUserId(user.getId());
                 response.setEmail(user.getEmail());
                 response.setName(user.getFullName());
@@ -204,8 +213,16 @@ public class AuthService {
                 RefreshToken refreshToken = refreshTokenService.createRefreshToken(vendor.getId(), vendor.getEmail(), vendor.getRole().name());
 
                 AuthResponseDto response = new AuthResponseDto();
-                response.setToken(token);
-                response.setRefreshToken(refreshToken.getToken());
+
+                // Create tokens object
+                TokensDto tokens = TokensDto.builder()
+                        .accessToken(token)
+                        .refreshToken(refreshToken.getToken())
+                        .expiresIn(Secrets.JWT_EXPIRATION / 1000) // Convert milliseconds to seconds
+                        .tokenType("Bearer")
+                        .build();
+
+                response.setTokens(tokens);
                 response.setUserId(vendor.getId());
                 response.setEmail(vendor.getEmail());
                 response.setName(vendor.getVendorName());
@@ -443,31 +460,41 @@ public class AuthService {
     }
 
     public AuthResponseDto refreshToken(String refreshTokenValue) {
+        // Generate new access token
         String newAccessToken = refreshTokenService.generateNewAccessToken(refreshTokenValue);
 
-        RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenValue);
+        // Rotate refresh token (generate new one, revoke old one)
+        RefreshToken newRefreshToken = refreshTokenService.rotateRefreshToken(refreshTokenValue);
 
         AuthResponseDto response = new AuthResponseDto();
-        response.setToken(newAccessToken);
-        response.setRefreshToken(refreshTokenValue);
-        response.setUserId(refreshToken.getUserId());
-        response.setEmail(refreshToken.getUserEmail());
+
+        // Create tokens object with new access and refresh tokens
+        TokensDto tokens = TokensDto.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken.getToken())
+                .expiresIn(Secrets.JWT_EXPIRATION / 1000) // Convert milliseconds to seconds
+                .tokenType("Bearer")
+                .build();
+
+        response.setTokens(tokens);
+        response.setUserId(newRefreshToken.getUserId());
+        response.setEmail(newRefreshToken.getUserEmail());
         response.setMessage("Token refreshed successfully");
 
         Role userRole;
         try {
-            userRole = Role.valueOf(refreshToken.getUserType());
+            userRole = Role.valueOf(newRefreshToken.getUserType());
         } catch (IllegalArgumentException e) {
             throw new BadRequestException("Invalid user type in refresh token");
         }
 
         if (Role.STUDENT.equals(userRole)) {
-            User user = userRepository.findById(refreshToken.getUserId())
+            User user = userRepository.findById(newRefreshToken.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("User not found"));
             response.setName(user.getFullName());
             response.setRole(user.getRole());
         } else if (Role.VENDOR.equals(userRole)) {
-            Vendor vendor = vendorRepository.findById(refreshToken.getUserId())
+            Vendor vendor = vendorRepository.findById(newRefreshToken.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
             response.setName(vendor.getVendorName());
             response.setRole(vendor.getRole());
