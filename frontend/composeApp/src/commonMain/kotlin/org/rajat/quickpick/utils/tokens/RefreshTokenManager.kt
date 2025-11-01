@@ -2,7 +2,10 @@ package org.rajat.quickpick.utils.tokens
 
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.rajat.quickpick.data.local.LocalDataStore
+import org.rajat.quickpick.di.TokenProvider
+import org.rajat.quickpick.domain.modal.auth.RefreshTokenRequest
 import org.rajat.quickpick.domain.repository.AuthRepository
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -39,7 +42,40 @@ class RefreshTokenManager(
     }
 
     suspend fun refreshNow(): Boolean {
-        return false
-    }
+        return mutex.withLock {
+            try {
+                val refreshToken = localDataStore.getRefreshToken()
+                if (refreshToken.isNullOrEmpty()) {
+                    logger.e { "No refresh token available" }
+                    return@withLock false
+                }
 
+                logger.i { "Calling refresh token API..." }
+                val result = authRepository.refreshToken(RefreshTokenRequest(refreshToken = refreshToken))
+
+                result.fold(
+                    onSuccess = { response ->
+                        TokenProvider.token = response.tokens.accessToken
+                        localDataStore.saveToken(response.tokens.accessToken)
+                        localDataStore.saveRefreshToken(response.tokens.refreshToken)
+
+                        val expiryMillis = Clock.System.now().toEpochMilliseconds() + (response.tokens.expiresIn * 1000)
+                        localDataStore.saveTokenExpiryMillis(expiryMillis)
+
+                        localDataStore.saveId(response.userId)
+
+                        logger.i { "Token refreshed successfully. New expiry: $expiryMillis" }
+                        true
+                    },
+                    onFailure = { error ->
+                        logger.e { "Failed to refresh token: ${error.message}" }
+                        false
+                    }
+                )
+            } catch (e: Exception) {
+                logger.e(e) { "Exception during token refresh" }
+                false
+            }
+        }
+    }
 }

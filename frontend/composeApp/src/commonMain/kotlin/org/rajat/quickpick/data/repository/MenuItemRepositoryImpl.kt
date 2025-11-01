@@ -1,6 +1,6 @@
 package org.rajat.quickpick.data.repository
 
-import org.rajat.quickpick.data.remote.MenuItemApiServiceImpl
+import org.rajat.quickpick.domain.service.MenuItemApiService
 import org.rajat.quickpick.domain.modal.menuitems.BulkDeleteMenuItemsResponse
 import org.rajat.quickpick.domain.modal.menuitems.CreateMenuItemRequest
 import org.rajat.quickpick.domain.modal.menuitems.CreateMenuItemResponse
@@ -20,7 +20,7 @@ import org.rajat.quickpick.domain.modal.menuitems.UpdateQuantityResponse
 import org.rajat.quickpick.domain.modal.menuitems.getMyMenuItemsPaginated.GetMyMenuItemsPaginatedResponse
 import org.rajat.quickpick.domain.repository.MenuItemRepository
 
-class MenuItemRepositoryImpl(private val menuItemApiService: MenuItemApiServiceImpl): MenuItemRepository {
+class MenuItemRepositoryImpl(private val menuItemApiService: MenuItemApiService): MenuItemRepository {
     override suspend fun createMenuItem(createMenuItemRequest: CreateMenuItemRequest): Result<CreateMenuItemResponse> {
         return runCatching {
             menuItemApiService.createMenuItem(createMenuItemRequest)

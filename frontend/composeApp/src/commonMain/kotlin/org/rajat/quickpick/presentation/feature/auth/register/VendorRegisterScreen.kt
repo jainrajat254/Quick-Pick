@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -63,7 +62,10 @@ import org.rajat.quickpick.utils.Validators
 import org.rajat.quickpick.utils.toast.showToast
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.registerbackground
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun VendorRegisterScreen(
     navController: NavController,
@@ -104,9 +106,16 @@ fun VendorRegisterScreen(
         when (vendorRegisterState) {
             is UiState.Success -> {
                 val response = (vendorRegisterState as UiState.Success<LoginVendorResponse>).data
-                TokenProvider.token = response.token
-                dataStore.saveToken(response.token ?: "")
-                dataStore.saveId(response.userId ?: "")
+                // Extract tokens from the new structure
+                TokenProvider.token = response.tokens.accessToken
+                dataStore.saveToken(response.tokens.accessToken)
+                dataStore.saveRefreshToken(response.tokens.refreshToken)
+
+                // Calculate and save token expiry time in milliseconds
+                val expiryMillis = Clock.System.now().toEpochMilliseconds() + (response.tokens.expiresIn * 1000)
+                dataStore.saveTokenExpiryMillis(expiryMillis)
+
+                dataStore.saveId(response.userId)
                 dataStore.saveVendorProfile(response)
                 showToast("Vendor Registered Successfully")
                 navController.navigate(Routes.Home.route) {

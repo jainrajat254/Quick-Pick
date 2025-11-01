@@ -7,6 +7,7 @@ import org.rajat.quickpick.di.modules.authModule
 import org.rajat.quickpick.di.modules.collegeModule
 import org.rajat.quickpick.di.modules.dataStoreModule
 import org.rajat.quickpick.di.modules.homeModule
+import org.rajat.quickpick.di.modules.menuItemModule
 import org.rajat.quickpick.di.modules.networkModule
 import org.rajat.quickpick.di.modules.profileModule
 import org.rajat.quickpick.di.modules.vendorModule
@@ -22,5 +23,6 @@ val quickPickModules = listOf(
     adminManagementModule,
     profileModule,
     homeModule,
-    vendorModule
+    vendorModule,
+    menuItemModule
 )
