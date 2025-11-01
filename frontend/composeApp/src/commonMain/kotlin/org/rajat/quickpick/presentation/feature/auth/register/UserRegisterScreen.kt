@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -61,7 +60,10 @@ import org.rajat.quickpick.utils.Validators
 import org.rajat.quickpick.utils.toast.showToast
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.registerbackground
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun UserRegisterScreen(
     navController: NavController,
@@ -97,9 +99,14 @@ fun UserRegisterScreen(
         when (userRegisterState) {
             is UiState.Success -> {
                 val response = (userRegisterState as UiState.Success<LoginUserResponse>).data
-                TokenProvider.token = response.token
-                dataStore.saveToken(response.token ?: "")
-                dataStore.saveId(response.userId ?: "")
+                TokenProvider.token = response.tokens.accessToken
+                dataStore.saveToken(response.tokens.accessToken)
+                dataStore.saveRefreshToken(response.tokens.refreshToken)
+
+                val expiryMillis = Clock.System.now().toEpochMilliseconds() + (response.tokens.expiresIn * 1000)
+                dataStore.saveTokenExpiryMillis(expiryMillis)
+
+                dataStore.saveId(response.userId)
                 dataStore.saveUserProfile(response)
                 showToast("User Registered Successfully")
                 navController.navigate(Routes.Home.route) {

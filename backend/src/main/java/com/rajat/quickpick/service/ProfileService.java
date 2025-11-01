@@ -38,7 +38,7 @@ public class ProfileService {
         response.setEmail(user.getEmail());
         response.setPhone(user.getPhone());
         response.setCollegeName(user.getCollegeName());
-        response.setProfileImageUrl(user.getProfileImageUrl());
+        response.setProfileImageUrl(user.getProfileImageUrl() != null ? user.getProfileImageUrl() : "");
         response.setRole(user.getRole());
         response.setPhoneVerified(user.isPhoneVerified());
         response.setEmailVerified(user.isEmailVerified());
@@ -60,7 +60,7 @@ public class ProfileService {
         response.setCollegeName(vendor.getCollegeName());
         response.setVendorDescription(vendor.getVendorDescription());
         response.setFoodCategories(vendor.getFoodCategories());
-        response.setProfileImageUrl(vendor.getProfileImageUrl());
+        response.setProfileImageUrl(vendor.getProfileImageUrl() != null ? vendor.getProfileImageUrl() : "");
         response.setRole(vendor.getRole());
         response.setPhoneVerified(vendor.isPhoneVerified());
         response.setEmailVerified(vendor.isEmailVerified());

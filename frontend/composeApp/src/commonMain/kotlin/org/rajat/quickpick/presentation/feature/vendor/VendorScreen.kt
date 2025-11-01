@@ -22,6 +22,7 @@ import org.rajat.quickpick.presentation.feature.vendor.components.CategoryCard
 import org.rajat.quickpick.presentation.feature.vendor.components.OffersSection
 import org.rajat.quickpick.presentation.feature.vendor.components.VendorHeaderSection
 import org.rajat.quickpick.presentation.feature.vendor.components.VendorNotFound
+import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
@@ -32,6 +33,7 @@ import org.rajat.quickpick.utils.toast.showToast
 fun VendorScreen(
     navController: NavController,
     vendorViewModel: VendorViewModel,
+    menuItemViewModel: MenuItemViewModel,
     vendorId: String,
     onBackClick: () -> Unit = { navController.navigateUp() }
 ) {
@@ -55,6 +57,7 @@ fun VendorScreen(
     if (selectedCategoryId != null) {
         MenuItemScreen(
             navController = navController,
+            menuItemViewModel = menuItemViewModel,
             vendorId = vendorId,
             category = selectedCategoryId!!,
             onBackClick = {

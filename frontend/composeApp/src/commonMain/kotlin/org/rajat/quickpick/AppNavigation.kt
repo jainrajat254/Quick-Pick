@@ -44,6 +44,7 @@ import org.rajat.quickpick.presentation.navigation.Routes
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.presentation.viewmodel.HomeViewModel
 import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
+import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
 
 @Composable
@@ -53,6 +54,7 @@ fun AppNavigation(
     val authViewModel: AuthViewModel = koinInject()
     val homeViewModel: HomeViewModel = koinInject()
     val vendorViewModel: VendorViewModel = koinInject()
+    val menuItemViewModel: MenuItemViewModel = koinInject()
     val dataStore: LocalDataStore = koinInject()
     val refreshTokenManager: RefreshTokenManager = koinInject()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -87,10 +89,10 @@ fun AppNavigation(
                 navController.popBackStack()
             }
         ) { paddingValues ->
-            AppNavHost(navController, authViewModel, homeViewModel, vendorViewModel, dataStore, refreshTokenManager, paddingValues)
+            AppNavHost(navController, authViewModel, homeViewModel, vendorViewModel, menuItemViewModel, dataStore, refreshTokenManager, paddingValues)
         }
     } else {
-        AppNavHost(navController, authViewModel, homeViewModel, vendorViewModel, dataStore, refreshTokenManager, PaddingValues())
+        AppNavHost(navController, authViewModel, homeViewModel, vendorViewModel, menuItemViewModel, dataStore, refreshTokenManager, PaddingValues())
     }
 }
 
@@ -100,6 +102,7 @@ private fun AppNavHost(
     authViewModel: AuthViewModel,
     homeViewModel: HomeViewModel,
     vendorViewModel: org.rajat.quickpick.presentation.viewmodel.VendorViewModel,
+    menuItemViewModel: org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel,
     dataStore: LocalDataStore,
     refreshTokenManager: RefreshTokenManager,
     appPaddingValues: PaddingValues
@@ -184,7 +187,8 @@ private fun AppNavHost(
                 navController = navController,
                 paddingValues = appPaddingValues,
                 homeViewModel = homeViewModel,
-                vendorViewModel = vendorViewModel
+                vendorViewModel = vendorViewModel,
+                menuItemViewModel = menuItemViewModel
             )
         }
 
@@ -192,6 +196,7 @@ private fun AppNavHost(
             VendorScreen(
                 navController = navController,
                 vendorViewModel = vendorViewModel,
+                menuItemViewModel = menuItemViewModel,
                 vendorId = "v1"
             )
         }

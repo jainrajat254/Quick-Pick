@@ -118,4 +118,19 @@ public class RefreshTokenService {
     public void deleteExpiredTokens() {
         refreshTokenRepository.deleteByExpiryDateBefore(LocalDateTime.now());
     }
+
+    public RefreshToken rotateRefreshToken(String oldTokenValue) {
+        RefreshToken oldToken = findByToken(oldTokenValue);
+
+        if (oldToken.isRevoked()) {
+            throw new BadRequestException("Refresh token is revoked");
+        }
+
+        verifyExpiration(oldToken);
+
+        oldToken.setRevoked(true);
+        refreshTokenRepository.save(oldToken);
+
+        return createRefreshToken(oldToken.getUserId(), oldToken.getUserEmail(), oldToken.getUserType());
+    }
 }
