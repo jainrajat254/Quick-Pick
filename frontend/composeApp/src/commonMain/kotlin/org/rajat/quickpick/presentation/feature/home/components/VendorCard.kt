@@ -24,11 +24,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.rajat.quickpick.data.dummy.DummyData
-import org.rajat.quickpick.domain.modal.search.GetVendorByIDResponse
+import org.rajat.quickpick.domain.modal.search.Vendor
 
 @Composable
 fun VendorCard(
-    vendor: GetVendorByIDResponse,
+    vendor: Vendor,
     rating: DummyData.VendorRating?,
     modifier: Modifier = Modifier,
     onVendorClick: () -> Unit

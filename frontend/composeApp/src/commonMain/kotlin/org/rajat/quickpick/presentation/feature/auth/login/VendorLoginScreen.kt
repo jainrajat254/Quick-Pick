@@ -54,7 +54,10 @@ import org.rajat.quickpick.utils.Validators.isLoginFormValid
 import org.rajat.quickpick.utils.toast.showToast
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.burger
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun VendorLoginScreen(
     navController: NavController,
@@ -75,9 +78,14 @@ fun VendorLoginScreen(
         when (vendorLoginState) {
             is UiState.Success -> {
                 val response = (vendorLoginState as UiState.Success<LoginVendorResponse>).data
-                TokenProvider.token = response.token
-                dataStore.saveToken(response.token ?: "")
-                dataStore.saveId(response.userId ?: "")
+                TokenProvider.token = response.tokens.accessToken
+                dataStore.saveToken(response.tokens.accessToken)
+                dataStore.saveRefreshToken(response.tokens.refreshToken)
+
+                val expiryMillis = Clock.System.now().toEpochMilliseconds() + (response.tokens.expiresIn * 1000)
+                dataStore.saveTokenExpiryMillis(expiryMillis)
+
+                dataStore.saveId(response.userId)
                 dataStore.saveVendorProfile(response)
                 showToast("Vendor Signed In Successfully")
                 navController.navigate(Routes.Home.route) {

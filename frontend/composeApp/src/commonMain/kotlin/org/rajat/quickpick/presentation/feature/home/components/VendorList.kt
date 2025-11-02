@@ -11,11 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.rajat.quickpick.data.dummy.DummyData
 import org.rajat.quickpick.domain.modal.search.GetVendorByIDResponse
+import org.rajat.quickpick.domain.modal.search.Vendor
 
 
 @Composable
 fun VendorsList(
-    vendors: List<GetVendorByIDResponse>,
+    vendors: List<Vendor>,
     onVendorClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -26,7 +27,7 @@ fun VendorsList(
     ) {
         items(
             items = vendors,
-            key = { it.id ?: "unknown" }
+            key = { it.id }
         ) { vendor ->
             val rating = DummyData.getRatingByVendorId(vendor.id ?: "")
 

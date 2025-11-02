@@ -1,6 +1,6 @@
 package com.rajat.quickpick.service;
 
-import com.rajat.quickpick.dto.menu.MenuItemSearchDto;
+import com.rajat.quickpick.dto.menu.*;
 import com.rajat.quickpick.dto.vendor.*;
 import com.rajat.quickpick.dto.menu.MenuItemResponseDto;
 import com.rajat.quickpick.enums.VendorVerificationStatus;
@@ -204,7 +204,7 @@ public class SearchService {
         dto.setCollegeName(vendor.getCollegeName());
         dto.setVendorDescription(vendor.getVendorDescription());
         dto.setFoodCategories(vendor.getFoodCategories());
-        dto.setProfileImageUrl(vendor.getProfileImageUrl());
+        dto.setProfileImageUrl(vendor.getProfileImageUrl() != null ? vendor.getProfileImageUrl() : "");
         dto.setRole(vendor.getRole());
         dto.setPhoneVerified(vendor.isPhoneVerified());
         dto.setEmailVerified(vendor.isEmailVerified());
@@ -220,7 +220,7 @@ public class SearchService {
         dto.setPrice(menuItem.getPrice());
         dto.setQuantity(menuItem.getQuantity());
         dto.setCategory(menuItem.getCategory());
-        dto.setImageUrl(menuItem.getImageUrl());
+        dto.setImageUrl(menuItem.getImageUrl() != null ? menuItem.getImageUrl() : "");
         dto.setIsAvailable(menuItem.getIsAvailable());
         dto.setCreatedAt(menuItem.getCreatedAt());
         dto.setUpdatedAt(menuItem.getUpdatedAt());

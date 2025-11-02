@@ -13,12 +13,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
-import org.rajat.quickpick.domain.modal.menuitems.CreateMenuItemResponse
+import org.rajat.quickpick.domain.modal.menuitems.MenuItem
 
 
 @Composable
 fun MenuItemCard(
-    menuItem: CreateMenuItemResponse,
+    menuItem: MenuItem,
     onItemClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -88,7 +88,7 @@ fun MenuItemCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "₹${menuItem.price ?: 0.0}",
+                        text = "₹${menuItem.price}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -97,7 +97,6 @@ fun MenuItemCard(
 
 
                     if (menuItem.available == true) {
-                        //TODO: Change change button logic
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.End
@@ -117,7 +116,7 @@ fun MenuItemCard(
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
-//TODO: Show quantity in between if needed
+
                             Spacer(modifier = Modifier.width(8.dp))
                             FilledTonalIconButton(
                                 onClick = {  },
@@ -150,7 +149,7 @@ fun MenuItemCard(
                         }
                     }
                 }
-                }
             }
         }
     }
+}
