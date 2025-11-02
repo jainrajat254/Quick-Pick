@@ -30,7 +30,6 @@ fun ContactUsScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .background(MaterialTheme.colorScheme.surface)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         horizontalAlignment = Alignment.Start

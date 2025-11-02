@@ -17,8 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.rajat.quickpick.presentation.feature.profile.components.SettingComponentCard
 import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.preview.SettingsScreenPreview
 
 
 @Composable
@@ -31,10 +33,9 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxWidth()
             .padding(paddingValues)
-            .background(MaterialTheme.colorScheme.surface)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
-        horizontalAlignment = Alignment.Start,
+//        horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         SettingComponentCard(
@@ -52,4 +53,10 @@ fun SettingsScreen(
             }
         )
     }
+}
+
+@Composable
+@Preview
+fun com(){
+    SettingsScreenPreview()
 }

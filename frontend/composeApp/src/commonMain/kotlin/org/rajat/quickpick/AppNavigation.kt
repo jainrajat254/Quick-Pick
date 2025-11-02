@@ -13,6 +13,7 @@ import org.rajat.quickpick.data.dummy.dummyActiveOrders
 import org.rajat.quickpick.data.dummy.dummyCancelledOrders
 import org.rajat.quickpick.data.dummy.dummyCompletedOrders
 import org.rajat.quickpick.data.dummy.profile
+import org.rajat.quickpick.data.dummy.sampleItems1
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.components.BasePage
 import org.rajat.quickpick.presentation.feature.SplashScreen
@@ -25,6 +26,9 @@ import org.rajat.quickpick.presentation.feature.auth.onboarding.OnboardingScreen
 import org.rajat.quickpick.presentation.feature.auth.onboarding.WelcomeScreen
 import org.rajat.quickpick.presentation.feature.auth.register.UserRegisterScreen
 import org.rajat.quickpick.presentation.feature.auth.register.VendorRegisterScreen
+import org.rajat.quickpick.presentation.feature.cart.CartScreen
+import org.rajat.quickpick.presentation.feature.cart.CheckoutScreen
+import org.rajat.quickpick.presentation.feature.cart.OrderConfirmationScreen
 import org.rajat.quickpick.presentation.feature.home.HomeScreen
 import org.rajat.quickpick.presentation.feature.myorders.CancelOrderScreen
 import org.rajat.quickpick.presentation.feature.myorders.MyOrderScreen
@@ -34,6 +38,7 @@ import org.rajat.quickpick.presentation.feature.myorders.OrderReviewScreen
 import org.rajat.quickpick.presentation.feature.myorders.ReviewOrderConfirmationScreen
 import org.rajat.quickpick.presentation.feature.profile.ChangePasswordScreen
 import org.rajat.quickpick.presentation.feature.profile.ContactUsScreen
+import org.rajat.quickpick.presentation.feature.profile.HelpAndFaqsScreen
 import org.rajat.quickpick.presentation.feature.profile.MyProfileScreen
 import org.rajat.quickpick.presentation.feature.profile.NotificationSettingsScreen
 import org.rajat.quickpick.presentation.feature.profile.ProfileScreen
@@ -67,7 +72,8 @@ fun AppNavigation(
         Routes.UserRegister.route,
         Routes.VendorRegister.route,
         Routes.ReviewOrderConfirmation.route, // Confirmation screens often hide nav
-        Routes.CancelOrderConfirmation.route
+        Routes.CancelOrderConfirmation.route,
+        Routes.ConfirmOrder.route,
     )
 
     val showBasePage = currentRoute !in screensWithoutBasePage
@@ -283,6 +289,39 @@ private fun AppNavHost(
         }
         composable(Routes.Settings.route){
             SettingsScreen(
+                paddingValues = appPaddingValues,
+                navController = navController
+            )
+        }
+        composable(Routes.Cart.route) {
+            CartScreen(
+                paddingValues = appPaddingValues,
+                navController = navController,
+                cartItems = sampleItems1,
+                onQuantityChange = {_,_ ->
+                },
+                onRemoveItem = {},
+            )
+        }
+        composable(Routes.Checkout.route){
+            CheckoutScreen(
+                paddingValues = appPaddingValues,
+                navController = navController,
+                cartItems = sampleItems1,
+                totalAmount = 12.00,
+                isLoading = false
+                ,
+            )
+        }
+        composable(Routes.ConfirmOrder.route) {
+            OrderConfirmationScreen(
+                paddingValues = appPaddingValues,
+                navController = navController,
+                orderId = "Q123321UHS"
+            )
+        }
+        composable(Routes.HelpAndFaqs.route){
+            HelpAndFaqsScreen(
                 paddingValues = appPaddingValues,
                 navController = navController
             )

@@ -1,10 +1,16 @@
 package org.rajat.quickpick.data.dummy
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import org.rajat.quickpick.domain.modal.menuitems.CreateMenuItemResponse
 import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.GetOrderByIdResponse
 import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.OrderItemX
 import org.rajat.quickpick.domain.modal.profile.GetStudentProfileResponse
 import org.rajat.quickpick.domain.modal.search.GetVendorByIDResponse
+import org.rajat.quickpick.presentation.feature.cart.CartItem
+import org.rajat.quickpick.presentation.feature.profile.FaqItem
+import org.rajat.quickpick.presentation.feature.profile.components.FaqItem
+import org.rajat.quickpick.presentation.navigation.Routes
 
 object DummyData {
 
@@ -681,4 +687,42 @@ val profile = GetStudentProfileResponse(
     phoneVerified = false,
     emailVerified = false,
     role = "STUDENT"
+)
+
+
+//Order items
+val sampleItems1 = listOf<CartItem>(
+    CartItem("1", "Classic Burger", 12.00, 1, null),
+    CartItem("2", "Fries", 4.50, 2, null)
+)
+
+
+
+// Dummy data for the FAQ screen
+val dummyFaqList = listOf(
+    FaqItem(
+        id = 1,
+        question = "How do I place an order?",
+        answer = "To place an order, navigate to the Home screen, select a vendor, choose your items, and add them to your cart. Once you're ready, go to your cart and tap 'Proceed to Checkout'."
+    ),
+    FaqItem(
+        id = 2,
+        question = "How does 'Cash on Take Away' work?",
+        answer = "When you select 'Cash on Take Away', you don't need to pay online. Simply place your order, and you will pay in cash directly to the vendor when you pick up your food."
+    ),
+    FaqItem(
+        id = 3,
+        question = "How can I track my order?",
+        answer = "You can see the status of your order (e.g., Pending, Preparing, Ready for Pickup) in the 'My Orders' section of the app under the 'Active' tab."
+    ),
+    FaqItem(
+        id = 4,
+        question = "How do I cancel my order?",
+        answer = "You can cancel an order only if its status is still 'Pending'. Go to 'My Orders', find the active order, and tap on it to see the details. If available, a 'Cancel Order' button will be visible."
+    ),
+    FaqItem(
+        id = 5,
+        question = "What if I have an issue with my order?",
+        answer = "If you have any problems with your food, payment, or pickup, please visit the 'Contact Us' section in the profile menu to get in touch with our support team."
+    )
 )

@@ -42,7 +42,7 @@ fun VendorCard(
             pressedElevation = 4.dp
         ),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.inverseOnSurface
         ),
         shape = MaterialTheme.shapes.medium
     ) {

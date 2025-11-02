@@ -42,7 +42,7 @@ fun StoreInfoCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.inverseOnSurface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
