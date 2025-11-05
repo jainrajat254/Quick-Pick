@@ -279,10 +279,9 @@ private fun AppNavHost(
             )
         }
         composable(Routes.MyProfile.route) {
-            MyProfileScreen(navController=navController,
-                paddingValues = appPaddingValues,
-                isLoading = false,
-                profile = profile
+            MyProfileScreen(
+                navController = navController,
+                paddingValues = appPaddingValues
             )
         }
         composable(Routes.ContactUs.route) {
