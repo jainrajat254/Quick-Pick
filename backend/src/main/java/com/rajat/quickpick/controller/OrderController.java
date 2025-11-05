@@ -38,6 +38,14 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
+    @PostMapping("/from-cart")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<OrderResponseDto> createOrderFromCart(HttpServletRequest request) {
+        String userId = extractUserIdFromToken(request);
+        OrderResponseDto order = orderService.createOrderFromCart(userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(order);
+    }
+
     @GetMapping("/{orderId}")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<OrderResponseDto> getOrderById(@PathVariable String orderId,
@@ -55,12 +63,19 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/vendor/orders/pending")
+    @PreAuthorize("hasRole('VENDOR')")
+    public ResponseEntity<OrdersResponseDto> getPendingOrders(HttpServletRequest request) {
+        String vendorId = extractUserIdFromToken(request);
+        OrdersResponseDto response = (OrdersResponseDto) orderService.getPendingOrdersForVendor(vendorId);
+        return ResponseEntity.ok(response);
+    }
 
 
     @GetMapping("/my-orders/status/{status}")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<OrdersResponseDto> getMyOrdersByStatus(@PathVariable OrderStatus status,
-                                                                      HttpServletRequest request) {
+                                                                 HttpServletRequest request) {
         String userId = extractUserIdFromToken(request);
         OrdersResponseDto response = orderService.getOrdersByStatus(userId, status);
         return ResponseEntity.ok(response);
@@ -92,7 +107,7 @@ public class OrderController {
             @RequestParam(defaultValue = "20") int size,
             HttpServletRequest request) {
         String vendorId = extractUserIdFromToken(request);
-        Page<OrderResponseDto> orders = orderService.getVendorOrders(vendorId, page, size);
+        Page<OrderResponseDto> orders = orderService.getVendorOrdersPaginated(vendorId, page, size);
         return ResponseEntity.ok(orders);
     }
 
@@ -108,7 +123,7 @@ public class OrderController {
     @GetMapping("/vendor/orders/status/{status}")
     @PreAuthorize("hasRole('VENDOR')")
     public ResponseEntity<OrdersResponseDto> getVendorOrdersByStatus(@PathVariable OrderStatus status,
-                                                                          HttpServletRequest request) {
+                                                                     HttpServletRequest request) {
         String vendorId = extractUserIdFromToken(request);
         OrdersResponseDto response = orderService.getVendorOrdersByStatus(vendorId, status);
         return ResponseEntity.ok(response);

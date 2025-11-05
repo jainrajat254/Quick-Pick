@@ -20,8 +20,9 @@ import com.rajat.quickpick.dto.order.OrderNotificationDto;
 @Slf4j
 public class OrderNotificationService {
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final NotificationService notificationService;
+    private final WebSocketConnectionManager connectionManager;
 
     public void notifyNewOrder(Order order, Vendor vendor) {
         OrderNotificationDto notification = OrderNotificationDto.builder()
@@ -34,17 +35,30 @@ public class OrderNotificationService {
                 .timestamp(order.getCreatedAt())
                 .build();
 
+        boolean sentViaWebSocket = false;
+        if (connectionManager.isUserConnected(vendor.getId())) {
+            try {
+                messagingTemplate.convertAndSendToUser(
+                        vendor.getId(),
+                        "/queue/orders",
+                        notification
+                );
 
-        messagingTemplate.convertAndSendToUser(
-                vendor.getId(),
-                "/queue/orders",
-                notification
-        );
+                sentViaWebSocket = true;
+                log.info("Sent new order notification via WebSocket to vendor: {}", vendor.getId());
+            } catch (Exception e) {
+                log.error("Failed to send WebSocket notification to vendor: {}", vendor.getId(), e);
+            }
+        }
 
-        log.info("Sent new order notification to vendor: {}", vendor.getId());
+        if (!sentViaWebSocket) {
+            notificationService.sendOrderNotification(order, "ORDER_CREATED", vendor.getId(), "VENDOR");
+            log.info("Vendor {} is offline, sent FCM notification", vendor.getId());
+        }
     }
 
     public void notifyOrderStatusUpdate(Order order, User user) {
+        String templateKey = getTemplateKeyForStatus(order.getOrderStatus());
         String message = getStatusMessage(order.getOrderStatus());
 
         OrderNotificationDto notification = OrderNotificationDto.builder()
@@ -58,13 +72,22 @@ public class OrderNotificationService {
                 .build();
 
         if (user != null) {
-            messagingTemplate.convertAndSendToUser(
-                    user.getId(),
-                    "/queue/orders",
-                    notification
-            );
+            // Try WebSocket first
+            if (connectionManager.isUserConnected(user.getId())) {
+                try {
+                    messagingTemplate.convertAndSendToUser(
+                            user.getId(),
+                            "/queue/orders",
+                            notification
+                    );
+                    log.info("Sent order status update via WebSocket to user: {}", user.getId());
+                } catch (Exception e) {
+                    log.error("Failed to send WebSocket notification to user: {}", user.getId(), e);
+                }
+            }
 
-            log.info("Sent order status update to user: {} for order: {}", user.getId(), order.getId());
+            // Always send FCM for important status updates
+            notificationService.sendOrderNotification(order, templateKey, user.getId(), "USER");
         }
     }
 
@@ -73,37 +96,51 @@ public class OrderNotificationService {
                 .orderId(order.getId())
                 .type("ORDER_CANCELLED")
                 .title("Order Cancelled")
-                .message("Order #" + order.getId().substring(0, 8) + " has been cancelled by the customer")
+                .message("Order #" + order.getId().substring(0, 8) + " has been cancelled")
                 .orderStatus(order.getOrderStatus())
                 .totalAmount(order.getTotalAmount())
                 .timestamp(order.getUpdatedAt())
                 .build();
 
-        messagingTemplate.convertAndSendToUser(
-                vendor.getId(),
-                "/queue/orders",
-                notification
-        );
+        // Try WebSocket
+        if (connectionManager.isUserConnected(vendor.getId())) {
+            try {
+                messagingTemplate.convertAndSendToUser(
+                        vendor.getId(),
+                        "/queue/orders",
+                        notification
+                );
+                log.info("Sent order cancellation via WebSocket to vendor: {}", vendor.getId());
+            } catch (Exception e) {
+                log.error("Failed to send WebSocket notification to vendor: {}", vendor.getId(), e);
+            }
+        }
 
-        log.info("Sent order cancellation notification to vendor: {}", vendor.getId());
+        // Always send FCM notification
+        notificationService.sendOrderNotification(order, "ORDER_CANCELLED", vendor.getId(), "VENDOR");
     }
 
-    private String getStatusMessage(OrderStatus status) {
+    private String getTemplateKeyForStatus(com.rajat.quickpick.enums.OrderStatus status) {
         switch (status) {
-            case ACCEPTED:
-                return "Your order has been accepted and will be prepared soon!";
-            case REJECTED:
-                return "Sorry, your order has been rejected by the vendor.";
-            case PREPARING:
-                return "Your order is being prepared. Please wait!";
-            case READY_FOR_PICKUP:
-                return "Your order is ready for pickup!";
-            case COMPLETED:
-                return "Order completed successfully. Thank you!";
-            case CANCELLED:
-                return "Your order has been cancelled.";
-            default:
-                return "Order status updated.";
+            case ACCEPTED: return "ORDER_ACCEPTED";
+            case REJECTED: return "ORDER_REJECTED";
+            case PREPARING: return "ORDER_PREPARING";
+            case READY_FOR_PICKUP: return "ORDER_READY";
+            case COMPLETED: return "ORDER_COMPLETED";
+            case CANCELLED: return "ORDER_CANCELLED";
+            default: return "ORDER_UPDATE";
+        }
+    }
+
+    private String getStatusMessage(com.rajat.quickpick.enums.OrderStatus status) {
+        switch (status) {
+            case ACCEPTED: return "Your order has been accepted!";
+            case REJECTED: return "Your order has been rejected";
+            case PREPARING: return "Your order is being prepared";
+            case READY_FOR_PICKUP: return "Your order is ready for pickup!";
+            case COMPLETED: return "Order completed successfully!";
+            case CANCELLED: return "Your order has been cancelled";
+            default: return "Order status updated";
         }
     }
 }

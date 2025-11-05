@@ -42,4 +42,8 @@ public interface OrderRepository extends MongoRepository<Order, String> {
     long countByVendorIdAndOrderStatus(String vendorId, OrderStatus orderStatus);
 
     long countByUserIdAndOrderStatus(String userId, OrderStatus orderStatus);
+
+    List<Order> findByVendorIdAndDeliveredToVendor(String vendorId, boolean deliveredToVendor);
+
+    List<Order> findByVendorIdAndDeliveredToVendorOrderByCreatedAtAsc(String vendorId, boolean deliveredToVendor);
 }
