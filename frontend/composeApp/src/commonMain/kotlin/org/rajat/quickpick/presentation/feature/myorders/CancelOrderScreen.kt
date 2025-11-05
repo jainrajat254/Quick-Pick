@@ -38,7 +38,6 @@ fun CancelOrderScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .background(MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier

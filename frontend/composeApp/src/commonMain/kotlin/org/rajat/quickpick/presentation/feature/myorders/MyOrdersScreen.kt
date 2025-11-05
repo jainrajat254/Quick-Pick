@@ -92,7 +92,9 @@ fun MyOrderScreen(
                             onOrderRate = {
                                 navController.navigate(Routes.ReviewOrder.createRoute(it))
                             },
-                            onOrderAgain = {  },
+                            onOrderAgain = {
+                                navController.navigate(Routes.Cart.route)
+                            },
                             onOrderViewDetails = {navController.navigate(Routes.OrderDetail.createRoute(it)) },
                             onclick = {
                                 navController.navigate(Routes.OrderDetail.createRoute(it))
@@ -108,7 +110,9 @@ fun MyOrderScreen(
                             onOrderRate = {
                                 navController.navigate(Routes.ReviewOrder.createRoute(it))
                             },
-                            onOrderAgain = {},
+                            onOrderAgain = {
+                                navController.navigate(Routes.Cart.route)
+                            },
                             onOrderViewDetails = {navController.navigate(Routes.OrderDetail.createRoute(it)) },
                             onclick = {
                                 navController.navigate(Routes.OrderDetail.createRoute(it))

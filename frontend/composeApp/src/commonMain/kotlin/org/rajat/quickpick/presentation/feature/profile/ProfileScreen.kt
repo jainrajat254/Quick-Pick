@@ -45,7 +45,6 @@ fun ProfileScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
 
@@ -92,7 +91,9 @@ fun ProfileScreen(
                 ProfileMenuItem(
                     text = "Help & FAQs",
                     icon = Icons.Default.Info,
-                    onClick = { /* TODO: Handle click */ }
+                    onClick = {
+                        navController.navigate(Routes.HelpAndFaqs.route)
+                    }
                 )
             }
             item {
@@ -127,7 +128,7 @@ fun ProfileScreen(
             },
             onConfirmLogout = {
                 showLogoutDialog = false
-//                navController.navigate(Routes.Welcome.route)
+//                navController.navigate(Routes.Welcome.route).65
                 //Logout logic here
             }
         )

@@ -36,7 +36,6 @@ fun MyProfileScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .background(MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier

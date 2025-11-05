@@ -52,7 +52,7 @@ fun BasePage(
             unselectedIcon = Icons.Outlined.Home
         ),
         BottomNavItem(
-            route = "cart",
+            route = Routes.Cart.route,
             label = "Cart",
             selectedIcon = Icons.Filled.ShoppingCart,
             unselectedIcon = Icons.Outlined.ShoppingCart
@@ -360,6 +360,9 @@ private fun getScreenTitle(route: String): String {
         "change_password"->"Change Password"
         "notification_setting"->"Notification Setting"
         "settings"->"Settings"
+        "cart"-> "My Cart"
+        "checkout"-> "Confirm Order"
+        "help_and_faqs"->"Help & FAQs"
 
 
         else -> "QuickPick"

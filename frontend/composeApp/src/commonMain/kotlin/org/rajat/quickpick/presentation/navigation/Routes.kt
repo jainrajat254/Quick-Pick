@@ -36,4 +36,8 @@ sealed class Routes(val route: String) {
     data object ChangePassword : Routes("change_password")
     data object NotificationSetting : Routes("notification_setting")
     data object Settings : Routes("settings")
+    data object Cart : Routes("cart")
+    data object Checkout : Routes("checkout")
+    data object ConfirmOrder : Routes("confirm_order")
+    data object HelpAndFaqs : Routes("help_and_faqs")
 }

@@ -23,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.rajat.quickpick.presentation.preview.SettingsScreenComponentPreview
 
 @Composable
 fun SettingComponentCard(
@@ -45,7 +47,7 @@ fun SettingComponentCard(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 20.dp),
+                .padding(vertical = 10.dp, horizontal = 20.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -80,4 +82,10 @@ fun SettingComponentCard(
             }
         }
     }
+}
+
+@Composable
+@Preview
+fun com1(){
+    SettingsScreenComponentPreview()
 }
