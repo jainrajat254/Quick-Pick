@@ -13,6 +13,8 @@ interface OrderApiService {
 
     suspend fun createOrder(createOrderRequest: CreateOrderRequest): GetOrderByIdResponse
 
+    suspend fun createOrderFromCart(): GetOrderByIdResponse
+
     suspend fun getOrderById(orderId: String): GetOrderByIdResponse
 
     suspend fun getMyOrders(): GetMyOrdersResponse

@@ -1,28 +1,61 @@
 package org.rajat.quickpick.presentation.feature.cart
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import org.rajat.quickpick.presentation.feature.cart.components.CreateOrderBody
 import org.rajat.quickpick.presentation.feature.cart.components.OrderInfoHeader
 import org.rajat.quickpick.presentation.feature.cart.components.PaymentMethod
 import org.rajat.quickpick.presentation.feature.cart.components.SpecialInstructions
+import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.viewmodel.CartViewModel
+import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
+import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.toast.showToast
 
 @Composable
 fun CheckoutScreen(
     paddingValues: PaddingValues,
-    cartItems: List<CartItem>,
-    totalAmount: Double,
-    isLoading: Boolean,
     navController: NavHostController,
+    cartViewModel: CartViewModel = koinInject(),
+    orderViewModel: OrderViewModel = koinInject()
 ) {
     var specialInstructions by remember { mutableStateOf("") }
+    val cartState by cartViewModel.cartState.collectAsState()
+    val createOrderState by orderViewModel.createOrderState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+
+    // Fetch cart on first composition
+    LaunchedEffect(Unit) {
+        cartViewModel.getCart()
+    }
+
+    // Handle order creation state
+    LaunchedEffect(createOrderState) {
+        when (createOrderState) {
+            is UiState.Success -> {
+                showToast("Order placed successfully!")
+                // Clear cart and navigate to confirmation
+                cartViewModel.clearCart()
+                orderViewModel.resetCreateOrderState()
+                navController.navigate(Routes.ConfirmOrder.route) {
+                    popUpTo(Routes.Cart.route) { inclusive = true }
+                }
+            }
+            is UiState.Error -> {
+                showToast((createOrderState as UiState.Error).message)
+            }
+            else -> {}
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -31,32 +64,72 @@ fun CheckoutScreen(
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
+        when (val state = cartState) {
+            is UiState.Loading -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            is UiState.Success -> {
+                val cart = state.data
+                val cartItems = cart.items.map {
+                    CartItem(
+                        id = it.menuItemId ?: "",
+                        name = it.menuItemName ?: "",
+                        price = it.unitPrice,
+                        quantity = it.quantity,
+                        imageUrl = it.menuItemImage
+                    )
+                }
 
-        OrderInfoHeader(
-            cartItems = cartItems,
-            totalAmount = totalAmount,
-        )
+                OrderInfoHeader(
+                    cartItems = cartItems,
+                    totalAmount = cart.totalAmount,
+                )
 
-        Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-        //Payment Method
-        PaymentMethod()
+                PaymentMethod()
 
-        //Special Instructions
-        SpecialInstructions(
-            specialInstructions = specialInstructions,
-            onSpecialInstructionsChange = { specialInstructions = it }
-        )
+                SpecialInstructions(
+                    specialInstructions = specialInstructions,
+                    onSpecialInstructionsChange = { specialInstructions = it }
+                )
 
-        Spacer(modifier = Modifier.weight(1f))
-        CreateOrderBody(
-            totalAmount=totalAmount,
-            navController = navController,
-            specialInstructions = specialInstructions,
-            isLoading=false,
-            cartItems=cartItems
-        )
+                Spacer(modifier = Modifier.weight(1f))
 
+                CreateOrderBody(
+                    totalAmount = cart.totalAmount,
+                    navController = navController,
+                    specialInstructions = specialInstructions,
+                    isLoading = createOrderState is UiState.Loading,
+                    cartItems = cartItems,
+                    onPlaceOrder = {
+                        coroutineScope.launch {
+                            orderViewModel.createOrderFromCart()
+                        }
+                    }
+                )
+            }
+            is UiState.Error, is UiState.Empty -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Cart is empty",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
     }
 }
-

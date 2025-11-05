@@ -94,6 +94,14 @@ class OrderViewModel(
         }
     }
 
+    fun createOrderFromCart() {
+        executeWithUiState(_createOrderState) {
+            val result = orderRepository.createOrderFromCart()
+            invalidateOrderCaches()
+            result
+        }
+    }
+
     fun getOrderById(orderId: String, forceRefresh: Boolean = false) {
         if (!forceRefresh && cachedOrderById.containsKey(orderId)) {
             _orderByIdState.value = UiState.Success(cachedOrderById[orderId]!!)
@@ -194,7 +202,6 @@ class OrderViewModel(
         }
     }
 
-    // Cache management methods
     fun invalidateOrderCaches() {
         cachedMyOrders = null
         cachedOrderStats = null
@@ -214,7 +221,6 @@ class OrderViewModel(
         orderStatsCacheTime = 0
     }
 
-    // Reset state methods
     fun resetCreateOrderState() {
         _createOrderState.value = UiState.Empty
     }

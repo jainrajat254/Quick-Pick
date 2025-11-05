@@ -23,6 +23,14 @@ class OrderRepositoryImpl(
         }
     }
 
+    override suspend fun createOrderFromCart(): Result<GetOrderByIdResponse> {
+        return try {
+            Result.success(orderApiService.createOrderFromCart())
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun getOrderById(orderId: String): Result<GetOrderByIdResponse> {
         return try {
             Result.success(orderApiService.getOrderById(orderId))
@@ -115,4 +123,3 @@ class OrderRepositoryImpl(
         }
     }
 }
-

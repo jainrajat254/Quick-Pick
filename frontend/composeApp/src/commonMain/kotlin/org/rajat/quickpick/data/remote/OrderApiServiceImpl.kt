@@ -24,6 +24,13 @@ class OrderApiServiceImpl(private val httpClient: HttpClient) : OrderApiService 
         )
     }
 
+    override suspend fun createOrderFromCart(): GetOrderByIdResponse {
+        return httpClient.safePost(
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.CREATE_ORDER_FROM_CART}",
+            body = null as Any?
+        )
+    }
+
     override suspend fun getOrderById(orderId: String): GetOrderByIdResponse {
         return httpClient.safeGet(
             endpoint = "${Constants.BASE_URL}${Constants.Endpoints.GET_ORDER_BY_ID}$orderId"
@@ -98,4 +105,3 @@ class OrderApiServiceImpl(private val httpClient: HttpClient) : OrderApiService 
         )
     }
 }
-

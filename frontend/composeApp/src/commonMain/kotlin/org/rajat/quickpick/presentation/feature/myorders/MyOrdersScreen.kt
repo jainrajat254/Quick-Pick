@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -18,109 +20,138 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.GetOrderByIdResponse
+import org.koin.compose.koinInject
 import org.rajat.quickpick.presentation.feature.myorders.components.OrderList
 import org.rajat.quickpick.presentation.feature.myorders.components.OrderTab
 import org.rajat.quickpick.presentation.feature.myorders.components.StyledTabRow
 import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
+import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.toast.showToast
 
 
 @Composable
 fun MyOrderScreen(
-    activeOrders: List<GetOrderByIdResponse>,
-    completedOrders: List<GetOrderByIdResponse>,
-    cancelledOrders: List<GetOrderByIdResponse>,
-    isLoading: Boolean,
     navController: NavHostController,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    orderViewModel: OrderViewModel = koinInject()
 ) {
     val tabs = listOf(OrderTab.Active, OrderTab.Completed, OrderTab.Cancelled)
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
-    // Tell the parent to load orders when the selected tab changes
-    LaunchedEffect(selectedTabIndex) {
-        tabs[selectedTabIndex]
+    val myOrdersState by orderViewModel.myOrdersState.collectAsState()
+
+    // Fetch orders when screen loads
+    LaunchedEffect(Unit) {
+        orderViewModel.getMyOrders()
     }
-        Column(
+
+    // Show error toast when API call fails
+    LaunchedEffect(myOrdersState) {
+        if (myOrdersState is UiState.Error) {
+            showToast((myOrdersState as UiState.Error).message)
+        }
+    }
+
+    // Filter orders based on status
+    val allOrders = when (myOrdersState) {
+        is UiState.Success -> (myOrdersState as UiState.Success).data.orders?.filterNotNull() ?: emptyList()
+        else -> emptyList()
+    }
+
+    val activeOrders = allOrders.filter {
+        it.orderStatus in listOf("PENDING", "ACCEPTED", "PREPARING", "READY")
+    }
+
+    val completedOrders = allOrders.filter {
+        it.orderStatus == "COMPLETED"
+    }
+
+    val cancelledOrders = allOrders.filter {
+        it.orderStatus == "CANCELLED"
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        StyledTabRow(
+            tabs = tabs.map { it.title },
+            selectedTabIndex = selectedTabIndex,
+            onTabSelected = { selectedTabIndex = it }
+        )
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(top = 16.dp),
+            contentAlignment = Alignment.TopCenter
         ) {
-            StyledTabRow(
-                tabs = tabs.map { it.title },
-                selectedTabIndex = selectedTabIndex,
-                onTabSelected = { selectedTabIndex = it }
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 16.dp),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                if (isLoading) {
+            when (val state = myOrdersState) {
+                is UiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.padding(top = 32.dp),
                         color = MaterialTheme.colorScheme.primary
                     )
-                } else {
-                    when (tabs[selectedTabIndex]) {
-                        is OrderTab.Active -> OrderList(
-                            orders = activeOrders,
-                            tabName = "Active",
-                            onOrderCancel = {
-                                navController.navigate(Routes.CancelOrder.createRoute(it))
-                            },
-                            onOrderRate = {
-                                navController.navigate(Routes.ReviewOrder.createRoute(it))
-                            },
-                            onOrderAgain = {  },
-                            onOrderViewDetails = {navController.navigate(Routes.OrderDetail.createRoute(it)) },
-                            onclick = {
-                                navController.navigate(Routes.OrderDetail.createRoute(it))
-                            }
-                        )
+                }
+                is UiState.Success -> {
+                    val currentOrders = when (tabs[selectedTabIndex]) {
+                        is OrderTab.Active -> activeOrders
+                        is OrderTab.Completed -> completedOrders
+                        is OrderTab.Cancelled -> cancelledOrders
+                        else -> emptyList()
+                    }
 
-                        is OrderTab.Completed -> OrderList(
-                            orders = completedOrders,
-                            tabName = "Completed",
-                            onOrderCancel = {
-                                navController.navigate(Routes.CancelOrder.createRoute(it))
-                            },
-                            onOrderRate = {
-                                navController.navigate(Routes.ReviewOrder.createRoute(it))
-                            },
-                            onOrderAgain = {
-                                navController.navigate(Routes.Cart.route)
-                            },
-                            onOrderViewDetails = {navController.navigate(Routes.OrderDetail.createRoute(it)) },
-                            onclick = {
-                                navController.navigate(Routes.OrderDetail.createRoute(it))
-                            }
+                    OrderList(
+                        orders = currentOrders,
+                        tabName = tabs[selectedTabIndex].title,
+                        onOrderCancel = {
+                            navController.navigate(Routes.CancelOrder.createRoute(it))
+                        },
+                        onOrderRate = {
+                            navController.navigate(Routes.ReviewOrder.createRoute(it))
+                        },
+                        onOrderAgain = {
+                            navController.navigate(Routes.Cart.route)
+                        },
+                        onOrderViewDetails = {
+                            navController.navigate(Routes.OrderDetail.createRoute(it))
+                        },
+                        onclick = {
+                            navController.navigate(Routes.OrderDetail.createRoute(it))
+                        }
+                    )
+                }
+                is UiState.Error -> {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(top = 32.dp)
+                    ) {
+                        Text(
+                            text = "Failed to load orders",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.error
                         )
-
-                        is OrderTab.Cancelled -> OrderList(
-                            orders = cancelledOrders,
-                            tabName = "Cancelled",
-                            onOrderCancel = {
-                                navController.navigate(Routes.CancelOrder.createRoute(it))
-                            },
-                            onOrderRate = {
-                                navController.navigate(Routes.ReviewOrder.createRoute(it))
-                            },
-                            onOrderAgain = {
-                                navController.navigate(Routes.Cart.route)
-                            },
-                            onOrderViewDetails = {navController.navigate(Routes.OrderDetail.createRoute(it)) },
-                            onclick = {
-                                navController.navigate(Routes.OrderDetail.createRoute(it))
-                            }
+                        Text(
+                            text = state.message ?: "Unknown error occurred",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 8.dp)
                         )
                     }
                 }
+                is UiState.Empty -> {
+                    Text(
+                        text = "No orders yet",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 32.dp)
+                    )
+                }
             }
         }
-
+    }
 }

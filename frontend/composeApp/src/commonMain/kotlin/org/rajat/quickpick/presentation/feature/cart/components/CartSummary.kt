@@ -23,7 +23,9 @@ import org.rajat.quickpick.presentation.navigation.Routes
 @Composable
 fun CartSummary(
     totalAmount: Double,
-    navController: NavController
+    navController: NavController,
+    vendorId: String? = null,
+    vendorName: String? = null
 ) {
     Column(
         modifier = Modifier
@@ -32,6 +34,16 @@ fun CartSummary(
     ) {
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         Spacer(modifier = Modifier.height(16.dp))
+
+        vendorName?.let {
+            Text(
+                text = "From: $it",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

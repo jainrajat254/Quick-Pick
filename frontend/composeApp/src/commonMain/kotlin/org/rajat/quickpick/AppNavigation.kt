@@ -65,7 +65,6 @@ fun AppNavigation(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Routes.Splash.route
 
-    // List of screens that should NOT show the BasePage (Scaffold, TopBar, BottomBar)
     val screensWithoutBasePage = listOf(
         Routes.Splash.route,
         Routes.Onboarding1.route,
@@ -77,7 +76,7 @@ fun AppNavigation(
         Routes.VendorLogin.route,
         Routes.UserRegister.route,
         Routes.VendorRegister.route,
-        Routes.ReviewOrderConfirmation.route, // Confirmation screens often hide nav
+        Routes.ReviewOrderConfirmation.route,
         Routes.CancelOrderConfirmation.route,
         Routes.ConfirmOrder.route,
     )
@@ -85,7 +84,6 @@ fun AppNavigation(
     val showBasePage = currentRoute !in screensWithoutBasePage
 
     if (showBasePage) {
-        //MAIN APP (with Scaffold, TopBar, BottomBar)
         BasePage(
             currentRoute = currentRoute,
             onNavigate = { route ->
@@ -209,56 +207,40 @@ private fun AppNavHost(
         composable(Routes.Orders.route) {
             MyOrderScreen(
                 navController = navController,
-                activeOrders = dummyActiveOrders,
-                completedOrders = dummyCompletedOrders,
-                cancelledOrders = dummyCancelledOrders,
-                isLoading = false,
                 paddingValues = appPaddingValues
             )
         }
         composable(Routes.ReviewOrder.route) {
-            val orderId = "1"
-            val order = allOrders.find { it.id == orderId }
-            if (order != null) {
-                val itemName = order.orderItems?.firstOrNull()?.menuItemName ?: "Unknown Item"
-                val orderIdStr = order.id ?: "Unknown ID"
-                OrderReviewScreen(
-                    navController = navController,
-                    orderId = orderIdStr,
-                    itemName = itemName,
-                    itemImageUrl = "",
-                    paddingValues = appPaddingValues
-                )
-            } else {
-                PlaceholderScreen(name = "Order not found", paddingValues = appPaddingValues)
-            }
+            val backStackEntry = navController.currentBackStackEntry
+            val orderId = backStackEntry?.arguments?.getString("orderId") ?: ""
+
+            OrderReviewScreen(
+                navController = navController,
+                orderId = orderId,
+                itemName = "", // Will be fetched from order details
+                itemImageUrl = "",
+                paddingValues = appPaddingValues
+            )
         }
         composable(Routes.OrderDetail.route) {
-            val orderId = "1"
-            val orderToShow = allOrders.find { it.id == orderId }
-            if (orderToShow != null) {
-                OrderDetailScreen(
-                    navController = navController,
-                    order = orderToShow,
-                    isLoading = false,
-                    paddingValues = appPaddingValues
-                )
-            } else {
-                PlaceholderScreen(name = "Order not found", paddingValues = appPaddingValues)
-            }
+            val backStackEntry = navController.currentBackStackEntry
+            val orderId = backStackEntry?.arguments?.getString("orderId") ?: ""
+
+            OrderDetailScreen(
+                navController = navController,
+                orderId = orderId,
+                paddingValues = appPaddingValues
+            )
         }
         composable(Routes.CancelOrder.route) {
-            val orderID = "1"
-            val order = allOrders.find { it.id == orderID }
-            if (order != null) {
-                CancelOrderScreen(
-                    navController = navController,
-                    orderId = order.id.toString(),
-                    isLoading = false,
-                    paddingValues = appPaddingValues
-                )
+            val backStackEntry = navController.currentBackStackEntry
+            val orderId = backStackEntry?.arguments?.getString("orderId") ?: ""
 
-            }
+            CancelOrderScreen(
+                navController = navController,
+                orderId = orderId,
+                paddingValues = appPaddingValues
+            )
         }
         composable(Routes.ReviewOrderConfirmation.route) {
             ReviewOrderConfirmationScreen(
@@ -311,21 +293,13 @@ private fun AppNavHost(
         composable(Routes.Cart.route) {
             CartScreen(
                 paddingValues = appPaddingValues,
-                navController = navController,
-                cartItems = sampleItems1,
-                onQuantityChange = {_,_ ->
-                },
-                onRemoveItem = {},
+                navController = navController
             )
         }
         composable(Routes.Checkout.route){
             CheckoutScreen(
                 paddingValues = appPaddingValues,
-                navController = navController,
-                cartItems = sampleItems1,
-                totalAmount = 12.00,
-                isLoading = false
-                ,
+                navController = navController
             )
         }
         composable(Routes.ConfirmOrder.route) {

@@ -31,7 +31,8 @@ fun CreateOrderBody(
     navController: NavHostController,
     specialInstructions: String,
     isLoading: Boolean,
-    cartItems: List<CartItem>
+    cartItems: List<CartItem>,
+    onPlaceOrder: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp) // Padding
@@ -50,7 +51,7 @@ fun CreateOrderBody(
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                totalAmount.formatTwoDecimals(),
+                text = "₹${totalAmount.formatTwoDecimals()}",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -58,41 +59,21 @@ fun CreateOrderBody(
         }
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = {
-                val orderItems = cartItems.map { cartItem ->
-                    OrderItem(
-                        menuItemId = cartItem.id,
-                        quantity = cartItem.quantity
-                    )
-                }
-
-                val request = CreateOrderRequest(
-                    orderItems = orderItems,
-                    // --- UPDATED: Pass the instructions state ---
-                    specialInstructions = specialInstructions.ifEmpty { null },
-                    vendorId = "TODO_GET_FROM_VIEWMODEL"
-                )
-
-//                    onConfirmOrder(request)
-                //viewmodel method to confirm the order
-                navController.navigate(Routes.ConfirmOrder.route)
-            },
+            onClick = onPlaceOrder,
+            enabled = !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            enabled = !isLoading && cartItems.isNotEmpty(),
             shape = RoundedCornerShape(50)
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    strokeWidth = 2.dp
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("Confirm Order", fontWeight = FontWeight.Bold)
+                Text("Place Order", fontWeight = FontWeight.Bold)
             }
         }
     }
 }
-

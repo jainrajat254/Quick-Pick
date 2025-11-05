@@ -95,5 +95,13 @@ object Endpoints {
         const val GET_VENDOR_ORDERS_BY_STATUS = "/api/orders/vendor/orders/status/" // + {status}
         const val UPDATE_ORDER_STATUS = "/api/orders/vendor/orders/" // + {orderId} + "/status"
         const val GET_VENDOR_ORDER_STATS = "/api/orders/vendor/orders/stats"
+
+        // Cart endpoints
+        const val ADD_TO_CART = "/api/cart/items"
+        const val GET_CART = "/api/cart"
+        const val UPDATE_CART_ITEM = "/api/cart/items/" // + {menuItemId}
+        const val REMOVE_FROM_CART = "/api/cart/items/" // + {menuItemId}
+        const val CLEAR_CART = "/api/cart"
+        const val CREATE_ORDER_FROM_CART = "/api/orders/from-cart"
     }
 }

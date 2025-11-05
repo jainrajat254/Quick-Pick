@@ -14,6 +14,8 @@ interface OrderRepository {
     // Student Order Operations
     suspend fun createOrder(createOrderRequest: CreateOrderRequest): Result<GetOrderByIdResponse>
 
+    suspend fun createOrderFromCart(): Result<GetOrderByIdResponse>
+
     suspend fun getOrderById(orderId: String): Result<GetOrderByIdResponse>
 
     suspend fun getMyOrders(): Result<GetMyOrdersResponse>
@@ -37,4 +39,3 @@ interface OrderRepository {
 
     suspend fun getVendorOrderStats(): Result<GetMyOrderStatsResponse>
 }
-
