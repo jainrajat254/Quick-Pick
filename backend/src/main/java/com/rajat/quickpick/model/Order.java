@@ -32,4 +32,7 @@ public class Order {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private boolean deliveredToVendor = false;
+    private LocalDateTime deliveredToVendorAt;
 }

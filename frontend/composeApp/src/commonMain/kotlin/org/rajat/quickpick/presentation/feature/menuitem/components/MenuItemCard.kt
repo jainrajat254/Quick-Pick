@@ -6,22 +6,53 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 import org.rajat.quickpick.domain.modal.menuitems.MenuItem
+import org.rajat.quickpick.presentation.viewmodel.CartViewModel
+import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.toast.showToast
 
 
 @Composable
 fun MenuItemCard(
     menuItem: MenuItem,
     onItemClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    cartViewModel: CartViewModel = koinInject()
 ) {
+    val cartState by cartViewModel.cartState.collectAsState()
+    val addToCartState by cartViewModel.addToCartState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+
+    val quantity = remember(cartState, menuItem.id) {
+        if (cartState is UiState.Success) {
+            val cart = (cartState as UiState.Success).data
+            cart.items.find { it.menuItemId == menuItem.id }?.quantity ?: 0
+        } else {
+            0
+        }
+    }
+
+    LaunchedEffect(addToCartState) {
+        when (val state = addToCartState) {
+            is UiState.Success -> {
+                showToast("Added to cart")
+            }
+            is UiState.Error -> {
+                showToast(state.message)
+            }
+            else -> {}
+        }
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -94,20 +125,30 @@ fun MenuItemCard(
                         color = MaterialTheme.colorScheme.primary
                     )
 
-
-
                     if (menuItem.available == true) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.End
                         ){
-
                             FilledTonalIconButton(
-                                onClick = { },
+                                onClick = {
+                                    coroutineScope.launch {
+                                        if (quantity == 1) {
+                                            // Remove from cart if quantity is 1
+                                            cartViewModel.removeFromCart(menuItem.id ?: "")
+                                        } else if (quantity > 1) {
+                                            // Decrease quantity
+                                            cartViewModel.updateCartItem(menuItem.id ?: "", quantity - 1)
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.size(36.dp),
+                                enabled = quantity > 0,
                                 colors = IconButtonDefaults.filledTonalIconButtonColors(
                                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             ) {
                                 Icon(
@@ -117,9 +158,30 @@ fun MenuItemCard(
                                 )
                             }
 
+                            // Show quantity if > 0
+                            if (quantity > 0) {
+                                Text(
+                                    text = quantity.toString(),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(horizontal = 8.dp)
+                                )
+                            }
+
                             Spacer(modifier = Modifier.width(8.dp))
                             FilledTonalIconButton(
-                                onClick = {  },
+                                onClick = {
+                                    coroutineScope.launch {
+                                        if (quantity == 0) {
+                                            // Add to cart for the first time
+                                            cartViewModel.addToCart(menuItem.id ?: "", 1)
+                                        } else {
+                                            // Increase quantity
+                                            cartViewModel.updateCartItem(menuItem.id ?: "", quantity + 1)
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.size(36.dp),
                                 colors = IconButtonDefaults.filledTonalIconButtonColors(
                                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -133,7 +195,6 @@ fun MenuItemCard(
                                 )
                             }
                         }
-
                     } else {
                         Surface(
                             shape = MaterialTheme.shapes.small,

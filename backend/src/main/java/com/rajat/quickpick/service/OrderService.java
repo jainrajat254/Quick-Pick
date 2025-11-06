@@ -7,6 +7,7 @@ import com.rajat.quickpick.exception.BadRequestException;
 import com.rajat.quickpick.exception.ResourceNotFoundException;
 import com.rajat.quickpick.model.*;
 import com.rajat.quickpick.repository.*;
+import com.rajat.quickpick.service.OrderNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,7 @@ public class OrderService {
     private final VendorRepository vendorRepository;
     private final MenuItemRepository menuItemRepository;
     private final OrderNotificationService notificationService;
+    private final CartRepository cartRepository;
 
     public OrderResponseDto createOrder(String userId, CreateOrderDto createDto) {
         User user = userRepository.findById(userId)
@@ -55,6 +57,9 @@ public class OrderService {
             MenuItem menuItem = menuItemRepository.findById(itemDto.getMenuItemId())
                     .orElseThrow(() -> new ResourceNotFoundException("Menu item not found: " + itemDto.getMenuItemId()));
 
+            if (!menuItem.getVendorId().equals(createDto.getVendorId())) {
+                throw new BadRequestException("Menu item does not belong to this vendor");
+            }
 
             if (!menuItem.getIsAvailable()) {
                 throw new BadRequestException("Menu item '" + menuItem.getName() + "' is not available");
@@ -89,11 +94,13 @@ public class OrderService {
         order.setTotalAmount(totalAmount);
         order.setOrderStatus(OrderStatus.PENDING);
         order.setSpecialInstructions(createDto.getSpecialInstructions());
+        order.setDeliveredToVendor(false);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
 
         Order savedOrder = orderRepository.save(order);
         log.info("Order created: {} for user: {} with vendor: {}", savedOrder.getId(), userId, createDto.getVendorId());
+
 
         notificationService.notifyNewOrder(savedOrder, vendor);
 
@@ -123,6 +130,34 @@ public class OrderService {
         notificationService.notifyOrderStatusUpdate(updatedOrder, user);
 
         return mapToResponseDto(updatedOrder, user, vendor);
+    }
+
+    public List<OrderResponseDto> getPendingOrdersForVendor(String vendorId) {
+        List<Order> undeliveredOrders = orderRepository.findByVendorIdAndDeliveredToVendorOrderByCreatedAtAsc(
+                vendorId, false);
+
+        undeliveredOrders.forEach(order -> {
+            order.setDeliveredToVendor(true);
+            order.setDeliveredToVendorAt(LocalDateTime.now());
+        });
+
+        if (!undeliveredOrders.isEmpty()) {
+            orderRepository.saveAll(undeliveredOrders);
+            log.info("Delivered {} pending orders to vendor: {}", undeliveredOrders.size(), vendorId);
+        }
+
+        List<OrderResponseDto> orderDtos = undeliveredOrders.stream()
+                .map(order -> {
+                    User user = userRepository.findById(order.getUserId()).orElse(null);
+                    Vendor vendor = vendorRepository.findById(vendorId).orElse(null);
+                    return mapToResponseDto(order, user, vendor);
+                })
+                .collect(Collectors.toList());
+
+        return OrdersResponseDto.builder()
+                .orders(orderDtos)
+                .count(orderDtos.size())
+                .build().getOrders();
     }
 
     public OrderResponseDto getOrderById(String orderId, String userId) {
@@ -162,6 +197,7 @@ public class OrderService {
                     return mapToResponseDto(order, user, vendor);
                 })
                 .collect(Collectors.toList());
+
         return OrdersResponseDto.builder()
                 .orders(orderDtos)
                 .count(orderDtos.size())
@@ -181,6 +217,17 @@ public class OrderService {
         });
     }
 
+    public Page<OrderResponseDto> getVendorOrdersPaginated(String vendorId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Order> orderPage = orderRepository.findByVendorId(vendorId, pageable);
+
+        return orderPage.map(order -> {
+            User user = userRepository.findById(order.getUserId()).orElse(null);
+            Vendor vendor = vendorRepository.findById(vendorId).orElse(null);
+            return mapToResponseDto(order, user, vendor);
+        });
+    }
+
     public OrdersResponseDto getOrdersByStatus(String userId, OrderStatus status) {
         List<Order> orders = orderRepository.findByUserIdAndOrderStatus(userId, status);
         List<OrderResponseDto> orderDtos = orders.stream()
@@ -190,6 +237,7 @@ public class OrderService {
                     return mapToResponseDto(order, user, vendor);
                 })
                 .collect(Collectors.toList());
+
         return OrdersResponseDto.builder()
                 .orders(orderDtos)
                 .count(orderDtos.size())
@@ -205,6 +253,7 @@ public class OrderService {
                     return mapToResponseDto(order, user, vendor);
                 })
                 .collect(Collectors.toList());
+
         return OrdersResponseDto.builder()
                 .orders(orderDtos)
                 .count(orderDtos.size())
@@ -244,6 +293,7 @@ public class OrderService {
         stats.setCompletedOrders(orderRepository.countByUserIdAndOrderStatus(userId, OrderStatus.COMPLETED));
         stats.setCancelledOrders(orderRepository.countByUserIdAndOrderStatus(userId, OrderStatus.CANCELLED));
 
+        // Calculate total spent
         List<Order> completedOrders = orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.COMPLETED);
         double totalSpent = completedOrders.stream().mapToDouble(Order::getTotalAmount).sum();
 
@@ -258,21 +308,39 @@ public class OrderService {
         stats.setCancelledOrders(orderRepository.countByVendorIdAndOrderStatus(vendorId, OrderStatus.CANCELLED));
 
         List<Order> completedOrders = orderRepository.findByVendorIdAndOrderStatus(vendorId, OrderStatus.COMPLETED);
-        double totalRevenue = completedOrders.stream().mapToDouble(Order::getTotalAmount).sum();
 
         return stats;
     }
 
     private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
-        // Only prevent changing from final states
-        if (currentStatus == OrderStatus.COMPLETED ||
-            currentStatus == OrderStatus.CANCELLED ||
-            currentStatus == OrderStatus.REJECTED) {
-            throw new BadRequestException("Cannot change status from " + currentStatus);
+        switch (currentStatus) {
+            case PENDING:
+                if (newStatus != OrderStatus.ACCEPTED && newStatus != OrderStatus.REJECTED) {
+                    throw new BadRequestException("Invalid status transition from PENDING to " + newStatus);
+                }
+                break;
+            case ACCEPTED:
+                if (newStatus != OrderStatus.PREPARING) {
+                    throw new BadRequestException("Invalid status transition from ACCEPTED to " + newStatus);
+                }
+                break;
+            case PREPARING:
+                if (newStatus != OrderStatus.READY_FOR_PICKUP) {
+                    throw new BadRequestException("Invalid status transition from PREPARING to " + newStatus);
+                }
+                break;
+            case READY_FOR_PICKUP:
+                if (newStatus != OrderStatus.COMPLETED) {
+                    throw new BadRequestException("Invalid status transition from READY_FOR_PICKUP to " + newStatus);
+                }
+                break;
+            case COMPLETED:
+            case CANCELLED:
+            case REJECTED:
+                throw new BadRequestException("Cannot change status from " + currentStatus);
+            default:
+                throw new BadRequestException("Unknown order status: " + currentStatus);
         }
-
-        // Allow any forward transition from PENDING, ACCEPTED, PREPARING, READY_FOR_PICKUP
-        // This allows vendors to skip steps if needed (e.g., ACCEPTED -> COMPLETED)
     }
 
     private void restoreMenuItemQuantities(List<OrderItem> orderItems) {
@@ -301,5 +369,39 @@ public class OrderService {
         dto.setCreatedAt(order.getCreatedAt());
         dto.setUpdatedAt(order.getUpdatedAt());
         return dto;
+    }
+
+    public OrderResponseDto createOrderFromCart(String userId) {
+        // Get user's cart
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new BadRequestException("Cart is empty"));
+
+        if (cart.getItems().isEmpty()) {
+            throw new BadRequestException("Cart is empty");
+        }
+
+        // Create order DTO from cart
+        CreateOrderDto createDto = new CreateOrderDto();
+        createDto.setVendorId(cart.getVendorId());
+
+        List<OrderItemDto> orderItemDtos = cart.getItems().stream()
+                .map(cartItem -> {
+                    OrderItemDto dto = new OrderItemDto();
+                    dto.setMenuItemId(cartItem.getMenuItemId());
+                    dto.setQuantity(cartItem.getQuantity());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        createDto.setOrderItems(orderItemDtos);
+
+        // Create the order using existing logic
+        OrderResponseDto orderResponse = createOrder(userId, createDto);
+
+        // Clear the cart after successful order
+        cartRepository.deleteByUserId(userId);
+        log.info("Cart cleared after order creation for user: {}", userId);
+
+        return orderResponse;
     }
 }

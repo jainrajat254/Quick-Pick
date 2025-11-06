@@ -37,12 +37,26 @@ fun BasePage(
 ) {
     val rootScreens = listOf("home", "cart", "orders", "profile")
     val showBackButton = currentRoute !in rootScreens && currentRoute.isNotEmpty()
-    //change it later with fetched data
     val userName: String = "Current User"
     val userEmail: String = "currentuser@gmail.com"
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    val cartViewModel: org.rajat.quickpick.presentation.viewmodel.CartViewModel = org.koin.compose.koinInject()
+    val cartState by cartViewModel.cartState.collectAsState()
+
+    val cartItemCount = remember(cartState) {
+        if (cartState is org.rajat.quickpick.utils.UiState.Success) {
+            (cartState as org.rajat.quickpick.utils.UiState.Success).data.itemCount
+        } else {
+            0
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        cartViewModel.getCart()
+    }
 
     val bottomNavItems = listOf(
         BottomNavItem(
@@ -55,7 +69,8 @@ fun BasePage(
             route = Routes.Cart.route,
             label = "Cart",
             selectedIcon = Icons.Filled.ShoppingCart,
-            unselectedIcon = Icons.Outlined.ShoppingCart
+            unselectedIcon = Icons.Outlined.ShoppingCart,
+            badgeCount = cartItemCount
         ),
         BottomNavItem(
             route = Routes.Orders.route,
@@ -313,14 +328,30 @@ private fun BottomNavigationBar(
         items.forEach { item ->
             NavigationBarItem(
                 icon = {
-                    Icon(
-                        imageVector = if (currentRoute == item.route) {
-                            item.selectedIcon
-                        } else {
-                            item.unselectedIcon
-                        },
-                        contentDescription = item.label
-                    )
+                    BadgedBox(
+                        badge = {
+                            if (item.badgeCount > 0) {
+                                Badge(
+                                    containerColor = MaterialTheme.colorScheme.error,
+                                    contentColor = MaterialTheme.colorScheme.onError
+                                ) {
+                                    Text(
+                                        text = if (item.badgeCount > 99) "99+" else item.badgeCount.toString(),
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (currentRoute == item.route) {
+                                item.selectedIcon
+                            } else {
+                                item.unselectedIcon
+                            },
+                            contentDescription = item.label
+                        )
+                    }
                 },
                 label = {
                     Text(
@@ -389,3 +420,4 @@ data class DrawerMenuItem(
     val label: String,
     val icon: ImageVector
 )
+

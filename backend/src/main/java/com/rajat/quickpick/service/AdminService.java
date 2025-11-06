@@ -1,6 +1,7 @@
 package com.rajat.quickpick.service;
 
 import com.rajat.quickpick.dto.auth.AuthResponseDto;
+import com.rajat.quickpick.dto.auth.TokensDto;
 import com.rajat.quickpick.exception.BadRequestException;
 import com.rajat.quickpick.model.User;
 import com.rajat.quickpick.enums.Role;
@@ -81,13 +82,17 @@ public class AdminService {
             }
 
             String token = jwtUtil.generateToken(userDetails, admin.getId(), admin.getRole().name());
-
             String refreshToken = jwtUtil.generateRefreshToken(userDetails, admin.getId(), admin.getRole().name());
 
-            AuthResponseDto response = new AuthResponseDto();
+            TokensDto tokens = TokensDto.builder()
+                    .accessToken(token)
+                    .refreshToken(refreshToken)
+                    .expiresIn(86400)
+                    .tokenType("Bearer")
+                    .build();
 
-            response.setToken(token);
-            response.setRefreshToken(refreshToken);
+            AuthResponseDto response = new AuthResponseDto();
+            response.setTokens(tokens);
             response.setUserId(admin.getId());
             response.setEmail(admin.getEmail());
             response.setName(admin.getFullName());

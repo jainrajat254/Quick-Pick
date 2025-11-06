@@ -12,22 +12,34 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import org.koin.compose.koinInject
 import org.rajat.quickpick.domain.modal.ordermanagement.OrderStatus
-import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.GetOrderByIdResponse
 import org.rajat.quickpick.presentation.feature.myorders.components.OrderDetailFields
+import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
+import org.rajat.quickpick.utils.UiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderDetailScreen(
-    order: GetOrderByIdResponse?,
-    isLoading: Boolean,
+    orderId: String,
     navController: NavHostController,
     paddingValues: PaddingValues,
+    orderViewModel: OrderViewModel = koinInject()
 ) {
+    val orderByIdState by orderViewModel.orderByIdState.collectAsState()
+
+    // Fetch order details when screen loads
+    LaunchedEffect(orderId) {
+        orderViewModel.getOrderById(orderId)
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -36,27 +48,38 @@ fun OrderDetailScreen(
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        if (isLoading) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-        } else if (order == null) {
-            Text(
-                "Order details not found.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        } else {
-            val status = try {
-                OrderStatus.valueOf(order.orderStatus ?: "PENDING")
-            } catch (e: Exception) {
-                OrderStatus.PENDING
+        when (val state = orderByIdState) {
+            is UiState.Loading -> {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
+            is UiState.Success -> {
+                val order = state.data
+                val status = try {
+                    OrderStatus.valueOf(order.orderStatus ?: "PENDING")
+                } catch (e: Exception) {
+                    OrderStatus.PENDING
+                }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.Start
-            ) {
-                OrderDetailFields(order, status)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    OrderDetailFields(order, status)
+                }
+            }
+            is UiState.Error -> {
+                Text(
+                    text = "Failed to load order details",
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            is UiState.Empty -> {
+                Text(
+                    "Order details not found.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }

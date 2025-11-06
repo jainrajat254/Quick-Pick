@@ -79,5 +79,29 @@ object Endpoints {
         const val SEARCH_VENDOR_BY_ID = "/api/search/vendors/" // + {vendorId}
         const val SEARCH_MENU_ITEMS = "/api/search/menu-items"
         const val STRICT_SEARCH_MENU_ITEMS = "/api/search/menu-items/strict-search"
+
+        // Order endpoints (Student)
+        const val CREATE_ORDER = "/api/orders"
+        const val GET_ORDER_BY_ID = "/api/orders/" // + {orderId}
+        const val GET_MY_ORDERS = "/api/orders/my-orders"
+        const val GET_MY_ORDERS_BY_STATUS = "/api/orders/my-orders/status/" // + {status}
+        const val CANCEL_ORDER = "/api/orders/" // + {orderId} + "/cancel"
+        const val GET_MY_ORDER_STATS = "/api/orders/my-orders/stats"
+
+        // Order endpoints (Vendor)
+        const val GET_PENDING_ORDERS_VENDOR = "/api/orders/vendor/orders/pending"
+        const val GET_VENDOR_ORDERS_PAGINATED = "/api/orders/vendor/orders/paginated"
+        const val GET_VENDOR_ORDER_BY_ID = "/api/orders/vendor/orders/" // + {orderId}
+        const val GET_VENDOR_ORDERS_BY_STATUS = "/api/orders/vendor/orders/status/" // + {status}
+        const val UPDATE_ORDER_STATUS = "/api/orders/vendor/orders/" // + {orderId} + "/status"
+        const val GET_VENDOR_ORDER_STATS = "/api/orders/vendor/orders/stats"
+
+        // Cart endpoints
+        const val ADD_TO_CART = "/api/cart/items"
+        const val GET_CART = "/api/cart"
+        const val UPDATE_CART_ITEM = "/api/cart/items/" // + {menuItemId}
+        const val REMOVE_FROM_CART = "/api/cart/items/" // + {menuItemId}
+        const val CLEAR_CART = "/api/cart"
+        const val CREATE_ORDER_FROM_CART = "/api/orders/from-cart"
     }
 }

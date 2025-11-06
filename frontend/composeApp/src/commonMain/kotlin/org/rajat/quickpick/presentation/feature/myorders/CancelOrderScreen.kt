@@ -13,15 +13,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import org.rajat.quickpick.presentation.feature.myorders.components.ReasonRow
 import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
+import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.toast.showToast
 
 @Composable
 fun CancelOrderScreen(
     orderId: String,
-    isLoading: Boolean,
     navController: NavHostController,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    orderViewModel: OrderViewModel = koinInject()
 ) {
     val reasons = listOf(
         "Order placed by mistake",
@@ -34,6 +38,26 @@ fun CancelOrderScreen(
     val isOtherSelected = selectedReason == "Others"
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    val cancelOrderState by orderViewModel.cancelOrderState.collectAsState()
+
+    // Handle cancel order state
+    LaunchedEffect(cancelOrderState) {
+        when (cancelOrderState) {
+            is UiState.Success -> {
+                showToast("Order cancelled successfully")
+                orderViewModel.resetCancelOrderState()
+                navController.navigate(Routes.CancelOrderConfirmation.route) {
+                    popUpTo(Routes.Orders.route) { inclusive = false }
+                }
+            }
+            is UiState.Error -> {
+                showToast((cancelOrderState as UiState.Error).message)
+            }
+            else -> {}
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -46,7 +70,6 @@ fun CancelOrderScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Text(
                 "Please select a reason for cancellation:",
                 style = MaterialTheme.typography.bodyLarge,
@@ -96,23 +119,22 @@ fun CancelOrderScreen(
                         focusedLabelColor = MaterialTheme.colorScheme.primary,
                         unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         cursorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
-                            alpha = 0.3f
-                        ),
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
-                            alpha = 0.3f
-                        )
-                    ),
-                    shape = RoundedCornerShape(12.dp)
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
             Button(
                 onClick = {
-                    val finalReason =
-                        if (isOtherSelected) otherReasonText.takeIf { it.isNotBlank() } else selectedReason
+                    val finalReason = if (isOtherSelected) {
+                        otherReasonText.takeIf { it.isNotBlank() } ?: "Other reason"
+                    } else {
+                        selectedReason
+                    }
+
                     scope.launch {
                         val result = snackbarHostState.showSnackbar(
                             message = "Are you sure you want to cancel this order?",
@@ -120,33 +142,48 @@ fun CancelOrderScreen(
                             duration = SnackbarDuration.Short
                         )
                         if (result == SnackbarResult.ActionPerformed) {
-                            //Viewmodel method to update the order state to cancel with orderId, finalReason
-                            navController.navigate(Routes.CancelOrderConfirmation.route)
+                            // User confirmed, proceed with cancellation
+                            orderViewModel.cancelOrder(orderId)
                         }
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
-                enabled = !isLoading && (selectedReason != null && (!isOtherSelected || otherReasonText.isNotBlank())),
-                shape = RoundedCornerShape(50),
+                    .height(56.dp),
+                shape = RoundedCornerShape(28.dp),
+                enabled = selectedReason != null &&
+                        (!isOtherSelected || otherReasonText.isNotBlank()) &&
+                        (cancelOrderState !is UiState.Loading),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
                 )
             ) {
-                if (isLoading) {
+                if (cancelOrderState is UiState.Loading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp
+                        color = MaterialTheme.colorScheme.onError
                     )
                 } else {
-                    Text("Submit", fontWeight = FontWeight.Bold)
+                    Text(
+                        "Cancel Order",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TextButton(
+                onClick = { navController.popBackStack() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Go Back", color = MaterialTheme.colorScheme.primary)
+            }
         }
+
+        // Snackbar Host for confirmation dialog
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
@@ -164,4 +201,3 @@ fun CancelOrderScreen(
         )
     }
 }
-

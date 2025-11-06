@@ -8,7 +8,6 @@ import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.OrderItemX
 import org.rajat.quickpick.domain.modal.profile.GetStudentProfileResponse
 import org.rajat.quickpick.domain.modal.search.GetVendorByIDResponse
 import org.rajat.quickpick.presentation.feature.cart.CartItem
-import org.rajat.quickpick.presentation.feature.profile.FaqItem
 import org.rajat.quickpick.presentation.feature.profile.components.FaqItem
 import org.rajat.quickpick.presentation.navigation.Routes
 
