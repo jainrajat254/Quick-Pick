@@ -88,7 +88,9 @@ fun UserLoginScreen(
                 dataStore.saveTokenExpiryMillis(expiryMillis)
 
                 dataStore.saveId(response.userId)
+                dataStore.saveUserRole("USER")
                 dataStore.saveUserProfile(response)
+                dataStore.clearVendorProfile()
                 showToast("User Signed In Successfully")
                 navController.navigate(Routes.Home.route) {
                     popUpTo(Routes.UserLogin.route) { inclusive = true }

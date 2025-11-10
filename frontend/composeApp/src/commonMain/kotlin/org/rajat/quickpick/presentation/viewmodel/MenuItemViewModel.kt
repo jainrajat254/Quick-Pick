@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.rajat.quickpick.domain.modal.menuitems.GetVendorMenuByCategoryResponse
+import org.rajat.quickpick.domain.modal.menuitems.ToggleAvailabilityResponse
+import org.rajat.quickpick.domain.modal.menuitems.getMyMenuItemsPaginated.GetMyMenuItemsPaginatedResponse
 import org.rajat.quickpick.domain.modal.search.SearchMenuItemsResponse
 import org.rajat.quickpick.domain.repository.MenuItemRepository
 import org.rajat.quickpick.domain.repository.SearchRepository
@@ -20,9 +22,17 @@ class MenuItemViewModel(
         MutableStateFlow<UiState<GetVendorMenuByCategoryResponse>>(UiState.Empty)
     val menuItemsState: StateFlow<UiState<GetVendorMenuByCategoryResponse>> = _menuItemsState.asStateFlow()
 
+    private val _myMenuItemsState =
+        MutableStateFlow<UiState<GetMyMenuItemsPaginatedResponse>>(UiState.Empty)
+    val myMenuItemsState: StateFlow<UiState<GetMyMenuItemsPaginatedResponse>> = _myMenuItemsState.asStateFlow()
+
     private val _searchedMenuItemsState =
         MutableStateFlow<UiState<SearchMenuItemsResponse>>(UiState.Empty)
     val searchedMenuItemsState: StateFlow<UiState<SearchMenuItemsResponse>> = _searchedMenuItemsState.asStateFlow()
+
+    private val _toggleAvailabilityState =
+        MutableStateFlow<UiState<ToggleAvailabilityResponse>>(UiState.Empty)
+    val toggleAvailabilityState: StateFlow<UiState<ToggleAvailabilityResponse>> = _toggleAvailabilityState.asStateFlow()
 
     private val _selectedVendorId = MutableStateFlow<String?>(null)
     val selectedVendorId: StateFlow<String?> = _selectedVendorId.asStateFlow()
@@ -136,12 +146,32 @@ class MenuItemViewModel(
         _menuItemsState.value = UiState.Empty
     }
 
+    fun resetMyMenuItemsState() {
+        _myMenuItemsState.value = UiState.Empty
+    }
+
     fun resetSearchedMenuItemsState() {
         _searchedMenuItemsState.value = UiState.Empty
+    }
+
+    fun resetToggleAvailabilityState() {
+        _toggleAvailabilityState.value = UiState.Empty
     }
 
     fun clearVendorAndCategory() {
         _selectedVendorId.value = null
         _selectedCategory.value = null
+    }
+
+    fun getMyMenuItems(page: Int = 0, size: Int = 50) {
+        executeWithUiState(_myMenuItemsState) {
+            menuItemRepository.getMyMenuItems(page, size)
+        }
+    }
+
+    fun toggleMenuItemAvailability(menuItemId: String) {
+        executeWithUiState(_toggleAvailabilityState) {
+            menuItemRepository.toggleMenuItemAvailability(menuItemId)
+        }
     }
 }

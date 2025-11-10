@@ -16,6 +16,7 @@ import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.feature.auth.onboarding.WelcomeScreen
 import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.VendorRoutes
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
 
 @Composable
@@ -47,10 +48,28 @@ fun SplashScreen(
                 popUpTo(0) { inclusive = true }
             }
         } else {
-            logger.i { "Token found. Navigating directly to Home." }
-            navController.navigate(Routes.Home.route) {
+            val userRole = datastore.getUserRole()
+
+            val destination = when (userRole) {
+                "VENDOR" -> {
+                    VendorRoutes.VendorDashboard.route
+                }
+                "USER" -> {
+                    Routes.Home.route
+                }
+                else -> {
+                    datastore.clearAll()
+                    navController.navigate(Routes.LaunchWelcome.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                    return@LaunchedEffect
+                }
+            }
+
+            navController.navigate(destination) {
                 popUpTo(0) { inclusive = true }
             }
+
             launch {
                 try {
                     val refreshed = refreshTokenManager.ensureValidToken()
@@ -73,5 +92,3 @@ fun SplashScreen(
         WelcomeScreen()
     }
 }
-
-

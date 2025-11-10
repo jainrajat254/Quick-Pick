@@ -20,11 +20,17 @@ interface LocalDataStore {
     suspend fun saveId(id: String)
     suspend fun getId(): String?
 
+    suspend fun saveUserRole(role: String)
+    suspend fun getUserRole(): String?
+    suspend fun clearUserRole()
+
     suspend fun saveVendorProfile(loginVendorResponse: LoginVendorResponse)
     suspend fun getVendorProfile(): LoginVendorResponse?
+    suspend fun clearVendorProfile()
 
     suspend fun saveUserProfile(loginUserResponse: LoginUserResponse)
     suspend fun getUserProfile(): LoginUserResponse?
+    suspend fun clearUserProfile()
 
     suspend fun setHasOnboarded(bool: Boolean)
     val hasOnboarded: Flow<Boolean>

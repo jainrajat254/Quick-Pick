@@ -8,14 +8,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import org.koin.compose.koinInject
-import org.rajat.quickpick.data.dummy.allOrders
-import org.rajat.quickpick.data.dummy.dummyActiveOrders
-import org.rajat.quickpick.data.dummy.dummyCancelledOrders
-import org.rajat.quickpick.data.dummy.dummyCompletedOrders
-import org.rajat.quickpick.data.dummy.profile
-import org.rajat.quickpick.data.dummy.sampleItems1
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.components.BasePage
+import org.rajat.quickpick.presentation.components.VendorBasePage
 import org.rajat.quickpick.presentation.feature.SplashScreen
 import org.rajat.quickpick.presentation.feature.auth.login.UserLoginScreen
 import org.rajat.quickpick.presentation.feature.auth.login.VendorLoginScreen
@@ -43,13 +38,19 @@ import org.rajat.quickpick.presentation.feature.profile.MyProfileScreen
 import org.rajat.quickpick.presentation.feature.profile.NotificationSettingsScreen
 import org.rajat.quickpick.presentation.feature.profile.ProfileScreen
 import org.rajat.quickpick.presentation.feature.profile.SettingsScreen
-import org.rajat.quickpick.presentation.feature.profile.components.PlaceholderScreen
 import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
+import org.rajat.quickpick.presentation.feature.vendor.dashboard.VendorDashboardScreen
+import org.rajat.quickpick.presentation.feature.vendor.menu.VendorMenuScreen
+import org.rajat.quickpick.presentation.feature.vendor.orders.VendorOrderDetailScreen
+import org.rajat.quickpick.presentation.feature.vendor.orders.VendorOrdersScreen
+import org.rajat.quickpick.presentation.feature.vendor.profile.VendorProfileScreen
 import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.VendorRoutes
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.presentation.viewmodel.HomeViewModel
 import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
+import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
 
 @Composable
@@ -60,6 +61,7 @@ fun AppNavigation(
     val homeViewModel: HomeViewModel = koinInject()
     val vendorViewModel: VendorViewModel = koinInject()
     val menuItemViewModel: MenuItemViewModel = koinInject()
+    val orderViewModel: OrderViewModel = koinInject()
     val dataStore: LocalDataStore = koinInject()
     val refreshTokenManager: RefreshTokenManager = koinInject()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -81,22 +83,45 @@ fun AppNavigation(
         Routes.ConfirmOrder.route,
     )
 
+    val vendorScreens = listOf(
+        VendorRoutes.VendorDashboard.route,
+        VendorRoutes.VendorOrders.route,
+        VendorRoutes.VendorMenu.route,
+        VendorRoutes.VendorProfile.route,
+        "vendor_order_detail/{orderId}"
+    )
+
+    val isVendorScreen = vendorScreens.any { currentRoute.startsWith(it.split("{")[0]) }
     val showBasePage = currentRoute !in screensWithoutBasePage
 
     if (showBasePage) {
-        BasePage(
-            currentRoute = currentRoute,
-            onNavigate = { route ->
-                navController.navigate(route)
-            },
-            onBackClick = {
-                navController.popBackStack()
+        if (isVendorScreen) {
+            VendorBasePage(
+                currentRoute = currentRoute,
+                onNavigate = { route ->
+                    navController.navigate(route)
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            ) { paddingValues ->
+                AppNavHost(navController, authViewModel, homeViewModel, vendorViewModel, menuItemViewModel, orderViewModel, dataStore, refreshTokenManager, paddingValues)
             }
-        ) { paddingValues ->
-            AppNavHost(navController, authViewModel, homeViewModel, vendorViewModel, menuItemViewModel, dataStore, refreshTokenManager, paddingValues)
+        } else {
+            BasePage(
+                currentRoute = currentRoute,
+                onNavigate = { route ->
+                    navController.navigate(route)
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            ) { paddingValues ->
+                AppNavHost(navController, authViewModel, homeViewModel, vendorViewModel, menuItemViewModel, orderViewModel, dataStore, refreshTokenManager, paddingValues)
+            }
         }
     } else {
-        AppNavHost(navController, authViewModel, homeViewModel, vendorViewModel, menuItemViewModel, dataStore, refreshTokenManager, PaddingValues())
+        AppNavHost(navController, authViewModel, homeViewModel, vendorViewModel, menuItemViewModel, orderViewModel, dataStore, refreshTokenManager, PaddingValues())
     }
 }
 
@@ -107,6 +132,7 @@ private fun AppNavHost(
     homeViewModel: HomeViewModel,
     vendorViewModel: org.rajat.quickpick.presentation.viewmodel.VendorViewModel,
     menuItemViewModel: org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel,
+    orderViewModel: OrderViewModel,
     dataStore: LocalDataStore,
     refreshTokenManager: RefreshTokenManager,
     appPaddingValues: PaddingValues
@@ -204,6 +230,50 @@ private fun AppNavHost(
                 vendorId = "v1"
             )
         }
+
+        composable(VendorRoutes.VendorDashboard.route) {
+            VendorDashboardScreen(
+                navController = navController,
+                paddingValues = appPaddingValues,
+                orderViewModel = orderViewModel
+            )
+        }
+
+        composable(VendorRoutes.VendorOrders.route) {
+            VendorOrdersScreen(
+                navController = navController,
+                paddingValues = appPaddingValues,
+                orderViewModel = orderViewModel
+            )
+        }
+
+        composable(VendorRoutes.VendorOrderDetail.route) {
+            val backStackEntry = navController.currentBackStackEntry
+            val orderId = backStackEntry?.arguments?.getString("orderId") ?: ""
+
+            VendorOrderDetailScreen(
+                navController = navController,
+                paddingValues = appPaddingValues,
+                orderId = orderId,
+                orderViewModel = orderViewModel
+            )
+        }
+
+        composable(VendorRoutes.VendorMenu.route) {
+            VendorMenuScreen(
+                navController = navController,
+                paddingValues = appPaddingValues,
+                menuItemViewModel = menuItemViewModel
+            )
+        }
+
+        composable(VendorRoutes.VendorProfile.route) {
+            VendorProfileScreen(
+                navController = navController,
+                paddingValues = appPaddingValues
+            )
+        }
+
         composable(Routes.Orders.route) {
             MyOrderScreen(
                 navController = navController,
@@ -217,7 +287,7 @@ private fun AppNavHost(
             OrderReviewScreen(
                 navController = navController,
                 orderId = orderId,
-                itemName = "", // Will be fetched from order details
+                itemName = "",
                 itemImageUrl = "",
                 paddingValues = appPaddingValues
             )

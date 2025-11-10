@@ -56,6 +56,7 @@ import org.rajat.quickpick.presentation.components.CustomTextField
 import org.rajat.quickpick.presentation.feature.auth.components.InlineClickableText
 import org.rajat.quickpick.presentation.feature.auth.components.RegisterButton
 import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.VendorRoutes
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators
@@ -106,19 +107,19 @@ fun VendorRegisterScreen(
         when (vendorRegisterState) {
             is UiState.Success -> {
                 val response = (vendorRegisterState as UiState.Success<LoginVendorResponse>).data
-                // Extract tokens from the new structure
                 TokenProvider.token = response.tokens.accessToken
                 dataStore.saveToken(response.tokens.accessToken)
                 dataStore.saveRefreshToken(response.tokens.refreshToken)
 
-                // Calculate and save token expiry time in milliseconds
                 val expiryMillis = Clock.System.now().toEpochMilliseconds() + (response.tokens.expiresIn * 1000)
                 dataStore.saveTokenExpiryMillis(expiryMillis)
 
                 dataStore.saveId(response.userId)
+                dataStore.saveUserRole("VENDOR")
                 dataStore.saveVendorProfile(response)
+                dataStore.clearUserProfile()
                 showToast("Vendor Registered Successfully")
-                navController.navigate(Routes.Home.route) {
+                navController.navigate(VendorRoutes.VendorDashboard.route) {
                     popUpTo(Routes.VendorRegister.route) { inclusive = true }
                 }
             }
