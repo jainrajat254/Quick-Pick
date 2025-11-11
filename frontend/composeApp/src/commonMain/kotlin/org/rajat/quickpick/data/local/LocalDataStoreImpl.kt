@@ -25,6 +25,7 @@ class LocalDataStoreImpl(
         private val KEY_TOKEN_EXPIRY = longPreferencesKey("token_expiry_time")
 
         private val ID_KEY = stringPreferencesKey("user_or_vendor_id")
+        private val USER_ROLE_KEY = stringPreferencesKey("user_role")
         private val VENDOR_PROFILE_KEY = stringPreferencesKey("vendor_profile")
         private val USER_PROFILE_KEY = stringPreferencesKey("user_profile")
 
@@ -71,6 +72,17 @@ class LocalDataStoreImpl(
     override suspend fun getId(): String? =
         dataStore.data.first()[ID_KEY]
 
+    override suspend fun saveUserRole(role: String) {
+        dataStore.edit { it[USER_ROLE_KEY] = role }
+    }
+
+    override suspend fun getUserRole(): String? =
+        dataStore.data.first()[USER_ROLE_KEY]
+
+    override suspend fun clearUserRole() {
+        dataStore.edit { it.remove(USER_ROLE_KEY) }
+    }
+
     override suspend fun saveVendorProfile(loginVendorResponse: LoginVendorResponse) {
         val jsonString = json.encodeToString(loginVendorResponse)
         dataStore.edit { it[VENDOR_PROFILE_KEY] = jsonString }
@@ -83,6 +95,10 @@ class LocalDataStoreImpl(
         }.getOrNull()
     }
 
+    override suspend fun clearVendorProfile() {
+        dataStore.edit { it.remove(VENDOR_PROFILE_KEY) }
+    }
+
     override suspend fun saveUserProfile(loginUserResponse: LoginUserResponse) {
         val jsonString = json.encodeToString(loginUserResponse)
         dataStore.edit { it[USER_PROFILE_KEY] = jsonString }
@@ -93,6 +109,10 @@ class LocalDataStoreImpl(
         return runCatching {
             json.decodeFromString<LoginUserResponse>(jsonString)
         }.getOrNull()
+    }
+
+    override suspend fun clearUserProfile() {
+        dataStore.edit { it.remove(USER_PROFILE_KEY) }
     }
 
     override suspend fun setHasOnboarded(bool: Boolean) {

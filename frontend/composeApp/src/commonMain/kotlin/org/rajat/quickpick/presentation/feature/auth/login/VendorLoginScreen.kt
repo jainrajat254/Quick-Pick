@@ -48,6 +48,7 @@ import org.rajat.quickpick.presentation.components.CustomTextField
 import org.rajat.quickpick.presentation.feature.auth.components.InlineClickableText
 import org.rajat.quickpick.presentation.feature.auth.components.RegisterButton
 import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.VendorRoutes
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators.isLoginFormValid
@@ -86,9 +87,11 @@ fun VendorLoginScreen(
                 dataStore.saveTokenExpiryMillis(expiryMillis)
 
                 dataStore.saveId(response.userId)
+                dataStore.saveUserRole("VENDOR")
                 dataStore.saveVendorProfile(response)
+                dataStore.clearUserProfile()
                 showToast("Vendor Signed In Successfully")
-                navController.navigate(Routes.Home.route) {
+                navController.navigate(VendorRoutes.VendorDashboard.route) {
                     popUpTo(Routes.VendorLogin.route) { inclusive = true }
                 }
             }

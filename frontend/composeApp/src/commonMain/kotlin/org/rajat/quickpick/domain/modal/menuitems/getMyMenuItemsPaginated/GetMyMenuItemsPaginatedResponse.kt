@@ -1,11 +1,11 @@
 package org.rajat.quickpick.domain.modal.menuitems.getMyMenuItemsPaginated
 
 import kotlinx.serialization.Serializable
-import org.rajat.quickpick.domain.modal.college.paginatedColleges.Content
+import org.rajat.quickpick.domain.modal.menuitems.MenuItem
 
 @Serializable
 data class GetMyMenuItemsPaginatedResponse(
-    val content: List<Content?>? = null,
+    val content: List<MenuItem?>? = null,
     val empty: Boolean? = null,
     val first: Boolean? = null,
     val last: Boolean? = null,

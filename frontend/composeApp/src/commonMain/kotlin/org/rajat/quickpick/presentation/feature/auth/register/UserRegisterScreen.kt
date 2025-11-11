@@ -107,7 +107,9 @@ fun UserRegisterScreen(
                 dataStore.saveTokenExpiryMillis(expiryMillis)
 
                 dataStore.saveId(response.userId)
+                dataStore.saveUserRole("USER")
                 dataStore.saveUserProfile(response)
+                dataStore.clearVendorProfile()
                 showToast("User Registered Successfully")
                 navController.navigate(Routes.Home.route) {
                     popUpTo(Routes.VendorRegister.route) { inclusive = true }
