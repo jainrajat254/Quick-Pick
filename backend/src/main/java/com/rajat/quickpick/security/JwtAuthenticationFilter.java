@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -30,13 +31,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
+    private static final Set<String> PUBLIC_PATHS = Set.of(
+            "/api/auth/register/user",
+            "/api/auth/register/vendor",
+            "/api/auth/login/user",
+            "/api/auth/login/vendor",
+            "/api/auth/verify-email",
+            "/api/auth/forgot-password",
+            "/api/auth/reset-password",
+            "/api/auth/resend-verification",
+            "/api/auth/refresh-token"
+    );
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.startsWith("/api/auth/") ||
-               path.startsWith("/ws/") ||
-               path.equals("/api/admin/create") ||
-               path.equals("/api/admin/login");
+        if (path.startsWith("/ws/")) return true;
+        if (path.equals("/api/admin/create") || path.equals("/api/admin/login")) return true;
+        return PUBLIC_PATHS.contains(path);
     }
 
     @Override

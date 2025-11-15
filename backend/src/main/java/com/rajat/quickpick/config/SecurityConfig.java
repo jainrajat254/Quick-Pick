@@ -48,13 +48,15 @@ public class SecurityConfig {
                         csrf -> csrf.disable()
                 )
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/admin/create").permitAll()
-                                .requestMatchers("/api/admin/login").permitAll()
-
-//                        .requestMatchers("/ws/**").permitAll()
-
-
+                        .requestMatchers("/api/auth/register/**").permitAll()
+                        .requestMatchers("/api/auth/login/**").permitAll()
+                        .requestMatchers("/api/auth/verify-email").permitAll()
+                        .requestMatchers("/api/auth/forgot-password").permitAll()
+                        .requestMatchers("/api/auth/reset-password").permitAll()
+                        .requestMatchers("/api/auth/resend-verification").permitAll()
+                        .requestMatchers("/api/auth/refresh-token").permitAll()
+                        .requestMatchers("/api/admin/create").permitAll()
+                        .requestMatchers("/api/admin/login").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
