@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.feature.auth.components.OnboardingScreenLayout
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.payment
 import quickpick.composeapp.generated.resources.pizza
@@ -46,13 +46,13 @@ fun OnboardingScreen2(
         cardDescription = "No need to worry about cash! Pay instantly using UPI, cards, or your campus wallet. Fast, safe, and hassle-free checkout every time.",
         buttonText = "Next",
         onButtonClick = {
-            navController.navigate(Routes.Onboarding3.route)
+            navController.navigate(AppScreenUser.Onboarding3)
         },
         onSkipClick = {
             coroutineScope.launch {
                 dataStore.setHasOnboarded(true)
-                navController.navigate(Routes.LaunchWelcome.route) {
-                    popUpTo(Routes.Onboarding2.route) { inclusive = true }
+                navController.navigate(AppScreenUser.LaunchWelcome) {
+                    popUpTo(AppScreenUser.Onboarding2) { inclusive = true }
                 }
             }
         },

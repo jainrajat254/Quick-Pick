@@ -24,7 +24,8 @@ import org.koin.compose.koinInject
 import org.rajat.quickpick.presentation.feature.myorders.components.OrderList
 import org.rajat.quickpick.presentation.feature.myorders.components.OrderTab
 import org.rajat.quickpick.presentation.feature.myorders.components.StyledTabRow
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
+import org.rajat.quickpick.presentation.viewmodel.CartViewModel
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
@@ -34,26 +35,24 @@ import org.rajat.quickpick.utils.toast.showToast
 fun MyOrderScreen(
     navController: NavHostController,
     paddingValues: PaddingValues,
-    orderViewModel: OrderViewModel = koinInject()
+    orderViewModel: OrderViewModel = koinInject(),
+    cartViewModel: CartViewModel = koinInject()
 ) {
     val tabs = listOf(OrderTab.Active, OrderTab.Completed, OrderTab.Cancelled)
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     val myOrdersState by orderViewModel.myOrdersState.collectAsState()
 
-    // Fetch orders when screen loads
     LaunchedEffect(Unit) {
         orderViewModel.getMyOrders()
     }
 
-    // Show error toast when API call fails
     LaunchedEffect(myOrdersState) {
         if (myOrdersState is UiState.Error) {
             showToast((myOrdersState as UiState.Error).message)
         }
     }
 
-    // Filter orders based on status
     val allOrders = when (myOrdersState) {
         is UiState.Success -> (myOrdersState as UiState.Success).data.orders?.filterNotNull() ?: emptyList()
         else -> emptyList()
@@ -109,19 +108,55 @@ fun MyOrderScreen(
                         orders = currentOrders,
                         tabName = tabs[selectedTabIndex].title,
                         onOrderCancel = {
-                            navController.navigate(Routes.CancelOrder.createRoute(it))
+                            navController.navigate(
+                                AppScreenUser.CancelOrder(orderId = it)
+                            )
                         },
-                        onOrderRate = {
-                            navController.navigate(Routes.ReviewOrder.createRoute(it))
+                        onOrderRate = {order->
+                            val orderId = order.id
+                            val firstItem = order.orderItems?.firstOrNull()
+                            val itemName = firstItem?.menuItemName ?: "Item"
+                            val itemImageUrl =  ""
+
+                            if (orderId != null) {
+                                navController.navigate(
+                                    AppScreenUser.ReviewOrder(
+                                        orderId = orderId,
+                                        itemName = itemName,
+                                        itemImageUrl = itemImageUrl
+                                    )
+                                )
+                            } else {
+                                showToast("Error: Cannot review this order.")
+                            }
                         },
-                        onOrderAgain = {
-                            navController.navigate(Routes.Cart.route)
+                        onOrderAgain = { order ->
+                            cartViewModel.clearCart()
+                            order.orderItems
+                                ?.filterNotNull()
+                                ?.forEach { item ->
+
+                                    val id = item.menuItemId ?: return@forEach
+                                    val qty = item.quantity ?: return@forEach
+
+                                    cartViewModel.addToCart(
+                                        menuItemId = id,
+                                        quantity = qty
+                                    )
+                                }
+
+                            navController.navigate(AppScreenUser.Cart)
                         },
                         onOrderViewDetails = {
-                            navController.navigate(Routes.OrderDetail.createRoute(it))
+                            navController.navigate(AppScreenUser.OrderDetail(
+                                orderId = it
+                            ))
                         },
                         onclick = {
-                            navController.navigate(Routes.OrderDetail.createRoute(it))
+                            navController.navigate(AppScreenUser.OrderDetail(
+                                orderId = it
+                            )
+                            )
                         }
                     )
                 }

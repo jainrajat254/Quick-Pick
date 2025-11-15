@@ -11,11 +11,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.GetOrderByIdResponse
 import org.rajat.quickpick.presentation.feature.cart.components.CreateOrderBody
 import org.rajat.quickpick.presentation.feature.cart.components.OrderInfoHeader
 import org.rajat.quickpick.presentation.feature.cart.components.PaymentMethod
 import org.rajat.quickpick.presentation.feature.cart.components.SpecialInstructions
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.viewmodel.CartViewModel
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.utils.UiState
@@ -43,11 +44,16 @@ fun CheckoutScreen(
         when (createOrderState) {
             is UiState.Success -> {
                 showToast("Order placed successfully!")
-                // Clear cart and navigate to confirmation
+                val successfulOrderId =
+                    (createOrderState as UiState.Success<GetOrderByIdResponse>).data.id!!
+
                 cartViewModel.clearCart()
                 orderViewModel.resetCreateOrderState()
-                navController.navigate(Routes.ConfirmOrder.route) {
-                    popUpTo(Routes.Cart.route) { inclusive = true }
+
+                navController.navigate(
+                    AppScreenUser.ConfirmOrder(orderId = successfulOrderId)
+                ) {
+                    popUpTo(AppScreenUser.Cart) { inclusive = true }
                 }
             }
             is UiState.Error -> {

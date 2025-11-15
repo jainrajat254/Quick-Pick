@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.feature.auth.components.OnboardingScreenLayout
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.chocolateshake
 import quickpick.composeapp.generated.resources.delivery
@@ -48,16 +48,16 @@ fun OnboardingScreen3(
         onButtonClick = {
             coroutineScope.launch {
                 dataStore.setHasOnboarded(true)
-                navController.navigate(Routes.LaunchWelcome.route) {
-                    popUpTo(Routes.Onboarding3.route) { inclusive = true }
+                navController.navigate(AppScreenUser.LaunchWelcome) {
+                    popUpTo(AppScreenUser.Onboarding3) { inclusive = true }
                 }
             }
         },
         onSkipClick = {
             coroutineScope.launch {
                 dataStore.setHasOnboarded(true)
-                navController.navigate(Routes.LaunchWelcome.route) {
-                    popUpTo(Routes.Onboarding3.route) { inclusive = true }
+                navController.navigate(AppScreenUser.LaunchWelcome) {
+                    popUpTo(AppScreenUser.Onboarding3) { inclusive = true }
                 }
             }
         },

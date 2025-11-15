@@ -9,7 +9,6 @@ import org.rajat.quickpick.domain.modal.profile.GetStudentProfileResponse
 import org.rajat.quickpick.domain.modal.search.GetVendorByIDResponse
 import org.rajat.quickpick.presentation.feature.cart.CartItem
 import org.rajat.quickpick.presentation.feature.profile.components.FaqItem
-import org.rajat.quickpick.presentation.navigation.Routes
 
 object DummyData {
 
@@ -724,4 +723,13 @@ val dummyFaqList = listOf(
         question = "What if I have an issue with my order?",
         answer = "If you have any problems with your food, payment, or pickup, please visit the 'Contact Us' section in the profile menu to get in touch with our support team."
     )
+)
+
+
+
+val dummyVendorFaqList = listOf(
+    FaqItem(1, "How do I update my menu items?", "You can update your menu items by going to the 'My Menu' tab and tapping on the item you wish to edit."),
+    FaqItem(2, "How do payouts work?", "Payouts are processed weekly every Friday. You can see your earnings summary in the 'Earnings' tab."),
+    FaqItem(3, "How can I temporarily close my store?", "In the 'Profile' tab, you can toggle your store's availability. Setting it to 'Unavailable' will temporarily hide your store from customers."),
+    FaqItem(4, "What are the commission rates?", "Standard commission rates are 15%. For more details, please check your vendor agreement in the 'Settings' section.")
 )

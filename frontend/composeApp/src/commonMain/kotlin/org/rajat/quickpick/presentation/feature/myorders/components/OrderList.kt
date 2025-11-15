@@ -13,8 +13,8 @@ fun OrderList(
     orders: List<GetOrderByIdResponse>,
     tabName: String,
     onOrderCancel: (String) -> Unit,
-    onOrderRate: (String) -> Unit,
-    onOrderAgain: (String) -> Unit,
+    onOrderRate: (GetOrderByIdResponse) -> Unit,
+    onOrderAgain: (GetOrderByIdResponse) -> Unit,
     onOrderViewDetails: (String) -> Unit,
     onclick: (String) -> Unit
 ) {
@@ -27,10 +27,11 @@ fun OrderList(
         ) {
             items(orders) { order ->
                 OrderItemCard(
+
                     order = order,
                     onCancel = { order.id?.let(onOrderCancel) ?: Unit },
-                    onRate = { order.id?.let(onOrderRate) ?: Unit },
-                    onOrderAgain = { order.id?.let(onOrderAgain) ?: Unit },
+                    onRate = { onOrderRate(order) },
+                    onOrderAgain = { onOrderAgain(order) },
                     onViewDetails = { order.id?.let(onOrderViewDetails) ?: Unit },
                     onClick = {
                         onclick(

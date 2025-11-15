@@ -1,6 +1,5 @@
 package org.rajat.quickpick.presentation.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -17,11 +16,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.navigation.BottomNavItem
-import org.rajat.quickpick.presentation.navigation.Routes
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.bgrem
 import quickpick.composeapp.generated.resources.bgremlight
@@ -30,12 +28,17 @@ import quickpick.composeapp.generated.resources.bgremlight
 @Composable
 fun BasePage(
 
-    currentRoute: String = "home",
+    currentRoute: String = AppScreenUser.HomeScreen::class.simpleName.toString(),
     onBackClick: () -> Unit,
     onNavigate: (String) -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
-    val rootScreens = listOf("home", "cart", "orders", "profile")
+    val rootScreens = listOf(
+        AppScreenUser.HomeScreen::class.simpleName,
+        AppScreenUser.Cart::class.simpleName,
+        AppScreenUser.Orders::class.simpleName,
+        AppScreenUser.Profile::class.simpleName
+    )
     val showBackButton = currentRoute !in rootScreens && currentRoute.isNotEmpty()
     val userName: String = "Current User"
     val userEmail: String = "currentuser@gmail.com"
@@ -60,26 +63,26 @@ fun BasePage(
 
     val bottomNavItems = listOf(
         BottomNavItem(
-            route = "home",
+            route = AppScreenUser.HomeScreen::class.simpleName!!,
             label = "Home",
             selectedIcon = Icons.Filled.Home,
             unselectedIcon = Icons.Outlined.Home
         ),
         BottomNavItem(
-            route = Routes.Cart.route,
+            route = AppScreenUser.Cart::class.simpleName!!,
             label = "Cart",
             selectedIcon = Icons.Filled.ShoppingCart,
             unselectedIcon = Icons.Outlined.ShoppingCart,
             badgeCount = cartItemCount
         ),
         BottomNavItem(
-            route = Routes.Orders.route,
+            route = AppScreenUser.Orders::class.simpleName!!,
             label = "Orders",
             selectedIcon = Icons.AutoMirrored.Filled.List,
             unselectedIcon = Icons.AutoMirrored.Filled.List
         ),
         BottomNavItem(
-            route = Routes.Profile.route,
+            route = AppScreenUser.Profile::class.simpleName!!,
             label = "Profile",
             selectedIcon = Icons.Filled.Person,
             unselectedIcon = Icons.Outlined.Person
@@ -156,7 +159,7 @@ fun BasePage(
                     items = bottomNavItems,
                     currentRoute = currentRoute,
                     onItemClick = { route ->
-                        onNavigate(route)
+                        onNavigate(route as String)
                     }
                 )
             }
@@ -185,7 +188,7 @@ private fun DrawerContent(
             horizontalAlignment = Alignment.Start,
 
 
-        ) {
+            ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -228,9 +231,6 @@ private fun DrawerContent(
                     )
                 }
             }
-
-
-
         }
 
         HorizontalDivider(
@@ -315,11 +315,12 @@ private fun DrawerContent(
     }
 }
 
+// This is your original BottomNavigationBar implementation
 @Composable
 private fun BottomNavigationBar(
     items: List<BottomNavItem>,
-    currentRoute: String,
-    onItemClick: (String) -> Unit
+    currentRoute: Any,
+    onItemClick: (Any) -> Unit
 ) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -377,47 +378,30 @@ private fun BottomNavigationBar(
 
 
 private fun getScreenTitle(route: String): String {
-    return when (route) {
-        "home" -> "QuickPick"
-        "cart" -> "My Cart"
-        "orders" -> "My Orders"
-        "profile" -> "Profile"
-        "order_details/{orderId}" -> "Order Details"
-        "my_orders" -> "My Orders"
-        "review_order/{order_Id}" -> "Review Order"
-        "cancel_order/{orderId}" -> "Cancel Order"
-        "my_profile" -> "My Profile"
-        "contact_us" -> "Get In Touch"
-        "change_password"->"Change Password"
-        "notification_setting"->"Notification Setting"
-        "settings"->"Settings"
-        "cart"-> "My Cart"
-        "checkout"-> "Confirm Order"
-        "help_and_faqs"->"Help & FAQs"
-
-
+    return when {
+        route.contains(AppScreenUser.OrderDetail::class.simpleName!!) -> "Order Details"
+        route.contains(AppScreenUser.ReviewOrder::class.simpleName!!) -> "Review Order"
+        route.contains(AppScreenUser.CancelOrder::class.simpleName!!) -> "Cancel Order"
+        route.contains(AppScreenUser.VendorDetail::class.simpleName!!) -> "Vendor Details"
+        route.contains(AppScreenUser.MyProfile::class.simpleName!!) -> "My Profile"
+        route.contains(AppScreenUser.ContactUs::class.simpleName!!) -> "Get In Touch"
+        route.contains(AppScreenUser.ChangePassword::class.simpleName!!) -> "Change Password"
+        route.contains(AppScreenUser.NotificationSetting::class.simpleName!!) -> "Notification Setting"
+        route.contains(AppScreenUser.Settings::class.simpleName!!) -> "Settings"
+        route.contains(AppScreenUser.Checkout::class.simpleName!!) -> "Confirm Order"
+        route.contains(AppScreenUser.HelpAndFaqs::class.simpleName!!) -> "Help & FAQs"
+        route.contains(AppScreenUser.HomeScreen::class.simpleName!!) -> "QuickPick"
+        route.contains(AppScreenUser.Cart::class.simpleName!!) -> "My Cart"
+        route.contains(AppScreenUser.Orders::class.simpleName!!) -> "My Orders"
+        route.contains(AppScreenUser.Profile::class.simpleName!!) -> "Profile"
+        route.contains("my_profile") -> "My Profile"
+        route.contains("my_orders") -> "My Orders"
+        route.contains("contact_us") -> "Get In Touch"
         else -> "QuickPick"
     }
 }
-//data object ReviewOrder : Routes("review_order/{orderId}") {
-//    fun createRoute(orderId: String) = "review_order/$orderId"
-//}
-//data object CancelOrderConfirmation : Routes("cancel_order_confirmation")
-//data object ReviewOrderConfirmation : Routes("review_order_confirmation")
-//data object MyProfile : Routes("my_profile")
-//data object ContactUs : Routes("contact_us")
-////    data object AboutUs : Routes("about_us")
-//data object ChangePassword : Routes("change_password")
-//data object NotificationSetting : Routes("notification_setting")
-//data object Settings : Routes("settings")
-
-
-
-
-
 data class DrawerMenuItem(
     val route: String,
     val label: String,
     val icon: ImageVector
 )
-

@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import org.rajat.quickpick.presentation.feature.vendor.dashboard.components.QuickActionsSection
 import org.rajat.quickpick.presentation.feature.vendor.dashboard.components.StatsCard
-import org.rajat.quickpick.presentation.navigation.VendorRoutes
+import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.utils.UiState
 
@@ -146,10 +146,10 @@ fun VendorDashboardScreen(
         item {
             QuickActionsSection(
                 onViewOrders = {
-                    navController.navigate(VendorRoutes.VendorOrders.route)
+                    navController.navigate(AppScreenVendor.VendorOrders)
                 },
                 onManageMenu = {
-                    navController.navigate(VendorRoutes.VendorMenu.route)
+                    navController.navigate(AppScreenVendor.VendorMenu)
                 }
             )
         }

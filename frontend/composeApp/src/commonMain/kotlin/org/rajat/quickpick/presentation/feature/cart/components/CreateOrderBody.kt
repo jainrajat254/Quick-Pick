@@ -23,7 +23,6 @@ import androidx.navigation.NavHostController
 import org.rajat.quickpick.domain.modal.ordermanagement.createOrder.CreateOrderRequest
 import org.rajat.quickpick.domain.modal.ordermanagement.createOrder.OrderItem
 import org.rajat.quickpick.presentation.feature.cart.CartItem
-import org.rajat.quickpick.presentation.navigation.Routes
 
 @Composable
 fun CreateOrderBody(

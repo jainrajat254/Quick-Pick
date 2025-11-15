@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 
 @Composable
 fun ReviewOrderConfirmationScreen(
@@ -58,7 +58,14 @@ fun ReviewOrderConfirmationScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = { navController.navigate(Routes.Orders.route) },
+            onClick = {
+                navController.navigate(AppScreenUser.Orders) {
+                    popUpTo(navController.graph.startDestinationId) {
+                        inclusive = false
+                    }
+                    launchSingleTop = true
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth(0.8f)
                 .height(50.dp),

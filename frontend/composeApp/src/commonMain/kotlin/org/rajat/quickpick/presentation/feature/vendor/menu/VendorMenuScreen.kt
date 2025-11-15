@@ -17,6 +17,7 @@ import androidx.navigation.NavController
 import org.koin.compose.koinInject
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.feature.vendor.menu.components.VendorMenuItemCard
+import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
@@ -262,7 +263,8 @@ fun VendorMenuScreen(
                                             onEdit = {
                                                 filteredItems[index].id?.let { id ->
                                                     // TODO: Navigate to edit screen
-                                                    showToast("Edit functionality coming soon")
+//                                                    showToast("Edit functionality coming soon")
+                                                    navController.navigate(AppScreenVendor.UpdateMenuItemScreen(id))
                                                 }
                                             },
                                             onDelete = {
@@ -320,7 +322,8 @@ fun VendorMenuScreen(
             FloatingActionButton(
                 onClick = {
                     // TODO: Navigate to create menu item screen
-                    showToast("Add menu item functionality coming soon")
+                    navController.navigate(AppScreenVendor.AddMenuItemScreen)
+
                 },
                 modifier = Modifier.padding(16.dp),
                 containerColor = MaterialTheme.colorScheme.primary

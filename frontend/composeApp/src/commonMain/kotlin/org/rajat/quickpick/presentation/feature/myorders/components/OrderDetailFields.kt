@@ -82,7 +82,7 @@ fun OrderDetailFields(
             color = MaterialTheme.colorScheme.onSurface
         )
         Text(
-            "$${(order.totalAmount ?: 0.0).format(2)}",
+            "₹${(order.totalAmount ?: 0.0).format(2)}",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary // Green for total

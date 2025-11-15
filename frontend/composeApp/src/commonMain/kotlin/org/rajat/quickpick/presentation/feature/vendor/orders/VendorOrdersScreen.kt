@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.feature.vendor.orders.components.VendorOrderCard
-import org.rajat.quickpick.presentation.navigation.VendorRoutes
+import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.utils.UiState
 
@@ -136,7 +136,9 @@ fun VendorOrdersScreen(
                                 order = order,
                                 onClick = {
                                     order.id?.let { orderId ->
-                                        navController.navigate(VendorRoutes.VendorOrderDetail.createRoute(orderId))
+                                        navController.navigate(AppScreenVendor.VendorOrderDetail(
+                                            orderId = orderId
+                                        ))
                                     }
                                 }
                             )

@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 
 @Composable
 fun ActionButtons(
@@ -28,7 +28,7 @@ fun ActionButtons(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Button(
-            onClick = { if (orderId != null) navController.navigate(Routes.OrderDetail.route)},
+            onClick = { if (orderId != null) navController.navigate(AppScreenUser.OrderDetail)},
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
@@ -40,7 +40,12 @@ fun ActionButtons(
 
         OutlinedButton(
             onClick = {
-                navController.navigate(Routes.Home.route)
+                navController.navigate(AppScreenUser.HomeScreen) {
+                    popUpTo(navController.graph.startDestinationId) {
+                        inclusive = false
+                    }
+                    launchSingleTop = true
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
