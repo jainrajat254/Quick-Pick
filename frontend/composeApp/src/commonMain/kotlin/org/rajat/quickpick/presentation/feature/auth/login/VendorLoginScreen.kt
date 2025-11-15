@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -76,12 +77,32 @@ fun VendorLoginScreen(
 
     val vendorLoginState by authViewModel.vendorLoginState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+        logoutLogger.d { "VENDOR_LOGIN - Screen loaded" }
+        logoutLogger.d { "VENDOR_LOGIN - Current vendorLoginState: $vendorLoginState" }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+            logoutLogger.d { "VENDOR_LOGIN - Screen disposed, resetting auth states" }
+            authViewModel.resetAuthStates()
+        }
+    }
+
     LaunchedEffect(vendorLoginState) {
+        val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+        logoutLogger.d { "VENDOR_LOGIN - LaunchedEffect triggered, vendorLoginState: $vendorLoginState" }
+
         when (vendorLoginState) {
             is UiState.Success -> {
+                logoutLogger.d { "VENDOR_LOGIN - Success state detected, auto-logging in!" }
                 val response = (vendorLoginState as UiState.Success<LoginVendorResponse>).data
+                logoutLogger.d { "VENDOR_LOGIN - Calling AuthSessionSaver.saveVendorSession" }
                 AuthSessionSaver.saveVendorSession(dataStore, response)
                 showToast("Vendor Signed In Successfully")
+                logoutLogger.d { "VENDOR_LOGIN - Navigating to VendorDashboard" }
                 navController.navigate(AppScreenVendor.VendorDashboard) {
                     popUpTo(0) { inclusive = true }
                     launchSingleTop = true
@@ -90,11 +111,14 @@ fun VendorLoginScreen(
 
             is UiState.Error -> {
                 val message = (vendorLoginState as UiState.Error).message ?: "Unknown error"
+                logoutLogger.d { "VENDOR_LOGIN - Error state: $message" }
                 showToast(message)
                 logger.e { message }
             }
 
-            else -> Unit
+            else -> {
+                logoutLogger.d { "VENDOR_LOGIN - State is Empty or Loading" }
+            }
         }
     }
 

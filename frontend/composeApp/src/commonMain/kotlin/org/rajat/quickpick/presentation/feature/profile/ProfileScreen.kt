@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.rajat.quickpick.data.local.LocalDataStore
@@ -81,9 +82,7 @@ fun ProfileScreen(
     LaunchedEffect(logoutState) {
         when (logoutState) {
             is UiState.Success -> {
-                PlatformScheduler.cancelScheduledRefresh()
-                TokenProvider.token = null
-                dataStore.clearAll()
+                Logger.withTag("LOGOUT_DEBUG").d { "USER - Logout API Success, navigating to welcome" }
                 authViewModel.resetAuthStates()
                 profileViewModel.resetProfileStates()
                 showToast("Logged out successfully")
@@ -93,9 +92,7 @@ fun ProfileScreen(
                 }
             }
             is UiState.Error -> {
-                PlatformScheduler.cancelScheduledRefresh()
-                TokenProvider.token = null
-                coroutineScope.launch { dataStore.clearAll() }
+                Logger.withTag("LOGOUT_DEBUG").d { "USER - Logout API Error, navigating to welcome" }
                 authViewModel.resetAuthStates()
                 profileViewModel.resetProfileStates()
                 showToast("Logged out")
@@ -204,10 +201,40 @@ fun ProfileScreen(
             onConfirmLogout = {
                 showLogoutDialog = false
                 coroutineScope.launch {
+                    val logger = Logger.withTag("LOGOUT_DEBUG")
+                    logger.d { "USER - Logout button clicked" }
+
+                    val tokenBefore = dataStore.getToken()
+                    val refreshTokenBefore = dataStore.getRefreshToken()
+                    val userRoleBefore = dataStore.getUserRole()
+                    val userIdBefore = dataStore.getId()
+
+                    logger.d { "USER - Before clear - Token: $tokenBefore" }
+                    logger.d { "USER - Before clear - RefreshToken: $refreshTokenBefore" }
+                    logger.d { "USER - Before clear - UserRole: $userRoleBefore" }
+                    logger.d { "USER - Before clear - UserId: $userIdBefore" }
+
                     val refreshToken = dataStore.getRefreshToken()
+
+                    authViewModel.resetAuthStates()
+                    profileViewModel.resetProfileStates()
+
                     dataStore.clearAll()
                     PlatformScheduler.cancelScheduledRefresh()
                     TokenProvider.token = null
+
+                    val tokenAfter = dataStore.getToken()
+                    val refreshTokenAfter = dataStore.getRefreshToken()
+                    val userRoleAfter = dataStore.getUserRole()
+                    val userIdAfter = dataStore.getId()
+
+                    logger.d { "USER - After clear - Token: $tokenAfter" }
+                    logger.d { "USER - After clear - RefreshToken: $refreshTokenAfter" }
+                    logger.d { "USER - After clear - UserRole: $userRoleAfter" }
+                    logger.d { "USER - After clear - UserId: $userIdAfter" }
+                    logger.d { "USER - TokenProvider.token: ${TokenProvider.token}" }
+                    logger.d { "USER - Datastore cleared, calling logout API" }
+
                     val logoutRequest = LogoutRequest(refreshToken = refreshToken)
                     authViewModel.logout(logoutRequest)
                 }

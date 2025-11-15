@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -77,7 +78,23 @@ fun UserLoginScreen(
 
     val userLoginState by authViewModel.userLoginState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+        logoutLogger.d { "USER_LOGIN - Screen loaded" }
+        logoutLogger.d { "USER_LOGIN - Current userLoginState: $userLoginState" }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+            logoutLogger.d { "USER_LOGIN - Screen disposed, resetting auth states" }
+            authViewModel.resetAuthStates()
+        }
+    }
+
     LaunchedEffect(userLoginState) {
+        val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+        logoutLogger.d { "USER_LOGIN - LaunchedEffect triggered, userLoginState: $userLoginState" }
         when (userLoginState) {
             is UiState.Success -> {
                 val response = (userLoginState as UiState.Success<LoginUserResponse>).data

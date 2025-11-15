@@ -199,7 +199,7 @@ fun VendorScreen(
                     }
 
                     item {
-                        Spacer(modifier = Modifier.height(48.dp))
+                        Spacer(modifier = Modifier.height(60.dp))
                     }
                 }
             }

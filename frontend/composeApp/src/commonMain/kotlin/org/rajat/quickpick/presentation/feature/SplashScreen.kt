@@ -42,22 +42,36 @@ fun SplashScreen(
         val token = datastore.getToken()
         logger.d { "SplashScreen Token: $token" }
 
+        val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+        logoutLogger.d { "SPLASH - Checking auto-login" }
+        logoutLogger.d { "SPLASH - Token: $token" }
+
         if (token.isNullOrEmpty()) {
             logger.i { "No token found. Navigating to LaunchWelcome." }
+            logoutLogger.d { "SPLASH - No token found, navigating to LaunchWelcome" }
             navController.navigate(AppScreenUser.LaunchWelcome) {
                 popUpTo(0) { inclusive = true }
             }
         } else {
             val userRole = datastore.getUserRole()
+            val userId = datastore.getId()
+            val refreshToken = datastore.getRefreshToken()
+
+            logoutLogger.d { "SPLASH - UserRole: $userRole" }
+            logoutLogger.d { "SPLASH - UserId: $userId" }
+            logoutLogger.d { "SPLASH - RefreshToken: $refreshToken" }
 
             val destination = when (userRole) {
                 "VENDOR" -> {
+                    logoutLogger.d { "SPLASH - Auto-logging in as VENDOR" }
                     AppScreenVendor.VendorDashboard
                 }
                 "USER" -> {
+                    logoutLogger.d { "SPLASH - Auto-logging in as USER" }
                     AppScreenUser.HomeScreen
                 }
                 else -> {
+                    logoutLogger.d { "SPLASH - Invalid role, clearing datastore" }
                     datastore.clearAll()
                     navController.navigate(AppScreenUser.LaunchWelcome) {
                         popUpTo(0) { inclusive = true }
@@ -66,6 +80,7 @@ fun SplashScreen(
                 }
             }
 
+            logoutLogger.d { "SPLASH - Navigating to: $destination" }
             navController.navigate(destination) {
                 popUpTo(0) { inclusive = true }
             }
