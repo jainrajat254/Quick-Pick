@@ -36,7 +36,7 @@ import org.rajat.quickpick.domain.modal.auth.LogoutRequest
 import org.rajat.quickpick.presentation.feature.profile.components.LogoutConfirmationDialog
 import org.rajat.quickpick.presentation.feature.profile.components.ProfileHeader
 import org.rajat.quickpick.presentation.feature.profile.components.ProfileMenuItem
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.presentation.viewmodel.ProfileViewModel
 import org.rajat.quickpick.utils.UiState
@@ -89,7 +89,7 @@ fun ProfileScreen(
                 showToast("Logged out successfully")
 
                 // Navigate to auth screen
-                navController.navigate(Routes.LaunchWelcome.route) {
+                navController.navigate(AppScreenUser.LaunchWelcome) {
                     popUpTo(0) { inclusive = true }
                     launchSingleTop = true
                 }
@@ -104,7 +104,7 @@ fun ProfileScreen(
 
                 showToast("Logged out")
 
-                navController.navigate(Routes.LaunchWelcome.route) {
+                navController.navigate(AppScreenUser.LaunchWelcome) {
                     popUpTo(0) { inclusive = true }
                     launchSingleTop = true
                 }
@@ -149,7 +149,7 @@ fun ProfileScreen(
                             text = "My Profile",
                             icon = Icons.Default.Person,
                             onClick = {
-                                navController.navigate(Routes.MyProfile.route)
+                                navController.navigate(AppScreenUser.MyProfile)
                             }
                         )
                     }
@@ -167,7 +167,7 @@ fun ProfileScreen(
                             text = "Contact Us",
                             icon = Icons.Outlined.Call,
                             onClick = {
-                                navController.navigate(Routes.ContactUs.route)
+                                navController.navigate(AppScreenUser.ContactUs)
                             }
                         )
                     }
@@ -176,7 +176,7 @@ fun ProfileScreen(
                             text = "Help & FAQs",
                             icon = Icons.Default.Info,
                             onClick = {
-                                navController.navigate(Routes.HelpAndFaqs.route)
+                                navController.navigate(AppScreenUser.HelpAndFaqs)
                             }
                         )
                     }
@@ -185,7 +185,7 @@ fun ProfileScreen(
                             text = "Settings",
                             icon = Icons.Default.Settings,
                             onClick = {
-                                navController.navigate(Routes.Settings.route)
+                                navController.navigate(AppScreenUser.Settings)
                             }
                         )
                     }

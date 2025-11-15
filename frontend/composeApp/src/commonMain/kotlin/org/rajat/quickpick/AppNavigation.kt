@@ -3,10 +3,12 @@ package org.rajat.quickpick
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.toRoute
 import org.koin.compose.koinInject
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.components.BasePage
@@ -25,6 +27,7 @@ import org.rajat.quickpick.presentation.feature.cart.CartScreen
 import org.rajat.quickpick.presentation.feature.cart.CheckoutScreen
 import org.rajat.quickpick.presentation.feature.cart.OrderConfirmationScreen
 import org.rajat.quickpick.presentation.feature.home.HomeScreen
+import org.rajat.quickpick.presentation.feature.menu.AddMenuItemScreen
 import org.rajat.quickpick.presentation.feature.myorders.CancelOrderScreen
 import org.rajat.quickpick.presentation.feature.myorders.MyOrderScreen
 import org.rajat.quickpick.presentation.feature.myorders.OrderCancelledConfirmationScreen
@@ -40,22 +43,27 @@ import org.rajat.quickpick.presentation.feature.profile.ProfileScreen
 import org.rajat.quickpick.presentation.feature.profile.SettingsScreen
 import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
 import org.rajat.quickpick.presentation.feature.vendor.dashboard.VendorDashboardScreen
+import org.rajat.quickpick.presentation.feature.vendor.menu.UpdateMenuItemScreen
 import org.rajat.quickpick.presentation.feature.vendor.menu.VendorMenuScreen
 import org.rajat.quickpick.presentation.feature.vendor.orders.VendorOrderDetailScreen
 import org.rajat.quickpick.presentation.feature.vendor.orders.VendorOrdersScreen
+import org.rajat.quickpick.presentation.feature.vendor.profile.HelpAndSupportScreenVendor
 import org.rajat.quickpick.presentation.feature.vendor.profile.VendorProfileScreen
-import org.rajat.quickpick.presentation.navigation.Routes
-import org.rajat.quickpick.presentation.navigation.VendorRoutes
+import org.rajat.quickpick.presentation.feature.vendor.profile.VendorProfileUpdateScreen
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
+import org.rajat.quickpick.presentation.navigation.AppScreenVendor
+import org.rajat.quickpick.presentation.navigation.getAppScreenUserFromRoute
+import org.rajat.quickpick.presentation.navigation.getAppScreenVendorFromRoute
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.presentation.viewmodel.HomeViewModel
-import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
+import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
 
 @Composable
 fun AppNavigation(
-    navController: NavHostController,
+    navController: NavHostController
 ) {
     val authViewModel: AuthViewModel = koinInject()
     val homeViewModel: HomeViewModel = koinInject()
@@ -64,74 +72,111 @@ fun AppNavigation(
     val orderViewModel: OrderViewModel = koinInject()
     val dataStore: LocalDataStore = koinInject()
     val refreshTokenManager: RefreshTokenManager = koinInject()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route ?: Routes.Splash.route
 
-    val screensWithoutBasePage = listOf(
-        Routes.Splash.route,
-        Routes.Onboarding1.route,
-        Routes.Onboarding2.route,
-        Routes.Onboarding3.route,
-        Routes.Welcome.route,
-        Routes.LaunchWelcome.route,
-        Routes.UserLogin.route,
-        Routes.VendorLogin.route,
-        Routes.UserRegister.route,
-        Routes.VendorRegister.route,
-        Routes.ReviewOrderConfirmation.route,
-        Routes.CancelOrderConfirmation.route,
-        Routes.ConfirmOrder.route,
-    )
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRouteString = backStackEntry?.destination?.route
 
-    val vendorScreens = listOf(
-        VendorRoutes.VendorDashboard.route,
-        VendorRoutes.VendorOrders.route,
-        VendorRoutes.VendorMenu.route,
-        VendorRoutes.VendorProfile.route,
-        "vendor_order_detail/{orderId}"
-    )
+    val currentRouteUser = getAppScreenUserFromRoute(currentRouteString)
+    val currentRouteVendor = getAppScreenVendorFromRoute(currentRouteString)
 
-    val isVendorScreen = vendorScreens.any { currentRoute.startsWith(it.split("{")[0]) }
-    val showBasePage = currentRoute !in screensWithoutBasePage
-
-    if (showBasePage) {
-        if (isVendorScreen) {
-            VendorBasePage(
-                currentRoute = currentRoute,
-                onNavigate = { route ->
-                    navController.navigate(route)
-                },
-                onBackClick = {
-                    navController.popBackStack()
-                }
-            ) { paddingValues ->
-                AppNavHost(navController, authViewModel, homeViewModel, vendorViewModel, menuItemViewModel, orderViewModel, dataStore, refreshTokenManager, paddingValues)
-            }
-        } else {
-            BasePage(
-                currentRoute = currentRoute,
-                onNavigate = { route ->
-                    navController.navigate(route)
-                },
-                onBackClick = {
-                    navController.popBackStack()
-                }
-            ) { paddingValues ->
-                AppNavHost(navController, authViewModel, homeViewModel, vendorViewModel, menuItemViewModel, orderViewModel, dataStore, refreshTokenManager, paddingValues)
-            }
+    val onNavigate: (String) -> Unit = { routeString ->
+        getAppScreenUserFromRoute(routeString)?.let { screen ->
+            navController.navigate(screen) { launchSingleTop = true }
+            return@let
         }
+        getAppScreenVendorFromRoute(routeString)?.let { screen ->
+            navController.navigate(screen) { launchSingleTop = true }
+            return@let
+        }
+    }
+
+    val showVendorBasePage = when (currentRouteVendor) {
+        null -> false
+        else -> true
+    }
+
+    val showUserBasePage = when (currentRouteUser) {
+        null -> false
+
+        AppScreenUser.Splash,
+        AppScreenUser.Onboarding1,
+        AppScreenUser.Onboarding2,
+        AppScreenUser.Onboarding3,
+        AppScreenUser.Welcome,
+        AppScreenUser.LaunchWelcome,
+        AppScreenUser.UserLogin,
+        AppScreenUser.VendorLogin,
+        AppScreenUser.UserRegister,
+        AppScreenUser.VendorRegister,
+        AppScreenUser.ReviewOrderConfirmation,
+        AppScreenUser.CancelOrderConfirmation,
+        AppScreenUser.ConfirmOrder -> false
+
+        else -> true
+    }
+
+
+    if (showVendorBasePage) {
+        VendorBasePage(
+            currentRoute = currentRouteString
+                ?: AppScreenVendor.VendorDashboard::class.simpleName!!,
+            onNavigate = onNavigate,
+            onBackClick = { navController.popBackStack() }
+        ) { padding ->
+            AppNavHost(
+                navController,
+                authViewModel = authViewModel,
+                homeViewModel = homeViewModel,
+                vendorViewModel = vendorViewModel,
+                menuItemViewModel = menuItemViewModel,
+                orderViewModel = orderViewModel,
+                dataStore = dataStore,
+                refreshTokenManager = refreshTokenManager,
+                appPaddingValues = padding
+            )
+        }
+
+    } else if (showUserBasePage) {
+        BasePage(
+            currentRoute = currentRouteString
+                ?: AppScreenUser.HomeScreen::class.simpleName!!,
+            onNavigate = onNavigate,
+            onBackClick = { navController.popBackStack() }
+        ) { padding ->
+            AppNavHost(
+                navController,
+                authViewModel = authViewModel,
+                homeViewModel = homeViewModel,
+                vendorViewModel = vendorViewModel,
+                menuItemViewModel = menuItemViewModel,
+                orderViewModel = orderViewModel,
+                dataStore = dataStore,
+                refreshTokenManager = refreshTokenManager,
+                appPaddingValues = padding
+            )
+        }
+
     } else {
-        AppNavHost(navController, authViewModel, homeViewModel, vendorViewModel, menuItemViewModel, orderViewModel, dataStore, refreshTokenManager, PaddingValues())
+        AppNavHost(
+            navController,
+            authViewModel = authViewModel,
+            homeViewModel = homeViewModel,
+            vendorViewModel = vendorViewModel,
+            menuItemViewModel = menuItemViewModel,
+            orderViewModel = orderViewModel,
+            dataStore = dataStore,
+            refreshTokenManager = refreshTokenManager,
+            appPaddingValues = PaddingValues(0.dp)
+        )
     }
 }
-
 @Composable
 private fun AppNavHost(
     navController: NavHostController,
     authViewModel: AuthViewModel,
     homeViewModel: HomeViewModel,
-    vendorViewModel: org.rajat.quickpick.presentation.viewmodel.VendorViewModel,
-    menuItemViewModel: org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel,
+    vendorViewModel: VendorViewModel,
+    menuItemViewModel: MenuItemViewModel,
     orderViewModel: OrderViewModel,
     dataStore: LocalDataStore,
     refreshTokenManager: RefreshTokenManager,
@@ -139,9 +184,9 @@ private fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Routes.Splash.route
+        startDestination = AppScreenUser.Splash
     ) {
-        composable(Routes.Splash.route) {
+        composable<AppScreenUser.Splash> {
             SplashScreen(
                 navController = navController,
                 datastore = dataStore,
@@ -149,38 +194,38 @@ private fun AppNavHost(
             )
         }
 
-        composable(Routes.Onboarding1.route) {
+        composable<AppScreenUser.Onboarding1> {
             OnboardingScreen1(
                 navController = navController,
                 dataStore = dataStore
             )
         }
 
-        composable(Routes.Onboarding2.route) {
+        composable<AppScreenUser.Onboarding2> {
             OnboardingScreen2(
                 navController = navController,
                 dataStore = dataStore
             )
         }
 
-        composable(Routes.Onboarding3.route) {
+        composable<AppScreenUser.Onboarding3> {
             OnboardingScreen3(
                 navController = navController,
                 dataStore = dataStore
             )
         }
 
-        composable(Routes.Welcome.route) {
+        composable<AppScreenUser.Welcome> {
             WelcomeScreen()
         }
 
-        composable(Routes.LaunchWelcome.route) {
+        composable<AppScreenUser.LaunchWelcome> {
             LaunchWelcomeScreen(
                 navController = navController
             )
         }
 
-        composable(Routes.UserLogin.route) {
+        composable<AppScreenUser.UserLogin> {
             UserLoginScreen(
                 navController = navController,
                 authViewModel = authViewModel,
@@ -188,7 +233,7 @@ private fun AppNavHost(
             )
         }
 
-        composable(Routes.VendorLogin.route) {
+        composable<AppScreenUser.VendorLogin> {
             VendorLoginScreen(
                 navController = navController,
                 authViewModel = authViewModel,
@@ -196,7 +241,7 @@ private fun AppNavHost(
             )
         }
 
-        composable(Routes.UserRegister.route) {
+        composable<AppScreenUser.UserRegister> {
             UserRegisterScreen(
                 navController = navController,
                 authViewModel = authViewModel,
@@ -204,7 +249,7 @@ private fun AppNavHost(
             )
         }
 
-        composable(Routes.VendorRegister.route) {
+        composable<AppScreenUser.VendorRegister> {
             VendorRegisterScreen(
                 navController = navController,
                 authViewModel = authViewModel,
@@ -212,7 +257,7 @@ private fun AppNavHost(
             )
         }
 
-        composable(Routes.Home.route) {
+        composable<AppScreenUser.HomeScreen> {
             HomeScreen(
                 navController = navController,
                 paddingValues = appPaddingValues,
@@ -222,16 +267,18 @@ private fun AppNavHost(
             )
         }
 
-        composable("vendor_detail/{vendorId}") {
+        composable<AppScreenUser.VendorDetail> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenUser.VendorDetail>()
             VendorScreen(
                 navController = navController,
                 vendorViewModel = vendorViewModel,
                 menuItemViewModel = menuItemViewModel,
-                vendorId = "v1"
+                vendorId = route.vendorId
             )
         }
 
-        composable(VendorRoutes.VendorDashboard.route) {
+        // --- VENDOR SCREENS ---
+        composable<AppScreenVendor.VendorDashboard> {
             VendorDashboardScreen(
                 navController = navController,
                 paddingValues = appPaddingValues,
@@ -239,7 +286,7 @@ private fun AppNavHost(
             )
         }
 
-        composable(VendorRoutes.VendorOrders.route) {
+        composable<AppScreenVendor.VendorOrders> {
             VendorOrdersScreen(
                 navController = navController,
                 paddingValues = appPaddingValues,
@@ -247,19 +294,17 @@ private fun AppNavHost(
             )
         }
 
-        composable(VendorRoutes.VendorOrderDetail.route) {
-            val backStackEntry = navController.currentBackStackEntry
-            val orderId = backStackEntry?.arguments?.getString("orderId") ?: ""
-
+        composable<AppScreenVendor.VendorOrderDetail> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenVendor.VendorOrderDetail>()
             VendorOrderDetailScreen(
                 navController = navController,
                 paddingValues = appPaddingValues,
-                orderId = orderId,
+                orderId = route.orderId,
                 orderViewModel = orderViewModel
             )
         }
 
-        composable(VendorRoutes.VendorMenu.route) {
+        composable<AppScreenVendor.VendorMenu> {
             VendorMenuScreen(
                 navController = navController,
                 paddingValues = appPaddingValues,
@@ -267,119 +312,159 @@ private fun AppNavHost(
             )
         }
 
-        composable(VendorRoutes.VendorProfile.route) {
+        composable<AppScreenVendor.VendorProfile> {
             VendorProfileScreen(
                 navController = navController,
                 paddingValues = appPaddingValues
             )
         }
+        composable<AppScreenVendor.VendorProfileUpdate> {
+            VendorProfileUpdateScreen(
+                navController = navController,
+                paddingValues = appPaddingValues
+            )
+        }
+        composable<AppScreenVendor.AddMenuItemScreen> {
+            AddMenuItemScreen(
+                navController = navController,
+                paddingValues = appPaddingValues
+            )
+        }
+        composable<AppScreenVendor.UpdateMenuItemScreen> { backStackEntry->
+            val route = backStackEntry.toRoute<AppScreenVendor.UpdateMenuItemScreen>()
+            UpdateMenuItemScreen(
+                navController = navController,
+                paddingValues = appPaddingValues,
+                menuItemId = route.orderId
+            )
+        }
+        composable<AppScreenVendor.HelpAndSupportScreenVendor>{
+            HelpAndSupportScreenVendor(
+                navController = navController,
+                paddingValues = appPaddingValues
+            )
+        }
 
-        composable(Routes.Orders.route) {
+        // --- USER ORDER ROUTES ---
+        composable<AppScreenUser.Orders> {
             MyOrderScreen(
                 navController = navController,
                 paddingValues = appPaddingValues
             )
         }
-        composable(Routes.ReviewOrder.route) {
-            val backStackEntry = navController.currentBackStackEntry
-            val orderId = backStackEntry?.arguments?.getString("orderId") ?: ""
 
+        composable<AppScreenUser.ReviewOrder> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenUser.ReviewOrder>()
             OrderReviewScreen(
                 navController = navController,
-                orderId = orderId,
-                itemName = "",
-                itemImageUrl = "",
+                orderId = route.orderId,
+                itemName = route.itemName,
+                itemImageUrl = route.itemImageUrl,
                 paddingValues = appPaddingValues
             )
         }
-        composable(Routes.OrderDetail.route) {
-            val backStackEntry = navController.currentBackStackEntry
-            val orderId = backStackEntry?.arguments?.getString("orderId") ?: ""
 
+        composable<AppScreenUser.OrderDetail> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenUser.OrderDetail>()
             OrderDetailScreen(
                 navController = navController,
-                orderId = orderId,
+                orderId = route.orderId,
                 paddingValues = appPaddingValues
             )
         }
-        composable(Routes.CancelOrder.route) {
-            val backStackEntry = navController.currentBackStackEntry
-            val orderId = backStackEntry?.arguments?.getString("orderId") ?: ""
 
+        composable<AppScreenUser.CancelOrder> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenUser.CancelOrder>()
             CancelOrderScreen(
                 navController = navController,
-                orderId = orderId,
+                orderId = route.orderId,
                 paddingValues = appPaddingValues
             )
         }
-        composable(Routes.ReviewOrderConfirmation.route) {
+
+        composable<AppScreenUser.ReviewOrderConfirmation> {
             ReviewOrderConfirmationScreen(
                 navController = navController,
                 paddingValues = appPaddingValues
             )
         }
-        composable(Routes.CancelOrderConfirmation.route) {
+
+        composable<AppScreenUser.CancelOrderConfirmation> {
             OrderCancelledConfirmationScreen(
                 navController = navController,
                 paddingValues = appPaddingValues
             )
         }
-        composable(Routes.Profile.route) {
+
+        // --- PROFILE SCREENS ---
+        composable<AppScreenUser.Profile> {
             ProfileScreen(
                 navController = navController,
                 paddingValues = appPaddingValues
             )
         }
-        composable(Routes.MyProfile.route) {
+
+        composable<AppScreenUser.MyProfile> {
             MyProfileScreen(
                 navController = navController,
                 paddingValues = appPaddingValues
             )
         }
-        composable(Routes.ContactUs.route) {
+
+        composable<AppScreenUser.ContactUs> {
             ContactUsScreen(
-                navController=navController,
+                navController = navController,
                 paddingValues = appPaddingValues,
             )
         }
-        composable(Routes.ChangePassword.route){
+
+        composable<AppScreenUser.ChangePassword> {
             ChangePasswordScreen(
                 paddingValues = appPaddingValues,
                 isLoading = false,
                 navController = navController
             )
         }
-        composable(Routes.NotificationSetting.route){
+
+        composable<AppScreenUser.NotificationSetting> {
             NotificationSettingsScreen(
                 paddingValues = appPaddingValues,
-                navController=navController)
+                navController = navController)
         }
-        composable(Routes.Settings.route){
+
+        composable<AppScreenUser.Settings> {
             SettingsScreen(
                 paddingValues = appPaddingValues,
                 navController = navController
             )
         }
-        composable(Routes.Cart.route) {
+
+        // --- CART/CHECKOUT SCREENS ---
+        composable<AppScreenUser.Cart> {
             CartScreen(
                 paddingValues = appPaddingValues,
                 navController = navController
             )
         }
-        composable(Routes.Checkout.route){
+
+        composable<AppScreenUser.Checkout> {
             CheckoutScreen(
                 paddingValues = appPaddingValues,
                 navController = navController
             )
         }
-        composable(Routes.ConfirmOrder.route) {
+
+        composable<AppScreenUser.ConfirmOrder> { backStackEntry ->
+            val confirmOrderRoute = backStackEntry.toRoute<AppScreenUser.ConfirmOrder>()
+            val orderId = confirmOrderRoute.orderId
             OrderConfirmationScreen(
                 paddingValues = appPaddingValues,
                 navController = navController,
-                orderId = "Q123321UHS"
+                orderId = orderId
             )
         }
-        composable(Routes.HelpAndFaqs.route){
+
+        composable<AppScreenUser.HelpAndFaqs> {
             HelpAndFaqsScreen(
                 paddingValues = appPaddingValues,
                 navController = navController

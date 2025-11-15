@@ -35,7 +35,7 @@ fun OrderCardHeader(title: String, totalAmount: Double, itemCount: Int) {
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = "$${totalAmount.format(2)}",
+                text = "₹${totalAmount.format(2)}",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold

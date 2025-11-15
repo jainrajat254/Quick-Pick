@@ -53,7 +53,7 @@ import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.components.CustomTextField
 import org.rajat.quickpick.presentation.feature.auth.components.InlineClickableText
 import org.rajat.quickpick.presentation.feature.auth.components.RegisterButton
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators
@@ -111,8 +111,8 @@ fun UserRegisterScreen(
                 dataStore.saveUserProfile(response)
                 dataStore.clearVendorProfile()
                 showToast("User Registered Successfully")
-                navController.navigate(Routes.Home.route) {
-                    popUpTo(Routes.VendorRegister.route) { inclusive = true }
+                navController.navigate(AppScreenUser.HomeScreen) {
+                    popUpTo(AppScreenUser.VendorRegister) { inclusive = true }
                 }
             }
 
@@ -305,8 +305,8 @@ fun UserRegisterScreen(
                         normalText = "Already have an account?",
                         clickableText = "Sign in",
                         onClick = {
-                            navController.navigate(Routes.UserLogin.route) {
-                                popUpTo(Routes.UserRegister.route) { inclusive = true }
+                            navController.navigate(AppScreenUser.UserLogin) {
+                                popUpTo(AppScreenUser.UserRegister) { inclusive = true }
                             }
                         }
                     )

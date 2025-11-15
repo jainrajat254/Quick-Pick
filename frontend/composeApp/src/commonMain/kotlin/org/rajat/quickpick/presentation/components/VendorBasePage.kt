@@ -1,4 +1,3 @@
-
 package org.rajat.quickpick.presentation.components
 
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -6,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -20,23 +18,29 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.presentation.navigation.BottomNavItem
-import org.rajat.quickpick.presentation.navigation.VendorRoutes
+// --- FIX: Add import for AppScreenVendor ---
+import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.bgrem
 import quickpick.composeapp.generated.resources.bgremlight
-
+import kotlin.text.contains
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VendorBasePage(
-    currentRoute: String = "vendor_dashboard",
+    currentRoute: String = AppScreenVendor.VendorDashboard::class.simpleName!!,
     onBackClick: () -> Unit,
     onNavigate: (String) -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
-    val rootScreens = listOf("vendor_dashboard", "vendor_orders", "vendor_menu", "vendor_profile")
-    val showBackButton = currentRoute !in rootScreens && currentRoute.isNotEmpty()
+    val rootScreens = listOf(
+        AppScreenVendor.VendorDashboard::class.simpleName,
+        AppScreenVendor.VendorOrders::class.simpleName,
+        AppScreenVendor.VendorMenu::class.simpleName,
+        AppScreenVendor.VendorProfile::class.simpleName
+    )
+    val showBackButton = !rootScreens.any { currentRoute.contains(it!!) } && currentRoute.isNotEmpty()
     val vendorName: String = "My Store"
     val vendorEmail: String = "vendor@quickpick.com"
 
@@ -60,26 +64,26 @@ fun VendorBasePage(
 
     val bottomNavItems = listOf(
         BottomNavItem(
-            route = VendorRoutes.VendorDashboard.route,
+            route = AppScreenVendor.VendorDashboard::class.simpleName!!,
             label = "Dashboard",
             selectedIcon = Icons.Filled.Home,
             unselectedIcon = Icons.Outlined.Home
         ),
         BottomNavItem(
-            route = VendorRoutes.VendorOrders.route,
+            route = AppScreenVendor.VendorOrders::class.simpleName!!,
             label = "Orders",
-            selectedIcon = Icons.AutoMirrored.Filled.List,
-            unselectedIcon = Icons.AutoMirrored.Filled.List,
+            selectedIcon = Icons.Filled.List,
+            unselectedIcon = Icons.Outlined.List,
             badgeCount = pendingOrderCount
         ),
         BottomNavItem(
-            route = VendorRoutes.VendorMenu.route,
+            route = AppScreenVendor.VendorMenu::class.simpleName!!,
             label = "Menu",
             selectedIcon = Icons.Filled.Restaurant,
             unselectedIcon = Icons.Outlined.Restaurant
         ),
         BottomNavItem(
-            route = VendorRoutes.VendorProfile.route,
+            route = AppScreenVendor.VendorProfile::class.simpleName!!,
             label = "Profile",
             selectedIcon = Icons.Filled.Person,
             unselectedIcon = Icons.Outlined.Person
@@ -124,6 +128,7 @@ fun VendorBasePage(
                                 Spacer(modifier = Modifier.width(5.dp))
                             }
                             Text(
+                                // --- FIX: Use corrected title function ---
                                 text = getVendorScreenTitle(currentRoute),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.SemiBold,
@@ -231,24 +236,19 @@ private fun VendorDrawerContent(
 
         val drawerItems = listOf(
             VendorDrawerMenuItem(
-                route = VendorRoutes.VendorDashboard.route,
+                route = AppScreenVendor.VendorDashboard::class.simpleName!!,
                 label = "Dashboard",
                 icon = Icons.Default.Dashboard
             ),
             VendorDrawerMenuItem(
-                route = VendorRoutes.VendorOrders.route,
+                route = AppScreenVendor.VendorOrders::class.simpleName!!,
                 label = "Orders",
                 icon = Icons.Default.ShoppingBag
             ),
             VendorDrawerMenuItem(
-                route = VendorRoutes.VendorMenu.route,
+                route = AppScreenVendor.VendorMenu::class.simpleName!!,
                 label = "Menu Management",
                 icon = Icons.Default.Restaurant
-            ),
-            VendorDrawerMenuItem(
-                route = "vendor_settings",
-                label = "Settings",
-                icon = Icons.Default.Settings
             ),
             VendorDrawerMenuItem(
                 route = "logout",
@@ -302,6 +302,7 @@ private fun VendorBottomNavigationBar(
         tonalElevation = 8.dp
     ) {
         items.forEach { item ->
+            val isSelected = currentRoute.contains(item.route)
             NavigationBarItem(
                 icon = {
                     BadgedBox(
@@ -320,7 +321,7 @@ private fun VendorBottomNavigationBar(
                         }
                     ) {
                         Icon(
-                            imageVector = if (currentRoute == item.route) {
+                            imageVector = if (isSelected) {
                                 item.selectedIcon
                             } else {
                                 item.unselectedIcon
@@ -335,7 +336,7 @@ private fun VendorBottomNavigationBar(
                         style = MaterialTheme.typography.labelMedium
                     )
                 },
-                selected = currentRoute == item.route,
+                selected = isSelected,
                 onClick = {
                     onItemClick(item.route)
                 },
@@ -352,12 +353,18 @@ private fun VendorBottomNavigationBar(
 }
 
 private fun getVendorScreenTitle(route: String): String {
-    return when (route) {
-        "vendor_dashboard" -> "Dashboard"
-        "vendor_orders" -> "Orders"
-        "vendor_menu" -> "Menu"
-        "vendor_profile" -> "Profile"
-        "vendor_order_detail/{orderId}" -> "Order Details"
+    return when {
+        route.contains(AppScreenVendor.VendorOrderDetail::class.simpleName!!) -> "Order Details"
+        route.contains(AppScreenVendor.VendorDashboard::class.simpleName!!) -> "Dashboard"
+        route.contains(AppScreenVendor.VendorOrders::class.simpleName!!) -> "Orders"
+        route.contains(AppScreenVendor.VendorMenu::class.simpleName!!) -> "Menu"
+        route.contains(AppScreenVendor.VendorProfile::class.simpleName!!) -> "Profile"
+        route.contains("VendorSettings") -> "Settings"
+        route.contains(AppScreenVendor.AddMenuItemScreen::class.simpleName!!) -> "Add New Menu Item"
+        route.contains(AppScreenVendor.UpdateMenuItemScreen::class.simpleName!!) -> "Edit Menu Item"
+
+
+
         else -> "QuickPick Vendor"
     }
 }

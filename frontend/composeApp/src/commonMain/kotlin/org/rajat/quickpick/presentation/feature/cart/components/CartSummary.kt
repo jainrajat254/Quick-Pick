@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 
 @Composable
 fun CartSummary(
@@ -65,7 +65,7 @@ fun CartSummary(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                navController.navigate(Routes.Checkout.route)
+                navController.navigate(AppScreenUser.Checkout)
             },
             modifier = Modifier
                 .fillMaxWidth()

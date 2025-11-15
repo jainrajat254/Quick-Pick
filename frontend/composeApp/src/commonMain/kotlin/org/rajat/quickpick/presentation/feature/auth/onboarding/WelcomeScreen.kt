@@ -30,7 +30,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.jetbrains.compose.resources.painterResource
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.theme.AppColors
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.bgrem
@@ -126,7 +126,7 @@ fun LaunchWelcomeScreen(
 
             Button(
                 onClick = {
-                    navController.navigate(Routes.VendorLogin.route)
+                    navController.navigate(AppScreenUser.VendorLogin)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -148,7 +148,7 @@ fun LaunchWelcomeScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Button(
-                onClick = { navController.navigate(Routes.UserLogin.route) },
+                onClick = { navController.navigate(AppScreenUser.UserLogin) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

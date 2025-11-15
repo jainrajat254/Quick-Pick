@@ -15,7 +15,7 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.rajat.quickpick.presentation.feature.myorders.components.ReasonRow
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
@@ -36,19 +36,20 @@ fun CancelOrderScreen(
     var selectedReason by remember { mutableStateOf<String?>(null) }
     var otherReasonText by remember { mutableStateOf("") }
     val isOtherSelected = selectedReason == "Others"
+
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     val cancelOrderState by orderViewModel.cancelOrderState.collectAsState()
 
-    // Handle cancel order state
     LaunchedEffect(cancelOrderState) {
         when (cancelOrderState) {
             is UiState.Success -> {
-                showToast("Order cancelled successfully")
                 orderViewModel.resetCancelOrderState()
-                navController.navigate(Routes.CancelOrderConfirmation.route) {
-                    popUpTo(Routes.Orders.route) { inclusive = false }
+                navController.navigate(AppScreenUser.CancelOrderConfirmation) {
+                    popUpTo(AppScreenUser.Orders.toString()) { inclusive = false }
                 }
             }
             is UiState.Error -> {
@@ -58,10 +59,37 @@ fun CancelOrderScreen(
         }
     }
 
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = { Text("Cancel Order?") },
+            text = { Text("Are you sure you want to cancel this order? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showConfirmDialog = false
+                        orderViewModel.cancelOrder(orderId)
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showConfirmDialog = false }
+                ) {
+                    Text("Go Back")
+                }
+            }
+        )
+    }
+
     Box(
         modifier = Modifier
-            .fillMaxSize()
             .padding(paddingValues)
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -75,14 +103,14 @@ fun CancelOrderScreen(
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
-                    .padding(bottom = 16.dp)
+                    .padding(bottom = 16.dp,top=16.dp)
                     .fillMaxWidth()
             )
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
@@ -119,8 +147,9 @@ fun CancelOrderScreen(
                         focusedLabelColor = MaterialTheme.colorScheme.primary,
                         unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         cursorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        // Use surface, not surfaceVariant, for a cleaner look
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface
                     )
                 )
             }
@@ -129,23 +158,7 @@ fun CancelOrderScreen(
 
             Button(
                 onClick = {
-                    val finalReason = if (isOtherSelected) {
-                        otherReasonText.takeIf { it.isNotBlank() } ?: "Other reason"
-                    } else {
-                        selectedReason
-                    }
-
-                    scope.launch {
-                        val result = snackbarHostState.showSnackbar(
-                            message = "Are you sure you want to cancel this order?",
-                            actionLabel = "Confirm",
-                            duration = SnackbarDuration.Short
-                        )
-                        if (result == SnackbarResult.ActionPerformed) {
-                            // User confirmed, proceed with cancellation
-                            orderViewModel.cancelOrder(orderId)
-                        }
-                    }
+                    showConfirmDialog = true
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -183,7 +196,6 @@ fun CancelOrderScreen(
             }
         }
 
-        // Snackbar Host for confirmation dialog
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier

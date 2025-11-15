@@ -20,7 +20,8 @@ import org.rajat.quickpick.domain.modal.auth.LogoutRequest
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.feature.profile.components.LogoutConfirmationDialog
 import org.rajat.quickpick.presentation.feature.vendor.profile.components.VendorProfileOption
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
+import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.presentation.viewmodel.ProfileViewModel
 import org.rajat.quickpick.utils.UiState
@@ -54,7 +55,7 @@ fun VendorProfileScreen(
 
                 showToast("Logged out successfully")
 
-                navController.navigate(Routes.LaunchWelcome.route) {
+                navController.navigate(AppScreenUser.LaunchWelcome) {
                     popUpTo(0) { inclusive = true }
                     launchSingleTop = true
                 }
@@ -68,7 +69,7 @@ fun VendorProfileScreen(
 
                 showToast("Logged out")
 
-                navController.navigate(Routes.LaunchWelcome.route) {
+                navController.navigate(AppScreenUser.LaunchWelcome) {
                     popUpTo(0) { inclusive = true }
                     launchSingleTop = true
                 }
@@ -335,7 +336,9 @@ fun VendorProfileScreen(
                     VendorProfileOption(
                         icon = Icons.Default.Edit,
                         title = "Edit Profile",
-                        onClick = { }
+                        onClick = {
+                            navController.navigate(AppScreenVendor.VendorProfileUpdate)
+                        }
                     )
                 }
 
@@ -343,7 +346,9 @@ fun VendorProfileScreen(
                     VendorProfileOption(
                         icon = Icons.Default.Notifications,
                         title = "Notifications",
-                        onClick = { }
+                        onClick = {
+                            navController.navigate(AppScreenUser.NotificationSetting)
+                        }
                     )
                 }
 
@@ -351,7 +356,9 @@ fun VendorProfileScreen(
                     VendorProfileOption(
                         icon = Icons.Default.Lock,
                         title = "Change Password",
-                        onClick = { }
+                        onClick = {
+                            navController.navigate(AppScreenUser.ChangePassword)
+                        }
                     )
                 }
 
@@ -368,7 +375,9 @@ fun VendorProfileScreen(
                     VendorProfileOption(
                         icon = Icons.AutoMirrored.Filled.Help,
                         title = "Help & Support",
-                        onClick = { }
+                        onClick = {
+                            navController.navigate(AppScreenVendor.HelpAndSupportScreenVendor)
+                        }
                     )
                 }
 

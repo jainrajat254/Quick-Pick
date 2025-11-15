@@ -47,8 +47,8 @@ import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.components.CustomTextField
 import org.rajat.quickpick.presentation.feature.auth.components.InlineClickableText
 import org.rajat.quickpick.presentation.feature.auth.components.RegisterButton
-import org.rajat.quickpick.presentation.navigation.Routes
-import org.rajat.quickpick.presentation.navigation.VendorRoutes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
+import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators.isLoginFormValid
@@ -91,8 +91,8 @@ fun VendorLoginScreen(
                 dataStore.saveVendorProfile(response)
                 dataStore.clearUserProfile()
                 showToast("Vendor Signed In Successfully")
-                navController.navigate(VendorRoutes.VendorDashboard.route) {
-                    popUpTo(Routes.VendorLogin.route) { inclusive = true }
+                navController.navigate(AppScreenVendor.VendorDashboard) {
+                    popUpTo(AppScreenUser.VendorLogin) { inclusive = true }
                 }
             }
 
@@ -209,8 +209,8 @@ fun VendorLoginScreen(
                         normalText = "Don't have an account?",
                         clickableText = "Sign up",
                         onClick = {
-                            navController.navigate(Routes.VendorRegister.route) {
-                                popUpTo(Routes.VendorLogin.route) { inclusive = true }
+                            navController.navigate(AppScreenUser.VendorRegister) {
+                                popUpTo(AppScreenUser.VendorLogin) { inclusive = true }
                             }
                         }
                     )

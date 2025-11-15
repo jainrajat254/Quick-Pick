@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.coil3.CoilImage
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 
 @Composable
 fun OrderReviewInfo(
@@ -110,7 +110,7 @@ fun OrderReviewInfo(
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         OutlinedButton(
-            onClick = { navController.navigate(Routes.Orders.route) },
+            onClick = { navController.navigate(AppScreenUser.Orders) },
             modifier = Modifier.weight(1f)
         ) {
             Text("Cancel")
@@ -118,7 +118,7 @@ fun OrderReviewInfo(
         Button(
             onClick = {
                 //Viewmodel method to submit review using orderId, rating, comment
-                navController.navigate(Routes.ReviewOrderConfirmation.route)
+                navController.navigate(AppScreenUser.ReviewOrderConfirmation)
             },
             modifier = Modifier.weight(1f),
             enabled = rating > 0

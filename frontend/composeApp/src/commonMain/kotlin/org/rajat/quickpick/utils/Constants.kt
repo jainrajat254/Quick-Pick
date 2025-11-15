@@ -3,7 +3,7 @@ package org.rajat.quickpick.utils
 object Constants {
     const val DATASTORE_FILE_NAME = "quick_pick.preferences_pb"
 //    const val BASE_URL = "https://0771701c2b50.ngrok-free.app"
-    const val BASE_URL = "https://jessika-interganglionic-goggly.ngrok-free.dev"
+    const val BASE_URL = "https://jq4ftr-ip-139-5-1-214.tunnelmole.net"
 
 object Endpoints {
         // Auth

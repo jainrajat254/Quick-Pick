@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.rajat.quickpick.presentation.feature.profile.components.SettingComponentCard
-import org.rajat.quickpick.presentation.navigation.Routes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.preview.SettingsScreenPreview
 
 
@@ -42,14 +42,14 @@ fun SettingsScreen(
             text = "Notifications",
             icon = Icons.Filled.Notifications,
             onClick = {
-                navController.navigate(Routes.NotificationSetting.route)
+                navController.navigate(AppScreenUser.NotificationSetting)
             }
         )
         SettingComponentCard(
             text = "Change Password",
             icon = Icons.Filled.Key,
             onClick = {
-                navController.navigate(Routes.ChangePassword.route)
+                navController.navigate(AppScreenUser.ChangePassword)
             }
         )
     }

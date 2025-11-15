@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.feature.profile
+package org.rajat.quickpick.presentation.feature.vendor.profile
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,12 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import org.rajat.quickpick.data.dummy.dummyFaqList
+import org.rajat.quickpick.data.dummy.dummyVendorFaqList
 import org.rajat.quickpick.presentation.feature.profile.components.FaqItemCard
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 
+
 @Composable
-fun HelpAndFaqsScreen(
+fun HelpAndSupportScreenVendor(
     paddingValues: PaddingValues,
     navController: NavController
 ) {
@@ -32,7 +33,7 @@ fun HelpAndFaqsScreen(
             modifier = Modifier.weight(1f).padding(top=16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(dummyFaqList, key = { it.id }) { faqItem ->
+            items(dummyVendorFaqList, key = { it.id }) { faqItem ->
                 FaqItemCard(
                     question = faqItem.question,
                     answer = faqItem.answer,
@@ -44,7 +45,6 @@ fun HelpAndFaqsScreen(
             }
         }
 
-        //Fallback Contact Us section
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             "Can't find your answer?",

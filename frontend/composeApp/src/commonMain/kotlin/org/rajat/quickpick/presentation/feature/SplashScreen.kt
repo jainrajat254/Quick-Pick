@@ -15,8 +15,8 @@ import kotlinx.coroutines.launch
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.feature.auth.onboarding.WelcomeScreen
-import org.rajat.quickpick.presentation.navigation.Routes
-import org.rajat.quickpick.presentation.navigation.VendorRoutes
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
+import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
 
 @Composable
@@ -33,7 +33,7 @@ fun SplashScreen(
 
         if (!hasOnboarded) {
             logger.i { "User has not onboarded. Navigating to onboarding." }
-            navController.navigate(Routes.Onboarding1.route) {
+            navController.navigate(AppScreenUser.Onboarding1) {
                 popUpTo(0) { inclusive = true }
             }
             return@LaunchedEffect
@@ -44,7 +44,7 @@ fun SplashScreen(
 
         if (token.isNullOrEmpty()) {
             logger.i { "No token found. Navigating to LaunchWelcome." }
-            navController.navigate(Routes.LaunchWelcome.route) {
+            navController.navigate(AppScreenUser.LaunchWelcome) {
                 popUpTo(0) { inclusive = true }
             }
         } else {
@@ -52,14 +52,14 @@ fun SplashScreen(
 
             val destination = when (userRole) {
                 "VENDOR" -> {
-                    VendorRoutes.VendorDashboard.route
+                    AppScreenVendor.VendorDashboard
                 }
                 "USER" -> {
-                    Routes.Home.route
+                    AppScreenUser.HomeScreen
                 }
                 else -> {
                     datastore.clearAll()
-                    navController.navigate(Routes.LaunchWelcome.route) {
+                    navController.navigate(AppScreenUser.LaunchWelcome) {
                         popUpTo(0) { inclusive = true }
                     }
                     return@LaunchedEffect
