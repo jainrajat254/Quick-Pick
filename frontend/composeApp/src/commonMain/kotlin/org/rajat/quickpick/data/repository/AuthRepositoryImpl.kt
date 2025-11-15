@@ -1,5 +1,7 @@
 package org.rajat.quickpick.data.repository
 
+import org.rajat.quickpick.domain.modal.auth.ChangePasswordRequest
+import org.rajat.quickpick.domain.modal.auth.ChangePasswordResponse
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordResponse
 import org.rajat.quickpick.domain.modal.auth.LoginUserRequest
@@ -64,5 +66,9 @@ class AuthRepositoryImpl(private val authApiService: AuthApiService) : AuthRepos
         return runCatching {
             authApiService.logout(logoutRequest = logoutRequest)
         }
+    }
+
+    override suspend fun changePassword(changePasswordRequest: ChangePasswordRequest): Result<ChangePasswordResponse> {
+        return runCatching { authApiService.changePassword(changePasswordRequest) }
     }
 }

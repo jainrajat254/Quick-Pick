@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -36,10 +35,13 @@ fun VendorMenuScreen(
     val myMenuItemsState by menuItemViewModel.myMenuItemsState.collectAsState()
     val searchedMenuItemsState by menuItemViewModel.searchedMenuItemsState.collectAsState()
     val toggleAvailabilityState by menuItemViewModel.toggleAvailabilityState.collectAsState()
+    val deleteState by menuItemViewModel.deleteMenuItemState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        menuItemViewModel.getMyMenuItems(page = 0, size = 100)
-    }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var pendingDeleteId by remember { mutableStateOf<String?>(null) }
+    var isDeleting by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) { menuItemViewModel.getMyMenuItems(page = 0, size = 100) }
 
     LaunchedEffect(toggleAvailabilityState) {
         when (toggleAvailabilityState) {
@@ -54,6 +56,34 @@ fun VendorMenuScreen(
             }
             else -> Unit
         }
+    }
+
+    LaunchedEffect(deleteState) {
+        when (deleteState) {
+            is UiState.Success -> {
+                showToast("Item deleted")
+                menuItemViewModel.resetDeleteMenuItemState()
+                menuItemViewModel.getMyMenuItems(page = 0, size = 100)
+                isDeleting = false
+            }
+            is UiState.Error -> {
+                showToast((deleteState as UiState.Error).message ?: "Failed to delete item")
+                menuItemViewModel.resetDeleteMenuItemState()
+                isDeleting = false
+            }
+            is UiState.Loading -> isDeleting = true
+            UiState.Empty -> Unit
+        }
+    }
+
+    fun requestDelete(id: String) {
+        pendingDeleteId = id
+        showDeleteDialog = true
+    }
+
+    fun performDelete() {
+        pendingDeleteId?.let { menuItemViewModel.deleteMenuItem(it) }
+        showDeleteDialog = false
     }
 
     Column(
@@ -74,12 +104,7 @@ fun VendorMenuScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             placeholder = { Text("Search menu items...") },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search"
-                )
-            },
+            leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search") },
             singleLine = true,
             shape = MaterialTheme.shapes.medium
         )
@@ -106,26 +131,12 @@ fun VendorMenuScreen(
             when {
                 searchQuery.isNotBlank() -> {
                     when (searchedMenuItemsState) {
-                        is UiState.Loading -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CustomLoader()
-                            }
-                        }
+                        is UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CustomLoader() }
                         is UiState.Success -> {
                             val items = (searchedMenuItemsState as UiState.Success).data.content?.filterNotNull() ?: emptyList()
                             if (items.isEmpty()) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "No items found",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Text("No items found", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             } else {
                                 LazyVerticalGrid(
@@ -139,108 +150,43 @@ fun VendorMenuScreen(
                                         VendorMenuItemCard(
                                             menuItem = items[index],
                                             onToggleAvailability = {
-                                                items[index].id?.let { id ->
-                                                    menuItemViewModel.toggleMenuItemAvailability(id)
-                                                }
+                                                items[index].id?.let { id -> menuItemViewModel.toggleMenuItemAvailability(id) }
                                             },
-                                            onEdit = {
-                                                items[index].id?.let { id ->
-                                                    // TODO: Navigate to edit screen
-                                                    showToast("Edit functionality coming soon")
-                                                }
-                                            },
-                                            onDelete = {
-                                                items[index].id?.let { id ->
-                                                    // TODO: Implement delete
-                                                    showToast("Delete functionality coming soon")
-                                                }
-                                            }
+                                            onEdit = { items[index].id?.let { id -> navController.navigate(AppScreenVendor.UpdateMenuItemScreen(id)) } },
+                                            onDelete = { items[index].id?.let { id -> requestDelete(id) } }
                                         )
                                     }
                                 }
                             }
                         }
-                        is UiState.Error -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text(
-                                        text = (searchedMenuItemsState as UiState.Error).message ?: "Error loading items",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.error
-                                    )
-                                    Button(
-                                        onClick = {
-                                            menuItemViewModel.searchMenuItems(query = searchQuery)
-                                        }
-                                    ) {
-                                        Text("Retry")
-                                    }
-                                }
+                        is UiState.Error -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text((searchedMenuItemsState as UiState.Error).message ?: "Error loading items", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.error)
+                                Button(onClick = { menuItemViewModel.searchMenuItems(query = searchQuery) }) { Text("Retry") }
                             }
                         }
-                        UiState.Empty -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CustomLoader()
-                            }
-                        }
+                        UiState.Empty -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CustomLoader() }
                     }
                 }
                 else -> {
                     when (myMenuItemsState) {
-                        is UiState.Loading -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CustomLoader()
-                            }
-                        }
+                        is UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CustomLoader() }
                         is UiState.Success -> {
                             val response = (myMenuItemsState as UiState.Success).data
                             val allItems = response.content?.filterNotNull() ?: emptyList()
-
                             val filteredItems = when (selectedTab) {
                                 0 -> allItems
                                 1 -> allItems.filter { it.available == true }
                                 2 -> allItems.filter { it.available != true }
                                 else -> allItems
                             }
-
                             if (filteredItems.isEmpty()) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Search,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(64.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Text(
-                                            text = "No ${tabs[selectedTab].lowercase()} menu items",
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                        Icon(imageVector = Icons.Default.Search, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text("No ${tabs[selectedTab].lowercase()} menu items", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         if (allItems.isEmpty()) {
-                                            Text(
-                                                text = "Add your first menu item using the + button",
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
+                                            Text("Add your first menu item using the + button", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
                                 }
@@ -255,61 +201,21 @@ fun VendorMenuScreen(
                                     items(filteredItems.size) { index ->
                                         VendorMenuItemCard(
                                             menuItem = filteredItems[index],
-                                            onToggleAvailability = {
-                                                filteredItems[index].id?.let { id ->
-                                                    menuItemViewModel.toggleMenuItemAvailability(id)
-                                                }
-                                            },
-                                            onEdit = {
-                                                filteredItems[index].id?.let { id ->
-                                                    // TODO: Navigate to edit screen
-//                                                    showToast("Edit functionality coming soon")
-                                                    navController.navigate(AppScreenVendor.UpdateMenuItemScreen(id))
-                                                }
-                                            },
-                                            onDelete = {
-                                                filteredItems[index].id?.let { id ->
-                                                    // TODO: Implement delete
-                                                    showToast("Delete functionality coming soon")
-                                                }
-                                            }
+                                            onToggleAvailability = { filteredItems[index].id?.let { id -> menuItemViewModel.toggleMenuItemAvailability(id) } },
+                                            onEdit = { filteredItems[index].id?.let { id -> navController.navigate(AppScreenVendor.UpdateMenuItemScreen(id)) } },
+                                            onDelete = { filteredItems[index].id?.let { id -> requestDelete(id) } }
                                         )
                                     }
                                 }
                             }
                         }
-                        is UiState.Error -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text(
-                                        text = (myMenuItemsState as UiState.Error).message ?: "Error loading menu",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.error
-                                    )
-                                    Button(
-                                        onClick = {
-                                            menuItemViewModel.getMyMenuItems(page = 0, size = 100)
-                                        }
-                                    ) {
-                                        Text("Retry")
-                                    }
-                                }
+                        is UiState.Error -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text((myMenuItemsState as UiState.Error).message ?: "Error loading menu", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.error)
+                                Button(onClick = { menuItemViewModel.getMyMenuItems(page = 0, size = 100) }) { Text("Retry") }
                             }
                         }
-                        UiState.Empty -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CustomLoader()
-                            }
-                        }
+                        UiState.Empty -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CustomLoader() }
                     }
                 }
             }
@@ -320,19 +226,28 @@ fun VendorMenuScreen(
             contentAlignment = Alignment.BottomEnd
         ) {
             FloatingActionButton(
-                onClick = {
-                    // TODO: Navigate to create menu item screen
-                    navController.navigate(AppScreenVendor.AddMenuItemScreen)
-
-                },
+                onClick = { navController.navigate(AppScreenVendor.AddMenuItemScreen) },
                 modifier = Modifier.padding(16.dp),
                 containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Menu Item"
-                )
-            }
+            ) { Icon(imageVector = Icons.Default.Add, contentDescription = "Add Menu Item") }
         }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Menu Item") },
+            text = { Text("Are you sure you want to delete this item? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = { performDelete() }, enabled = !isDeleting) {
+                    if (isDeleting) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                    } else {
+                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            },
+            dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") } }
+        )
     }
 }

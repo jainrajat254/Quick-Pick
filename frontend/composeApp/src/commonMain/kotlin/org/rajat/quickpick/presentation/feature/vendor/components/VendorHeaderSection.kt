@@ -7,13 +7,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.rajat.quickpick.data.dummy.DummyData
 import org.rajat.quickpick.domain.modal.search.GetVendorByIDResponse
+import org.rajat.quickpick.domain.modal.review.GetVendorRatingStatsResponse
+import org.rajat.quickpick.utils.UiState
 
 @Composable
 fun VendorHeaderSection(
     vendor: GetVendorByIDResponse,
-    rating: DummyData.VendorRating?,
+    ratingState: UiState<GetVendorRatingStatsResponse>,
+    onRatingClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -28,7 +30,8 @@ fun VendorHeaderSection(
 
         StoreInfoCard(
             vendor = vendor,
-            rating = rating
+            ratingState = ratingState,
+            onRatingClick = onRatingClick
         )
     }
 }

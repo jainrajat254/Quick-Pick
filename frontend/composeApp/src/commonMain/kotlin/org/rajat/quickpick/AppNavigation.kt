@@ -27,7 +27,6 @@ import org.rajat.quickpick.presentation.feature.cart.CartScreen
 import org.rajat.quickpick.presentation.feature.cart.CheckoutScreen
 import org.rajat.quickpick.presentation.feature.cart.OrderConfirmationScreen
 import org.rajat.quickpick.presentation.feature.home.HomeScreen
-import org.rajat.quickpick.presentation.feature.menu.AddMenuItemScreen
 import org.rajat.quickpick.presentation.feature.myorders.CancelOrderScreen
 import org.rajat.quickpick.presentation.feature.myorders.MyOrderScreen
 import org.rajat.quickpick.presentation.feature.myorders.OrderCancelledConfirmationScreen
@@ -43,6 +42,7 @@ import org.rajat.quickpick.presentation.feature.profile.ProfileScreen
 import org.rajat.quickpick.presentation.feature.profile.SettingsScreen
 import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
 import org.rajat.quickpick.presentation.feature.vendor.dashboard.VendorDashboardScreen
+import org.rajat.quickpick.presentation.feature.vendor.menu.AddMenuItemScreen
 import org.rajat.quickpick.presentation.feature.vendor.menu.UpdateMenuItemScreen
 import org.rajat.quickpick.presentation.feature.vendor.menu.VendorMenuScreen
 import org.rajat.quickpick.presentation.feature.vendor.orders.VendorOrderDetailScreen
@@ -50,6 +50,7 @@ import org.rajat.quickpick.presentation.feature.vendor.orders.VendorOrdersScreen
 import org.rajat.quickpick.presentation.feature.vendor.profile.HelpAndSupportScreenVendor
 import org.rajat.quickpick.presentation.feature.vendor.profile.VendorProfileScreen
 import org.rajat.quickpick.presentation.feature.vendor.profile.VendorProfileUpdateScreen
+import org.rajat.quickpick.presentation.feature.vendor.reviews.VendorReviewsScreen
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.navigation.getAppScreenUserFromRoute
@@ -58,6 +59,7 @@ import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.presentation.viewmodel.HomeViewModel
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
+import org.rajat.quickpick.presentation.viewmodel.ReviewViewModel
 import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
 
@@ -72,6 +74,7 @@ fun AppNavigation(
     val orderViewModel: OrderViewModel = koinInject()
     val dataStore: LocalDataStore = koinInject()
     val refreshTokenManager: RefreshTokenManager = koinInject()
+    val reviewViewModel : ReviewViewModel = koinInject()
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRouteString = backStackEntry?.destination?.route
@@ -263,6 +266,7 @@ private fun AppNavHost(
                 paddingValues = appPaddingValues,
                 homeViewModel = homeViewModel,
                 vendorViewModel = vendorViewModel,
+                reviewViewModel = koinInject(),
                 menuItemViewModel = menuItemViewModel
             )
         }
@@ -273,6 +277,15 @@ private fun AppNavHost(
                 navController = navController,
                 vendorViewModel = vendorViewModel,
                 menuItemViewModel = menuItemViewModel,
+                reviewViewModel = koinInject(),
+                vendorId = route.vendorId
+            )
+        }
+        // Vendor reviews screen
+        composable<AppScreenVendor.VendorReviewsScreen> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenVendor.VendorReviewsScreen>()
+            VendorReviewsScreen(
+                navController = navController,
                 vendorId = route.vendorId
             )
         }

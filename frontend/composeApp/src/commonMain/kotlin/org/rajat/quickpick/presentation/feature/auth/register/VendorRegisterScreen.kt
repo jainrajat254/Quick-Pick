@@ -61,6 +61,7 @@ import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.session.AuthSessionSaver
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.registerbackground
 import kotlin.time.Clock
@@ -107,20 +108,11 @@ fun VendorRegisterScreen(
         when (vendorRegisterState) {
             is UiState.Success -> {
                 val response = (vendorRegisterState as UiState.Success<LoginVendorResponse>).data
-                TokenProvider.token = response.tokens.accessToken
-                dataStore.saveToken(response.tokens.accessToken)
-                dataStore.saveRefreshToken(response.tokens.refreshToken)
-
-                val expiryMillis = Clock.System.now().toEpochMilliseconds() + (response.tokens.expiresIn * 1000)
-                dataStore.saveTokenExpiryMillis(expiryMillis)
-
-                dataStore.saveId(response.userId)
-                dataStore.saveUserRole("VENDOR")
-                dataStore.saveVendorProfile(response)
-                dataStore.clearUserProfile()
+                AuthSessionSaver.saveVendorSession(dataStore, response)
                 showToast("Vendor Registered Successfully")
                 navController.navigate(AppScreenVendor.VendorDashboard) {
-                    popUpTo(AppScreenUser.VendorRegister) { inclusive = true }
+                    popUpTo(0) { inclusive = true }
+                    launchSingleTop = true
                 }
             }
 

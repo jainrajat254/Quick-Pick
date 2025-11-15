@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import org.koin.viewmodel.resolveViewModel
 import org.rajat.quickpick.domain.modal.search.GetAllVendorsInCollegeResponse
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.components.ErrorState
@@ -26,6 +27,7 @@ import org.rajat.quickpick.presentation.feature.home.components.VendorsList
 import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
 import org.rajat.quickpick.presentation.viewmodel.HomeViewModel
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
+import org.rajat.quickpick.presentation.viewmodel.ReviewViewModel
 import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
@@ -36,6 +38,7 @@ fun HomeScreen(
     paddingValues: PaddingValues,
     homeViewModel: HomeViewModel,
     vendorViewModel: VendorViewModel,
+    reviewViewModel: ReviewViewModel,
     menuItemViewModel: MenuItemViewModel
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -62,6 +65,7 @@ fun HomeScreen(
             navController = navController,
             vendorViewModel = vendorViewModel,
             menuItemViewModel = menuItemViewModel,
+            reviewViewModel = reviewViewModel,
             vendorId = selectedVendorId!!,
             onBackClick = {
                 homeViewModel.setSelectedVendorId(null)

@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.rajat.quickpick.domain.modal.auth.ChangePasswordRequest
+import org.rajat.quickpick.domain.modal.auth.ChangePasswordResponse
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordResponse
 import org.rajat.quickpick.domain.modal.auth.LoginUserRequest
@@ -52,6 +54,9 @@ class AuthViewModel(
 
     private val _logoutState = MutableStateFlow<UiState<LogoutResponse>>(UiState.Empty)
     val logoutState: StateFlow<UiState<LogoutResponse>> = _logoutState
+
+    private val _changePasswordState = MutableStateFlow<UiState<ChangePasswordResponse>>(UiState.Empty)
+    val changePasswordState: StateFlow<UiState<ChangePasswordResponse>> = _changePasswordState
 
     private fun <T> executeWithUiState(
         stateFlow: MutableStateFlow<UiState<T>>,
@@ -115,6 +120,12 @@ class AuthViewModel(
         }
     }
 
+    fun changePassword(request: ChangePasswordRequest) {
+        executeWithUiState(_changePasswordState) {
+            authRepository.changePassword(request)
+        }
+    }
+
     fun resetAuthStates() {
         _userLoginState.value = UiState.Empty
         _vendorLoginState.value = UiState.Empty
@@ -124,6 +135,7 @@ class AuthViewModel(
         _forgotPasswordState.value = UiState.Empty
         _resetPasswordState.value = UiState.Empty
         _logoutState.value = UiState.Empty
+        _changePasswordState.value = UiState.Empty
     }
 
 }

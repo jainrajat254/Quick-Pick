@@ -53,6 +53,7 @@ import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators.isLoginFormValid
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.session.AuthSessionSaver
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.burger
 import kotlin.time.Clock
@@ -80,20 +81,11 @@ fun UserLoginScreen(
         when (userLoginState) {
             is UiState.Success -> {
                 val response = (userLoginState as UiState.Success<LoginUserResponse>).data
-                TokenProvider.token = response.tokens.accessToken
-                dataStore.saveToken(response.tokens.accessToken)
-                dataStore.saveRefreshToken(response.tokens.refreshToken)
-
-                val expiryMillis = Clock.System.now().toEpochMilliseconds() + (response.tokens.expiresIn * 1000)
-                dataStore.saveTokenExpiryMillis(expiryMillis)
-
-                dataStore.saveId(response.userId)
-                dataStore.saveUserRole("USER")
-                dataStore.saveUserProfile(response)
-                dataStore.clearVendorProfile()
+                AuthSessionSaver.saveUserSession(dataStore, response)
                 showToast("User Signed In Successfully")
                 navController.navigate(AppScreenUser.HomeScreen) {
-                    popUpTo(AppScreenUser.UserLogin) { inclusive = true }
+                    popUpTo(0) { inclusive = true }
+                    launchSingleTop = true
                 }
             }
 

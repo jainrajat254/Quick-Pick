@@ -11,20 +11,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import org.rajat.quickpick.domain.modal.menuitems.UpdateMenuItemRequest
-import org.rajat.quickpick.domain.modal.menuitems.UpdateMenuItemResponse // Dummy
 import org.rajat.quickpick.presentation.feature.vendor.menu.components.MenuItemDetailsForm
 import org.rajat.quickpick.presentation.feature.vendor.menu.components.MenuItemImagePicker
 import org.rajat.quickpick.presentation.feature.vendor.menu.components.UpdateMenuItemButton
+import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
+import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
 
 @Composable
 fun UpdateMenuItemScreen(
     navController: NavController,
     paddingValues: PaddingValues,
-    menuItemId: String
+    menuItemId: String,
+    menuItemViewModel: MenuItemViewModel = koinInject()
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
@@ -35,40 +36,82 @@ fun UpdateMenuItemScreen(
     var isVeg by rememberSaveable { mutableStateOf(true) }
     var imageUri by remember { mutableStateOf<Any?>(null) }
 
-    var isDeleting by remember { mutableStateOf(false) }
-    var showDeleteDialog by remember { mutableStateOf(false) } // <--
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var pendingDeleteId by remember { mutableStateOf<String?>(null) }
+
+    val singleState by menuItemViewModel.singleMenuItemState.collectAsState()
+    val updateState by menuItemViewModel.updateMenuItemState.collectAsState()
+    val deleteState by menuItemViewModel.deleteMenuItemState.collectAsState()
 
     var isSaving by remember { mutableStateOf(false) }
     var isPageLoading by remember { mutableStateOf(true) }
-    val coroutineScope = rememberCoroutineScope()
+    var isDeleting by remember { mutableStateOf(false) }
 
     LaunchedEffect(menuItemId) {
-        delay(1000) // Simulating network call
-        val dummyItem = UpdateMenuItemResponse(
-            id = menuItemId,
-            name = "Classic Burger",
-            description = "A delicious beef patty with lettuce, tomato, and cheese.",
-            price = 9.99,
-            quantity = 50,
-            category = "Main Course",
-            available = true,
-            veg = false,
-            imageUrl = null,
-            createdAt = "",
-            updatedAt = "",
-            vendorId = ""
-        )
+        menuItemViewModel.getMenuItemById(menuItemId)
+    }
 
-        name = dummyItem.name ?: ""
-        description = dummyItem.description ?: ""
-        price = dummyItem.price.toString()
-        category = dummyItem.category ?: ""
-        quantity = dummyItem.quantity?.toString() ?: ""
-        isAvailable = dummyItem.available ?: true
-        isVeg = dummyItem.veg ?: false
-        imageUri = dummyItem.imageUrl
+    LaunchedEffect(singleState) {
+        when (singleState) {
+            is UiState.Success -> {
+                val item = (singleState as UiState.Success).data
+                name = item.name ?: ""
+                description = item.description ?: ""
+                price = item.price?.toString() ?: ""
+                category = item.category ?: ""
+                quantity = item.quantity?.toString() ?: ""
+                isAvailable = item.available ?: true
+                isVeg = item.veg ?: false
+                imageUri = item.imageUrl
+                isPageLoading = false
+            }
+            is UiState.Error -> {
+                showToast((singleState as UiState.Error).message ?: "Failed to load item")
+                isPageLoading = false
+            }
+            is UiState.Loading -> {
+                isPageLoading = true
+            }
+            UiState.Empty -> Unit
+        }
+    }
 
-        isPageLoading = false
+    // Handle update state
+    LaunchedEffect(updateState) {
+        when (updateState) {
+            is UiState.Success -> {
+                showToast("Menu item updated successfully")
+                menuItemViewModel.resetUpdateMenuItemState()
+                menuItemViewModel.getMyMenuItems(page = 0, size = 100)
+                navController.popBackStack()
+            }
+            is UiState.Error -> {
+                showToast((updateState as UiState.Error).message ?: "Failed to update item")
+                isSaving = false
+                menuItemViewModel.resetUpdateMenuItemState()
+            }
+            is UiState.Loading -> isSaving = true
+            UiState.Empty -> Unit
+        }
+    }
+
+    // Handle delete state
+    LaunchedEffect(deleteState) {
+        when (deleteState) {
+            is UiState.Success -> {
+                showToast("Menu item deleted")
+                menuItemViewModel.resetDeleteMenuItemState()
+                menuItemViewModel.getMyMenuItems(page = 0, size = 100)
+                navController.popBackStack()
+            }
+            is UiState.Error -> {
+                showToast((deleteState as UiState.Error).message ?: "Failed to delete item")
+                isDeleting = false
+                menuItemViewModel.resetDeleteMenuItemState()
+            }
+            is UiState.Loading -> isDeleting = true
+            UiState.Empty -> Unit
+        }
     }
 
     fun handleUpdateItemClick() {
@@ -90,16 +133,19 @@ fun UpdateMenuItemScreen(
             quantity = quantity.toIntOrNull(),
             isVeg = isVeg,
             isAvailable = isAvailable,
-            imageUrl = null //Replace with uploaded image URL
+            imageUrl = null // TODO: Replace with uploaded image URL
         )
+        menuItemViewModel.updateMenuItem(menuItemId, request)
+    }
 
-        coroutineScope.launch {
-            isSaving = true
-            delay(1500)
-            isSaving = false
-            showToast("Menu item updated successfully (dummy)")
-            navController.popBackStack()
-        }
+    fun confirmDelete(id: String) {
+        pendingDeleteId = id
+        showDeleteDialog = true
+    }
+
+    fun performDelete() {
+        pendingDeleteId?.let { menuItemViewModel.deleteMenuItem(it) }
+        showDeleteDialog = false
     }
 
     Box(
@@ -121,7 +167,7 @@ fun UpdateMenuItemScreen(
                 MenuItemImagePicker(
                     imageUri = imageUri,
                     onImagePickerClick = {
-                        // TODO: Logic to launch image picker
+                        // TODO: Integrate image picker and upload
                     }
                 )
 
@@ -153,7 +199,7 @@ fun UpdateMenuItemScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 TextButton(
-                    onClick = { showDeleteDialog = true },
+                    onClick = { confirmDelete(menuItemId) },
                     enabled = !(isSaving || isDeleting)
                 ) {
                     Text(
@@ -169,6 +215,24 @@ fun UpdateMenuItemScreen(
                     )
                 }
             }
+        }
+
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text("Delete Menu Item") },
+                text = { Text("Are you sure you want to delete this menu item? This action cannot be undone.") },
+                confirmButton = {
+                    TextButton(onClick = { performDelete() }) {
+                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }

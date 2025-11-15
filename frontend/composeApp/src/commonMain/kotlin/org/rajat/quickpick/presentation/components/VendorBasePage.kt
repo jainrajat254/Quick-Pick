@@ -114,7 +114,9 @@ fun VendorBasePage(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ){
-                            if(!showBackButton){
+                            // Only show logo if NOT vendor profile root
+                            val isProfileRoot = currentRoute.contains(AppScreenVendor.VendorProfile::class.simpleName!!)
+                            if(!showBackButton && !isProfileRoot){
                                 Icon(
                                     painter = if (isSystemInDarkTheme()) {
                                         painterResource(resource = Res.drawable.bgremlight)
@@ -128,7 +130,6 @@ fun VendorBasePage(
                                 Spacer(modifier = Modifier.width(5.dp))
                             }
                             Text(
-                                // --- FIX: Use corrected title function ---
                                 text = getVendorScreenTitle(currentRoute),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.SemiBold,

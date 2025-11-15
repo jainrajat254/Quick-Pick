@@ -1,5 +1,7 @@
 package org.rajat.quickpick.domain.repository
 
+import org.rajat.quickpick.domain.modal.auth.ChangePasswordRequest
+import org.rajat.quickpick.domain.modal.auth.ChangePasswordResponse
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordResponse
 import org.rajat.quickpick.domain.modal.auth.LoginUserRequest
@@ -24,4 +26,5 @@ interface AuthRepository {
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): Result<ForgotPasswordResponse>
     suspend fun resetPassword(resetPasswordRequest: ResetPasswordRequest): Result<ResetPasswordResponse>
     suspend fun logout(logoutRequest: LogoutRequest): Result<LogoutResponse>
+    suspend fun changePassword(changePasswordRequest: ChangePasswordRequest): Result<ChangePasswordResponse>
 }

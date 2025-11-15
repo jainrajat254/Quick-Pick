@@ -1,5 +1,7 @@
 package org.rajat.quickpick.domain.service
 
+import org.rajat.quickpick.domain.modal.auth.ChangePasswordRequest
+import org.rajat.quickpick.domain.modal.auth.ChangePasswordResponse
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordResponse
 import org.rajat.quickpick.domain.modal.auth.LoginUserRequest
@@ -25,4 +27,5 @@ interface AuthApiService {
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): ForgotPasswordResponse
     suspend fun resetPassword(resetPasswordRequest: ResetPasswordRequest): ResetPasswordResponse
     suspend fun logout(logoutRequest: LogoutRequest): LogoutResponse
+    suspend fun changePassword(changePasswordRequest: ChangePasswordRequest): ChangePasswordResponse
 }

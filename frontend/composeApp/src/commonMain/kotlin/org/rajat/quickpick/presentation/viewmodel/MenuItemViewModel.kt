@@ -6,8 +6,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.rajat.quickpick.domain.modal.menuitems.CreateMenuItemRequest
+import org.rajat.quickpick.domain.modal.menuitems.CreateMenuItemResponse
+import org.rajat.quickpick.domain.modal.menuitems.DeleteMenuItemResponse
 import org.rajat.quickpick.domain.modal.menuitems.GetVendorMenuByCategoryResponse
 import org.rajat.quickpick.domain.modal.menuitems.ToggleAvailabilityResponse
+import org.rajat.quickpick.domain.modal.menuitems.UpdateMenuItemRequest
+import org.rajat.quickpick.domain.modal.menuitems.UpdateMenuItemResponse
 import org.rajat.quickpick.domain.modal.menuitems.getMyMenuItemsPaginated.GetMyMenuItemsPaginatedResponse
 import org.rajat.quickpick.domain.modal.search.SearchMenuItemsResponse
 import org.rajat.quickpick.domain.repository.MenuItemRepository
@@ -17,22 +22,46 @@ import org.rajat.quickpick.utils.UiState
 class MenuItemViewModel(
     private val menuItemRepository: MenuItemRepository,
     private val searchRepository: SearchRepository
-): ViewModel() {
+) : ViewModel() {
     private val _menuItemsState =
         MutableStateFlow<UiState<GetVendorMenuByCategoryResponse>>(UiState.Empty)
-    val menuItemsState: StateFlow<UiState<GetVendorMenuByCategoryResponse>> = _menuItemsState.asStateFlow()
+    val menuItemsState: StateFlow<UiState<GetVendorMenuByCategoryResponse>> =
+        _menuItemsState.asStateFlow()
 
     private val _myMenuItemsState =
         MutableStateFlow<UiState<GetMyMenuItemsPaginatedResponse>>(UiState.Empty)
-    val myMenuItemsState: StateFlow<UiState<GetMyMenuItemsPaginatedResponse>> = _myMenuItemsState.asStateFlow()
+    val myMenuItemsState: StateFlow<UiState<GetMyMenuItemsPaginatedResponse>> =
+        _myMenuItemsState.asStateFlow()
 
     private val _searchedMenuItemsState =
         MutableStateFlow<UiState<SearchMenuItemsResponse>>(UiState.Empty)
-    val searchedMenuItemsState: StateFlow<UiState<SearchMenuItemsResponse>> = _searchedMenuItemsState.asStateFlow()
+    val searchedMenuItemsState: StateFlow<UiState<SearchMenuItemsResponse>> =
+        _searchedMenuItemsState.asStateFlow()
 
     private val _toggleAvailabilityState =
         MutableStateFlow<UiState<ToggleAvailabilityResponse>>(UiState.Empty)
-    val toggleAvailabilityState: StateFlow<UiState<ToggleAvailabilityResponse>> = _toggleAvailabilityState.asStateFlow()
+    val toggleAvailabilityState: StateFlow<UiState<ToggleAvailabilityResponse>> =
+        _toggleAvailabilityState.asStateFlow()
+
+    private val _createMenuItemState =
+        MutableStateFlow<UiState<CreateMenuItemResponse>>(UiState.Empty)
+    val createMenuItemState: StateFlow<UiState<CreateMenuItemResponse>> =
+        _createMenuItemState.asStateFlow()
+
+    private val _singleMenuItemState =
+        MutableStateFlow<UiState<CreateMenuItemResponse>>(UiState.Empty)
+    val singleMenuItemState: StateFlow<UiState<CreateMenuItemResponse>> =
+        _singleMenuItemState.asStateFlow()
+
+    private val _updateMenuItemState =
+        MutableStateFlow<UiState<UpdateMenuItemResponse>>(UiState.Empty)
+    val updateMenuItemState: StateFlow<UiState<UpdateMenuItemResponse>> =
+        _updateMenuItemState.asStateFlow()
+
+    private val _deleteMenuItemState =
+        MutableStateFlow<UiState<DeleteMenuItemResponse>>(UiState.Empty)
+    val deleteMenuItemState: StateFlow<UiState<DeleteMenuItemResponse>> =
+        _deleteMenuItemState.asStateFlow()
 
     private val _selectedVendorId = MutableStateFlow<String?>(null)
     val selectedVendorId: StateFlow<String?> = _selectedVendorId.asStateFlow()
@@ -74,10 +103,12 @@ class MenuItemViewModel(
             )
         }
     }
+
     fun setVendorAndCategory(vendorId: String?, category: String?) {
         _selectedVendorId.value = vendorId
         _selectedCategory.value = category
     }
+
     fun getMenuItemsByCategory(vendorId: String, category: String) {
         executeWithUiState(_menuItemsState) {
             menuItemRepository.getVendorMenuByCategory(vendorId, category)
@@ -95,7 +126,7 @@ class MenuItemViewModel(
         sortDirection: String = _sortDirection.value,
         page: Int = 0,
         size: Int = 50
-    ){
+    ) {
         executeWithUiState(_searchedMenuItemsState) {
             searchRepository.searchMenuItems(
                 query = query,
@@ -120,6 +151,7 @@ class MenuItemViewModel(
         _minPrice.value = min
         _maxPrice.value = max
     }
+
     fun updateAvailableOnly(available: Boolean) {
         _availableOnly.value = available
     }
@@ -128,6 +160,7 @@ class MenuItemViewModel(
         _sortBy.value = sortBy
         _sortDirection.value = sortDirection
     }
+
     fun updateVegFilter(veg: Boolean?) {
         _isVeg.value = veg
     }
@@ -158,6 +191,22 @@ class MenuItemViewModel(
         _toggleAvailabilityState.value = UiState.Empty
     }
 
+    fun resetCreateMenuItemState() {
+        _createMenuItemState.value = UiState.Empty
+    }
+
+    fun resetSingleMenuItemState() {
+        _singleMenuItemState.value = UiState.Empty
+    }
+
+    fun resetUpdateMenuItemState() {
+        _updateMenuItemState.value = UiState.Empty
+    }
+
+    fun resetDeleteMenuItemState() {
+        _deleteMenuItemState.value = UiState.Empty
+    }
+
     fun clearVendorAndCategory() {
         _selectedVendorId.value = null
         _selectedCategory.value = null
@@ -172,6 +221,30 @@ class MenuItemViewModel(
     fun toggleMenuItemAvailability(menuItemId: String) {
         executeWithUiState(_toggleAvailabilityState) {
             menuItemRepository.toggleMenuItemAvailability(menuItemId)
+        }
+    }
+
+    fun createMenuItem(request: CreateMenuItemRequest) {
+        executeWithUiState(_createMenuItemState) {
+            menuItemRepository.createMenuItem(request)
+        }
+    }
+
+    fun getMenuItemById(menuItemId: String) {
+        executeWithUiState(_singleMenuItemState) {
+            menuItemRepository.getMenuItemById(menuItemId)
+        }
+    }
+
+    fun updateMenuItem(menuItemId: String, request: UpdateMenuItemRequest) {
+        executeWithUiState(_updateMenuItemState) {
+            menuItemRepository.updateMenuItem(menuItemId, request)
+        }
+    }
+
+    fun deleteMenuItem(menuItemId: String) {
+        executeWithUiState(_deleteMenuItemState) {
+            menuItemRepository.deleteMenuItem(menuItemId)
         }
     }
 }

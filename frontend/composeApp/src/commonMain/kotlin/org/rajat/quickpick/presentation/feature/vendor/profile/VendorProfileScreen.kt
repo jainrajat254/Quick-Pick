@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.rajat.quickpick.data.local.LocalDataStore
+import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.domain.modal.auth.LogoutRequest
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.feature.profile.components.LogoutConfirmationDialog
@@ -26,6 +27,7 @@ import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.presentation.viewmodel.ProfileViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.tokens.PlatformScheduler
 
 @Composable
 fun VendorProfileScreen(
@@ -48,27 +50,24 @@ fun VendorProfileScreen(
     LaunchedEffect(logoutState) {
         when (logoutState) {
             is UiState.Success -> {
+                PlatformScheduler.cancelScheduledRefresh()
+                TokenProvider.token = null
                 dataStore.clearAll()
-
                 authViewModel.resetAuthStates()
                 profileViewModel.resetProfileStates()
-
                 showToast("Logged out successfully")
-
                 navController.navigate(AppScreenUser.LaunchWelcome) {
                     popUpTo(0) { inclusive = true }
                     launchSingleTop = true
                 }
             }
             is UiState.Error -> {
-                coroutineScope.launch {
-                    dataStore.clearAll()
-                }
+                PlatformScheduler.cancelScheduledRefresh()
+                TokenProvider.token = null
+                coroutineScope.launch { dataStore.clearAll() }
                 authViewModel.resetAuthStates()
                 profileViewModel.resetProfileStates()
-
                 showToast("Logged out")
-
                 navController.navigate(AppScreenUser.LaunchWelcome) {
                     popUpTo(0) { inclusive = true }
                     launchSingleTop = true
@@ -81,11 +80,13 @@ fun VendorProfileScreen(
     if (showLogoutDialog) {
         LogoutConfirmationDialog(
             onDismiss = { showLogoutDialog = false },
-            onConfirmLogout =
-{
+            onConfirmLogout = {
                 showLogoutDialog = false
                 coroutineScope.launch {
                     val refreshToken = dataStore.getRefreshToken() ?: ""
+                    dataStore.clearAll()
+                    PlatformScheduler.cancelScheduledRefresh()
+                    TokenProvider.token = null
                     val logoutRequest = LogoutRequest(refreshToken = refreshToken)
                     authViewModel.logout(logoutRequest)
                 }
@@ -190,13 +191,6 @@ fun VendorProfileScreen(
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
-                            }
-
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-
-
                             }
                         }
                     }
@@ -344,16 +338,6 @@ fun VendorProfileScreen(
 
                 item {
                     VendorProfileOption(
-                        icon = Icons.Default.Notifications,
-                        title = "Notifications",
-                        onClick = {
-                            navController.navigate(AppScreenUser.NotificationSetting)
-                        }
-                    )
-                }
-
-                item {
-                    VendorProfileOption(
                         icon = Icons.Default.Lock,
                         title = "Change Password",
                         onClick = {
@@ -382,21 +366,13 @@ fun VendorProfileScreen(
                 }
 
                 item {
-                    VendorProfileOption(
-                        icon = Icons.Default.Info,
-                        title = "About",
-                        onClick = { }
-                    )
-                }
-
-                item {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 item {
                     Button(
                         onClick = { showLogoutDialog = true },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
                         )

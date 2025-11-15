@@ -32,6 +32,7 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.rajat.quickpick.data.local.LocalDataStore
+import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.domain.modal.auth.LogoutRequest
 import org.rajat.quickpick.presentation.feature.profile.components.LogoutConfirmationDialog
 import org.rajat.quickpick.presentation.feature.profile.components.ProfileHeader
@@ -41,6 +42,7 @@ import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.presentation.viewmodel.ProfileViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.tokens.PlatformScheduler
 
 @Composable
 fun ProfileScreen(
@@ -79,31 +81,24 @@ fun ProfileScreen(
     LaunchedEffect(logoutState) {
         when (logoutState) {
             is UiState.Success -> {
-                // Clear all local data
+                PlatformScheduler.cancelScheduledRefresh()
+                TokenProvider.token = null
                 dataStore.clearAll()
-
-                // Reset auth states
                 authViewModel.resetAuthStates()
                 profileViewModel.resetProfileStates()
-
                 showToast("Logged out successfully")
-
-                // Navigate to auth screen
                 navController.navigate(AppScreenUser.LaunchWelcome) {
                     popUpTo(0) { inclusive = true }
                     launchSingleTop = true
                 }
             }
             is UiState.Error -> {
-                // Even if logout API fails, clear local data
-                coroutineScope.launch {
-                    dataStore.clearAll()
-                }
+                PlatformScheduler.cancelScheduledRefresh()
+                TokenProvider.token = null
+                coroutineScope.launch { dataStore.clearAll() }
                 authViewModel.resetAuthStates()
                 profileViewModel.resetProfileStates()
-
                 showToast("Logged out")
-
                 navController.navigate(AppScreenUser.LaunchWelcome) {
                     popUpTo(0) { inclusive = true }
                     launchSingleTop = true
@@ -208,10 +203,11 @@ fun ProfileScreen(
             onDismiss = { showLogoutDialog = false },
             onConfirmLogout = {
                 showLogoutDialog = false
-
-                // Get refresh token and call logout API
                 coroutineScope.launch {
                     val refreshToken = dataStore.getRefreshToken()
+                    dataStore.clearAll()
+                    PlatformScheduler.cancelScheduledRefresh()
+                    TokenProvider.token = null
                     val logoutRequest = LogoutRequest(refreshToken = refreshToken)
                     authViewModel.logout(logoutRequest)
                 }
