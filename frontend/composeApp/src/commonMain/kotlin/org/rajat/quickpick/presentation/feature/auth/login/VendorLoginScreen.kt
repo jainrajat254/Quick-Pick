@@ -19,6 +19,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -41,7 +42,6 @@ import androidx.navigation.NavController
 import co.touchlab.kermit.Logger
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.data.local.LocalDataStore
-import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.domain.modal.auth.LoginVendorRequest
 import org.rajat.quickpick.domain.modal.auth.LoginVendorResponse
 import org.rajat.quickpick.presentation.components.CustomLoader
@@ -57,7 +57,6 @@ import org.rajat.quickpick.utils.toast.showToast
 import org.rajat.quickpick.utils.session.AuthSessionSaver
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.burger
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -111,9 +110,17 @@ fun VendorLoginScreen(
 
             is UiState.Error -> {
                 val message = (vendorLoginState as UiState.Error).message ?: "Unknown error"
-                logoutLogger.d { "VENDOR_LOGIN - Error state: $message" }
-                showToast(message)
-                logger.e { message }
+                if (message.contains("verify your email", ignoreCase = true)) {
+                    val emailLower = email.trim().lowercase()
+                    navController.navigate(AppScreenUser.EmailOtpVerify(email = emailLower, userType = "VENDOR")) {
+                        popUpTo(AppScreenUser.VendorLogin) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                } else {
+                    logoutLogger.d { "VENDOR_LOGIN - Error state: $message" }
+                    showToast(message)
+                    logger.e { message }
+                }
             }
 
             else -> {
@@ -202,6 +209,12 @@ fun VendorLoginScreen(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
                     )
+
+                    TextButton(onClick = {
+                        navController.navigate(AppScreenUser.ForgotPassword(userType = "VENDOR"))
+                    }, modifier = Modifier.align(Alignment.End)) {
+                        Text("Forgot Password?", color = MaterialTheme.colorScheme.primary)
+                    }
 
                     RegisterButton(
                         onClick = {

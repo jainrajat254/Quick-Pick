@@ -47,8 +47,6 @@ import co.touchlab.kermit.Logger
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.data.dummy.DummyData
 import org.rajat.quickpick.data.local.LocalDataStore
-import org.rajat.quickpick.di.TokenProvider
-import org.rajat.quickpick.domain.modal.auth.LoginVendorResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterVendorRequest
 import org.rajat.quickpick.presentation.components.CustomDropdown
 import org.rajat.quickpick.presentation.components.CustomLoader
@@ -56,15 +54,12 @@ import org.rajat.quickpick.presentation.components.CustomTextField
 import org.rajat.quickpick.presentation.feature.auth.components.InlineClickableText
 import org.rajat.quickpick.presentation.feature.auth.components.RegisterButton
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
-import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators
 import org.rajat.quickpick.utils.toast.showToast
-import org.rajat.quickpick.utils.session.AuthSessionSaver
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.registerbackground
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -107,11 +102,17 @@ fun VendorRegisterScreen(
     LaunchedEffect(vendorRegisterState) {
         when (vendorRegisterState) {
             is UiState.Success -> {
-                val response = (vendorRegisterState as UiState.Success<LoginVendorResponse>).data
-                AuthSessionSaver.saveVendorSession(dataStore, response)
-                showToast("Vendor Registered Successfully")
-                navController.navigate(AppScreenVendor.VendorDashboard) {
-                    popUpTo(0) { inclusive = true }
+                showToast("Registration successful. We've emailed a verification code.")
+                val emailLower = email.trim().lowercase()
+                dataStore.savePendingVerification(emailLower, "VENDOR")
+                dataStore.setHasOnboarded(true)
+                authViewModel.setPendingRegistrationCredentials(
+                    email = emailLower,
+                    password = password.trim(),
+                    userType = "VENDOR"
+                )
+                navController.navigate(AppScreenUser.EmailOtpVerify(email = emailLower, userType = "VENDOR")) {
+                    popUpTo(AppScreenUser.VendorRegister) { inclusive = true }
                     launchSingleTop = true
                 }
             }

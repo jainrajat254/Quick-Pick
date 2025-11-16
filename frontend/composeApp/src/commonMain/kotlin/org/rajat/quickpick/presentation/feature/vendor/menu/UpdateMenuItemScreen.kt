@@ -19,13 +19,15 @@ import org.rajat.quickpick.presentation.feature.vendor.menu.components.UpdateMen
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.presentation.viewmodel.MenuCategoryViewModel
 
 @Composable
 fun UpdateMenuItemScreen(
     navController: NavController,
     paddingValues: PaddingValues,
     menuItemId: String,
-    menuItemViewModel: MenuItemViewModel = koinInject()
+    menuItemViewModel: MenuItemViewModel = koinInject(),
+    menuCategoryViewModel: MenuCategoryViewModel = koinInject()
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
@@ -43,12 +45,20 @@ fun UpdateMenuItemScreen(
     val updateState by menuItemViewModel.updateMenuItemState.collectAsState()
     val deleteState by menuItemViewModel.deleteMenuItemState.collectAsState()
 
+    val defaultCategoriesState by menuCategoryViewModel.getDefaultCategoriesState.collectAsState()
+
     var isSaving by remember { mutableStateOf(false) }
     var isPageLoading by remember { mutableStateOf(true) }
     var isDeleting by remember { mutableStateOf(false) }
 
     LaunchedEffect(menuItemId) {
         menuItemViewModel.getMenuItemById(menuItemId)
+        menuCategoryViewModel.getDefaultVendorCategories()
+    }
+
+    val categoryOptions: List<String> = when (val state = defaultCategoriesState) {
+        is UiState.Success -> state.data.categories
+        else -> emptyList()
     }
 
     LaunchedEffect(singleState) {
@@ -76,7 +86,6 @@ fun UpdateMenuItemScreen(
         }
     }
 
-    // Handle update state
     LaunchedEffect(updateState) {
         when (updateState) {
             is UiState.Success -> {
@@ -95,7 +104,6 @@ fun UpdateMenuItemScreen(
         }
     }
 
-    // Handle delete state
     LaunchedEffect(deleteState) {
         when (deleteState) {
             is UiState.Success -> {
@@ -122,6 +130,15 @@ fun UpdateMenuItemScreen(
         val priceDouble = price.toDoubleOrNull()
         if (priceDouble == null || priceDouble <= 0) {
             showToast("Please enter a valid price.")
+            return
+        }
+
+        if (categoryOptions.isNotEmpty() && category.isBlank()) {
+            showToast("Please select a category.")
+            return
+        }
+        if (categoryOptions.isNotEmpty() && category !in categoryOptions) {
+            showToast("Please select a valid category from the list.")
             return
         }
 
@@ -187,7 +204,8 @@ fun UpdateMenuItemScreen(
                     isVeg = isVeg,
                     onIsVegChange = { isVeg = it },
                     isAvailable = isAvailable,
-                    onIsAvailableChange = { isAvailable = it }
+                    onIsAvailableChange = { isAvailable = it },
+                    categoryOptions = categoryOptions
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

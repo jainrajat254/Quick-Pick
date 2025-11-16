@@ -4,6 +4,8 @@ import io.ktor.client.HttpClient
 import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.domain.modal.auth.ChangePasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ChangePasswordResponse
+import org.rajat.quickpick.domain.modal.auth.EmailOtpRequest
+import org.rajat.quickpick.domain.modal.auth.EmailOtpVerifyRequest
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordResponse
 import org.rajat.quickpick.domain.modal.auth.LoginUserRequest
@@ -18,6 +20,9 @@ import org.rajat.quickpick.domain.modal.auth.RegisterUserRequest
 import org.rajat.quickpick.domain.modal.auth.RegisterVendorRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordResponse
+import org.rajat.quickpick.domain.modal.auth.SimpleMessageResponse
+import org.rajat.quickpick.domain.modal.auth.PasswordOtpRequest
+import org.rajat.quickpick.domain.modal.auth.ResetPasswordOtpRequest
 import org.rajat.quickpick.domain.service.AuthApiService
 import org.rajat.quickpick.utils.Constants
 import org.rajat.quickpick.utils.network.safePost
@@ -83,8 +88,35 @@ class AuthApiServiceImpl(private val httpClient: HttpClient) : AuthApiService {
     override suspend fun changePassword(changePasswordRequest: ChangePasswordRequest): ChangePasswordResponse {
         return httpClient.safePost(
             endpoint = "${Constants.BASE_URL}${Constants.Endpoints.CHANGE_PASSWORD}",
-            body = changePasswordRequest,
-            headers = mapOf("Authorization" to "Bearer ${TokenProvider.token}")
+            body = changePasswordRequest
+        )
+    }
+
+    override suspend fun sendEmailOtp(request: EmailOtpRequest): SimpleMessageResponse {
+        return httpClient.safePost(
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.SEND_EMAIL_OTP}",
+            body = request
+        )
+    }
+
+    override suspend fun verifyEmailOtp(request: EmailOtpVerifyRequest): SimpleMessageResponse {
+        return httpClient.safePost(
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.VERIFY_EMAIL_OTP}",
+            body = request
+        )
+    }
+
+    override suspend fun sendPasswordOtp(request: PasswordOtpRequest): SimpleMessageResponse {
+        return httpClient.safePost(
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.SEND_PASSWORD_OTP}",
+            body = request
+        )
+    }
+
+    override suspend fun resetPasswordOtp(request: ResetPasswordOtpRequest): SimpleMessageResponse {
+        return httpClient.safePost(
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.RESET_PASSWORD_OTP}",
+            body = request
         )
     }
 }

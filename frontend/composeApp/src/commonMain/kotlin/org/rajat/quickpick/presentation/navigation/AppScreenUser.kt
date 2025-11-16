@@ -35,6 +35,9 @@ sealed class AppScreenUser {
     data object VendorLogin : AppScreenUser()
 
     @Serializable
+    data class EmailOtpVerify(val email: String, val userType: String) : AppScreenUser()
+
+    @Serializable
     data object HomeScreen : AppScreenUser()
 
     @Serializable
@@ -92,6 +95,12 @@ sealed class AppScreenUser {
 
     @Serializable
     data object HelpAndFaqs : AppScreenUser()
+
+    @Serializable
+    data class ForgotPassword(val userType: String) : AppScreenUser()
+
+    @Serializable
+    data class ResetPasswordOtp(val email: String, val userType: String) : AppScreenUser()
 }
 
 fun getAppScreenUserFromRoute(route: String?): AppScreenUser? {
@@ -108,6 +117,7 @@ fun getAppScreenUserFromRoute(route: String?): AppScreenUser? {
         "UserLogin" to AppScreenUser.UserLogin,
         "VendorRegister" to AppScreenUser.VendorRegister,
         "VendorLogin" to AppScreenUser.VendorLogin,
+        "EmailOtpVerify" to AppScreenUser.EmailOtpVerify(email = "", userType = ""),
         "HomeScreen" to AppScreenUser.HomeScreen,
         "VendorDetail" to AppScreenUser.VendorDetail(vendorId = ""),
         "Orders" to AppScreenUser.Orders,
@@ -136,6 +146,8 @@ fun getAppScreenUserFromRoute(route: String?): AppScreenUser? {
             orderId = ""
         ),
         "HelpAndFaqs" to AppScreenUser.HelpAndFaqs,
+        "ForgotPassword" to AppScreenUser.ForgotPassword(userType = ""),
+        "ResetPasswordOtp" to AppScreenUser.ResetPasswordOtp(email = "", userType = ""),
     )
 
     return screenMap.entries.firstOrNull { route.contains(it.key) }?.value

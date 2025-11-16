@@ -17,12 +17,14 @@ import org.rajat.quickpick.presentation.feature.vendor.menu.components.MenuItemI
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.presentation.viewmodel.MenuCategoryViewModel
 
 @Composable
 fun AddMenuItemScreen(
     navController: NavController,
     paddingValues: PaddingValues,
-    menuItemViewModel: MenuItemViewModel = koinInject()
+    menuItemViewModel: MenuItemViewModel = koinInject(),
+    menuCategoryViewModel: MenuCategoryViewModel = koinInject()
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
@@ -35,6 +37,16 @@ fun AddMenuItemScreen(
     var isLoading by remember { mutableStateOf(false) }
 
     val createState by menuItemViewModel.createMenuItemState.collectAsState()
+    val defaultCategoriesState by menuCategoryViewModel.getDefaultCategoriesState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        menuCategoryViewModel.getDefaultVendorCategories()
+    }
+
+    val categoryOptions: List<String> = when (val state = defaultCategoriesState) {
+        is UiState.Success -> state.data.categories
+        else -> emptyList()
+    }
 
     LaunchedEffect(createState) {
         when (createState) {
@@ -63,6 +75,27 @@ fun AddMenuItemScreen(
         if (priceDouble == null || priceDouble <= 0) {
             showToast("Please enter a valid price.")
             return
+        }
+
+        when (defaultCategoriesState) {
+            is UiState.Success -> {
+                if (category.isBlank()) {
+                    showToast("Please select a category.")
+                    return
+                }
+                if (category !in categoryOptions) {
+                    showToast("Please select a valid category from the list.")
+                    return
+                }
+            }
+            is UiState.Loading, UiState.Empty -> {
+                showToast("Loading categories. Please wait...")
+                return
+            }
+            is UiState.Error -> {
+                showToast("Couldn't load categories. Pull to refresh and try again.")
+                return
+            }
         }
 
         val request = CreateMenuItemRequest(
@@ -107,7 +140,8 @@ fun AddMenuItemScreen(
             isVeg = isVeg,
             onIsVegChange = { isVeg = it },
             isAvailable = isAvailable,
-            onIsAvailableChange = { isAvailable = it }
+            onIsAvailableChange = { isAvailable = it },
+            categoryOptions = categoryOptions
         )
         Spacer(modifier = Modifier.height(16.dp))
         AddMenuItemButton(isLoading = isLoading, onClick = ::handleAddItemClick)

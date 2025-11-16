@@ -21,8 +21,11 @@ import org.rajat.quickpick.presentation.feature.auth.onboarding.OnboardingScreen
 import org.rajat.quickpick.presentation.feature.auth.onboarding.OnboardingScreen2
 import org.rajat.quickpick.presentation.feature.auth.onboarding.OnboardingScreen3
 import org.rajat.quickpick.presentation.feature.auth.onboarding.WelcomeScreen
+import org.rajat.quickpick.presentation.feature.auth.password.ForgotPasswordScreen
+import org.rajat.quickpick.presentation.feature.auth.password.ResetPasswordOtpScreen
 import org.rajat.quickpick.presentation.feature.auth.register.UserRegisterScreen
 import org.rajat.quickpick.presentation.feature.auth.register.VendorRegisterScreen
+import org.rajat.quickpick.presentation.feature.auth.verify.EmailOtpVerifyScreen
 import org.rajat.quickpick.presentation.feature.cart.CartScreen
 import org.rajat.quickpick.presentation.feature.cart.CheckoutScreen
 import org.rajat.quickpick.presentation.feature.cart.OrderConfirmationScreen
@@ -111,6 +114,7 @@ fun AppNavigation(
         AppScreenUser.VendorLogin,
         AppScreenUser.UserRegister,
         AppScreenUser.VendorRegister,
+        AppScreenUser.EmailOtpVerify, // hide base UI on OTP screen
         AppScreenUser.ReviewOrderConfirmation,
         AppScreenUser.CancelOrderConfirmation,
         AppScreenUser.ConfirmOrder -> false
@@ -256,6 +260,17 @@ private fun AppNavHost(
             VendorRegisterScreen(
                 navController = navController,
                 authViewModel = authViewModel,
+                dataStore = dataStore
+            )
+        }
+
+        composable<AppScreenUser.EmailOtpVerify> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenUser.EmailOtpVerify>()
+            EmailOtpVerifyScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                email = route.email,
+                userType = route.userType,
                 dataStore = dataStore
             )
         }
@@ -481,6 +496,24 @@ private fun AppNavHost(
             HelpAndFaqsScreen(
                 paddingValues = appPaddingValues,
                 navController = navController
+            )
+        }
+
+        composable<AppScreenUser.ForgotPassword> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenUser.ForgotPassword>()
+            ForgotPasswordScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                userType = route.userType
+            )
+        }
+        composable<AppScreenUser.ResetPasswordOtp> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenUser.ResetPasswordOtp>()
+            ResetPasswordOtpScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                email = route.email,
+                userType = route.userType
             )
         }
     }

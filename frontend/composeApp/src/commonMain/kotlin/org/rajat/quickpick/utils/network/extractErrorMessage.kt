@@ -7,7 +7,9 @@ import kotlinx.serialization.json.jsonPrimitive
 
 fun extractErrorMessage(json: String?): String {
     return try {
-        val jsonObject = Json.parseToJsonElement(json ?: "").jsonObject
+        val text = json ?: ""
+        val jsonElement = Json.parseToJsonElement(text)
+        val jsonObject = jsonElement.jsonObject
         val message = jsonObject["message"]?.jsonPrimitive?.content
         val fieldErrors = jsonObject["fieldErrors"]?.jsonArray
             ?.joinToString(", ") { it.jsonPrimitive.content }
@@ -15,9 +17,10 @@ fun extractErrorMessage(json: String?): String {
         when {
             !fieldErrors.isNullOrBlank() -> fieldErrors
             !message.isNullOrBlank() -> message
+            text.isNotBlank() -> text.trim()
             else -> "Unexpected error occurred"
         }
     } catch (e: Exception) {
-        "Unexpected error occurred"
+        if (!json.isNullOrBlank()) json.trim() else "Unexpected error occurred"
     }
 }

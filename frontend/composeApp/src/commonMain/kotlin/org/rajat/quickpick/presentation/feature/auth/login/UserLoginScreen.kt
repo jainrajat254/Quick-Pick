@@ -19,6 +19,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -42,7 +43,6 @@ import co.touchlab.kermit.Logger
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.rajat.quickpick.data.local.LocalDataStore
-import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.domain.modal.auth.LoginUserRequest
 import org.rajat.quickpick.domain.modal.auth.LoginUserResponse
 import org.rajat.quickpick.presentation.components.CustomLoader
@@ -108,8 +108,16 @@ fun UserLoginScreen(
 
             is UiState.Error -> {
                 val message = (userLoginState as UiState.Error).message ?: "Unknown error"
-                showToast(message)
-                logger.e { message }
+                if (message.contains("verify your email", ignoreCase = true)) {
+                    val emailLower = email.trim().lowercase()
+                    navController.navigate(AppScreenUser.EmailOtpVerify(email = emailLower, userType = "STUDENT")) {
+                        popUpTo(AppScreenUser.UserLogin) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                } else {
+                    showToast(message)
+                    logger.e { message }
+                }
             }
 
             else -> Unit
@@ -197,6 +205,12 @@ fun UserLoginScreen(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
                     )
+
+                    TextButton(onClick = {
+                        navController.navigate(AppScreenUser.ForgotPassword(userType = "STUDENT"))
+                    }, modifier = Modifier.align(Alignment.End)) {
+                        Text("Forgot Password?", color = MaterialTheme.colorScheme.primary)
+                    }
 
                     RegisterButton(
                         onClick = {

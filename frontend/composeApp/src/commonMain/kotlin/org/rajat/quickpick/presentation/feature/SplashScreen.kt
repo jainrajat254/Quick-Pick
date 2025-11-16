@@ -13,7 +13,6 @@ import co.touchlab.kermit.Logger
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.rajat.quickpick.data.local.LocalDataStore
-import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.feature.auth.onboarding.WelcomeScreen
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
@@ -30,6 +29,16 @@ fun SplashScreen(
 
     LaunchedEffect(Unit) {
         delay(1500)
+
+        val pendingEmail = datastore.getPendingVerificationEmail()
+        val pendingUserType = datastore.getPendingVerificationUserType()
+        if (!pendingEmail.isNullOrBlank() && !pendingUserType.isNullOrBlank()) {
+            logger.i { "Pending verification found. Navigating to EmailOtpVerify." }
+            navController.navigate(AppScreenUser.EmailOtpVerify(email = pendingEmail, userType = pendingUserType)) {
+                popUpTo(0) { inclusive = true }
+            }
+            return@LaunchedEffect
+        }
 
         if (!hasOnboarded) {
             logger.i { "User has not onboarded. Navigating to onboarding." }

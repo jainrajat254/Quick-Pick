@@ -35,5 +35,10 @@ interface LocalDataStore {
     suspend fun setHasOnboarded(bool: Boolean)
     val hasOnboarded: Flow<Boolean>
 
+    suspend fun savePendingVerification(email: String, userType: String)
+    suspend fun getPendingVerificationEmail(): String?
+    suspend fun getPendingVerificationUserType(): String?
+    suspend fun clearPendingVerification()
+
     suspend fun clearAll()
 }

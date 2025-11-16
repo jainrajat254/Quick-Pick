@@ -41,6 +41,9 @@ fun ChangePasswordScreen(
     var currentPasswordVisible by remember { mutableStateOf(false) }
     var newPasswordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+    var uiError by remember { mutableStateOf<String?>(null) }
+    var uiSuccess by remember { mutableStateOf<String?>(null) }
+    var userTypeForReset by remember { mutableStateOf("STUDENT") }
     val passwordsMatch = newPassword == confirmPassword
     val canChangePassword = currentPassword.isNotBlank() &&
             newPassword.isNotBlank() &&
@@ -54,19 +57,29 @@ fun ChangePasswordScreen(
     LaunchedEffect(changePasswordState) {
         when (changePasswordState) {
             is UiState.Success -> {
-                showToast((changePasswordState as UiState.Success<ChangePasswordResponse>).data.message ?: "Password changed successfully")
+                val msg = (changePasswordState as UiState.Success<ChangePasswordResponse>).data.message ?: "Password changed successfully"
+                uiSuccess = msg
+                uiError = null
+                showToast(msg)
                 currentPassword = ""
                 newPassword = ""
                 confirmPassword = ""
                 navController.navigateUp()
             }
             is UiState.Error -> {
-                showToast((changePasswordState as UiState.Error).message ?: "Failed to change password")
+                val err = (changePasswordState as UiState.Error).message ?: "Failed to change password"
+                uiError = err
+                uiSuccess = null
+                showToast(err)
             }
             else -> Unit
         }
     }
 
+    LaunchedEffect(Unit) {
+        val role = dataStore.getUserRole()
+        userTypeForReset = if (role.equals("VENDOR", true)) "VENDOR" else "STUDENT"
+    }
 
     Box(
         modifier = Modifier
@@ -102,6 +115,7 @@ fun ChangePasswordScreen(
 
             TextButton(
                 onClick = {
+                    navController.navigate(org.rajat.quickpick.presentation.navigation.AppScreenUser.ForgotPassword(userType = userTypeForReset))
                 },
                 modifier = Modifier.align(Alignment.End)
             ) {
@@ -111,12 +125,6 @@ fun ChangePasswordScreen(
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier
                         .padding(top = 4.dp, bottom = 16.dp)
-                        .clickable {
-                            //Viewmodel method to perform forgot password
-                            showToast(
-                                "Password reset link sent to your email"
-                            )
-                        }
                 )
             }
 
@@ -152,20 +160,34 @@ fun ChangePasswordScreen(
                         .padding(start = 4.dp, top = 2.dp)
                 )
             }
+            if (!uiError.isNullOrBlank()) {
+                Text(
+                    text = uiError!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                        .padding(start = 4.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
                 onClick = {
+                    uiError = null
+                    uiSuccess = null
+                    val token = TokenProvider.token
+                    if (token.isNullOrBlank()) {
+                        uiError = "Session expired. Please login again."
+                        showToast(uiError!!)
+                        return@Button
+                    }
                     authViewModel.changePassword(
                         ChangePasswordRequest(
                             currentPassword = currentPassword.trim(),
                             newPassword = newPassword.trim()
                         )
-                    )
-
-                    showToast(
-                        message = "Password changed successfully",
                     )
                 },
                 modifier = Modifier

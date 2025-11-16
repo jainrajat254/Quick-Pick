@@ -42,12 +42,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import co.touchlab.kermit.Logger
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.data.dummy.DummyData
 import org.rajat.quickpick.data.local.LocalDataStore
-import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.domain.modal.auth.LoginUserResponse
 import org.rajat.quickpick.domain.modal.auth.RegisterUserRequest
 import org.rajat.quickpick.presentation.components.CustomDropdown
@@ -60,10 +57,8 @@ import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators
 import org.rajat.quickpick.utils.toast.showToast
-import org.rajat.quickpick.utils.session.AuthSessionSaver
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.registerbackground
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -102,17 +97,24 @@ fun UserRegisterScreen(
         when (userRegisterState) {
             is UiState.Success -> {
                 val response = (userRegisterState as UiState.Success<LoginUserResponse>).data
-                Logger.withTag("LOGOUT_DEBUG").d { "USER_REGISTER success: token=${response.tokens?.accessToken?.take(15)}... userId=${response.userId}" }
-                AuthSessionSaver.saveUserSession(dataStore, response)
-                showToast("User Registered Successfully")
-                navController.navigate(AppScreenUser.HomeScreen) {
-                    popUpTo(0) { inclusive = true }
+                Logger.withTag("REGISTER").d { "USER_REGISTER success: userId=${response.userId}" }
+                showToast("Registration successful. We've emailed a verification code.")
+                val emailLower = email.trim().lowercase()
+                dataStore.savePendingVerification(emailLower, "STUDENT")
+                dataStore.setHasOnboarded(true)
+                authViewModel.setPendingRegistrationCredentials(
+                    email = emailLower,
+                    password = password.trim(),
+                    userType = "STUDENT"
+                )
+                navController.navigate(AppScreenUser.EmailOtpVerify(email = emailLower, userType = "STUDENT")) {
+                    popUpTo(AppScreenUser.UserRegister) { inclusive = true }
                     launchSingleTop = true
                 }
             }
             is UiState.Error -> {
                 val message = (userRegisterState as UiState.Error).message ?: "Unknown error"
-                Logger.withTag("LOGOUT_DEBUG").d { "USER_REGISTER error: $message" }
+                Logger.withTag("REGISTER").d { "USER_REGISTER error: $message" }
                 showToast(message)
                 logger.e { message }
             }
