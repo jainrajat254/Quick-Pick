@@ -32,8 +32,5 @@ build/
 ### VS Code ###
 .vscode/
 
-# Ignore secrets file
-src/main/java/com/rajat/quickpick/utils/Secrets.java
 src/main/resources/firebase-service-account.json
-
 .env
