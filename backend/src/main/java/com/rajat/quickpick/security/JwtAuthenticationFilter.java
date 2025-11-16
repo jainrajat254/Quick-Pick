@@ -32,7 +32,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private CustomUserDetailsService userDetailsService;
 
     private static final Set<String> PUBLIC_PATHS = Set.of(
-            "/server",
             "/api/auth/register/user",
             "/api/auth/register/vendor",
             "/api/auth/login/user",
