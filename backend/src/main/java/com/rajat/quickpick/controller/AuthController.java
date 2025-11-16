@@ -63,7 +63,7 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordDto forgotPasswordDto) {
         authService.forgotPassword(forgotPasswordDto);
-        return ResponseEntity.ok(Map.of("message", "Password reset email sent"));
+        return ResponseEntity.ok(Map.of("message", "If the account exists, a password reset code has been sent"));
     }
 
     //while working with postman... this endpoint can be used to reset password
@@ -134,7 +134,6 @@ public class AuthController {
         return ResponseEntity.ok(html);
     }
 
-    // Endpoint to handle password reset via token...not implemented
     @PostMapping("/reset-password")
     public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordDto resetPasswordDto) {
         authService.resetPassword(resetPasswordDto);
@@ -166,5 +165,29 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> logout(@Valid @RequestBody RefreshTokenDto refreshTokenDto) {
         authService.logout(refreshTokenDto.getRefreshToken());
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    }
+
+    @PostMapping("/send-email-otp")
+    public ResponseEntity<Map<String, String>> sendEmailOtp(@Valid @RequestBody EmailOtpRequestDto requestDto) {
+        authService.sendEmailOtp(requestDto);
+        return ResponseEntity.ok(Map.of("message", "If an account exists, a verification code has been sent"));
+    }
+
+    @PostMapping("/verify-email-otp")
+    public ResponseEntity<Map<String, String>> verifyEmailOtp(@Valid @RequestBody EmailOtpVerifyDto verifyDto) {
+        authService.verifyEmailOtp(verifyDto);
+        return ResponseEntity.ok(Map.of("message", "Email verified successfully"));
+    }
+
+    @PostMapping("/send-password-otp")
+    public ResponseEntity<Map<String,String>> sendPasswordOtp(@Valid @RequestBody PasswordOtpRequestDto dto) {
+        authService.sendPasswordResetOtp(dto);
+        return ResponseEntity.ok(Map.of("message","If the account exists, a password reset code has been sent"));
+    }
+
+    @PostMapping("/reset-password-otp")
+    public ResponseEntity<Map<String,String>> resetPasswordWithOtp(@Valid @RequestBody ResetPasswordOtpDto dto) {
+        authService.resetPasswordWithOtp(dto);
+        return ResponseEntity.ok(Map.of("message","Password reset successful"));
     }
 }

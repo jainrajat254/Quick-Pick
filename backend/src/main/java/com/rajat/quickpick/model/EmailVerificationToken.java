@@ -26,4 +26,6 @@ public class EmailVerificationToken {
 
     private LocalDateTime createdAt;
 
+    private Integer attempts;
+    private LocalDateTime lastSentAt;
 }

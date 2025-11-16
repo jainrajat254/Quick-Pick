@@ -1,10 +1,6 @@
 package com.rajat.quickpick.service;
 
-import com.rajat.quickpick.dto.auth.AuthResponseDto;
-import com.rajat.quickpick.dto.auth.ChangePasswordDto;
-import com.rajat.quickpick.dto.auth.ForgotPasswordDto;
-import com.rajat.quickpick.dto.auth.ResetPasswordDto;
-import com.rajat.quickpick.dto.auth.TokensDto;
+import com.rajat.quickpick.dto.auth.*;
 import com.rajat.quickpick.dto.user.RegisterUserDto;
 import com.rajat.quickpick.dto.vendor.RegisterVendor;
 import com.rajat.quickpick.exception.BadRequestException;
@@ -18,7 +14,6 @@ import com.rajat.quickpick.repository.VendorRepository;
 import com.rajat.quickpick.security.JwtUtil;
 import com.rajat.quickpick.utils.Secrets;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -68,6 +64,12 @@ public class AuthService {
             "Tea/Coffee", "Ice Cream", "Sweets", "Breakfast"
     );
 
+    private static final long EMAIL_OTP_EXPIRATION_MINUTES = 10;
+    private static final long EMAIL_OTP_RESEND_COOLDOWN_SECONDS = 60;
+    private static final int EMAIL_OTP_MAX_ATTEMPTS = 5;
+    private static final long PASSWORD_OTP_EXPIRATION_MINUTES = 10;
+    private static final long PASSWORD_OTP_RESEND_COOLDOWN_SECONDS = 60;
+    private static final int PASSWORD_OTP_MAX_ATTEMPTS = 5;
 
     public AuthResponseDto registerUser(RegisterUserDto registrationDto) {
         if (userRepository.existsByEmail(registrationDto.getEmail())) {
@@ -82,7 +84,6 @@ public class AuthService {
             throw new BadRequestException("Student ID already registered");
         }
 
-        // Create new user
         User user = new User();
         user.setFullName(registrationDto.getFullName());
         user.setGender(registrationDto.getGender());
@@ -99,14 +100,14 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        createAndSendVerificationToken(savedUser.getEmail(), Role.STUDENT);
+        createAndSendEmailOtp(savedUser.getEmail(), Role.STUDENT);
 
         AuthResponseDto response = new AuthResponseDto();
         response.setUserId(savedUser.getId());
         response.setEmail(savedUser.getEmail());
         response.setName(savedUser.getFullName());
         response.setRole(savedUser.getRole());
-        response.setMessage("Registration successful. Please check your email to verify your account.");
+        response.setMessage("Registration successful. We've emailed a verification code to verify your account.");
 
         return response;
     }
@@ -149,14 +150,14 @@ public class AuthService {
 
         Vendor savedVendor = vendorRepository.save(vendor);
 
-        createAndSendVerificationToken(savedVendor.getEmail(), Role.VENDOR);
+        createAndSendEmailOtp(savedVendor.getEmail(), Role.VENDOR);
 
         AuthResponseDto response = new AuthResponseDto();
         response.setUserId(savedVendor.getId());
         response.setEmail(savedVendor.getEmail());
         response.setName(savedVendor.getVendorName());
         response.setRole(savedVendor.getRole());
-        response.setMessage("Registration successful. Please check your email to verify your account.");
+        response.setMessage("Registration successful. We've emailed a verification code to verify your account.");
 
         return response;
     }
@@ -183,7 +184,6 @@ public class AuthService {
 
                 AuthResponseDto response = new AuthResponseDto();
 
-                // Create tokens object
                 TokensDto tokens = TokensDto.builder()
                         .accessToken(token)
                         .refreshToken(refreshToken.getToken())
@@ -214,7 +214,6 @@ public class AuthService {
 
                 AuthResponseDto response = new AuthResponseDto();
 
-                // Create tokens object
                 TokensDto tokens = TokensDto.builder()
                         .accessToken(token)
                         .refreshToken(refreshToken.getToken())
@@ -284,147 +283,118 @@ public class AuthService {
     }
 
     public void forgotPassword(ForgotPasswordDto forgotPasswordDto) {
-        String email = forgotPasswordDto.getEmail();
-        Role userType = forgotPasswordDto.getUserType();
-
-        boolean userExists = false;
-
-        if (Role.STUDENT.equals(userType)) {
-            userExists = userRepository.existsByEmail(email);
-        } else if (Role.VENDOR.equals(userType)) {
-            userExists = vendorRepository.existsByEmail(email);
-        }
-
-        if (!userExists) {
-            throw new ResourceNotFoundException("User not found with email: " + email);
-        }
-
-        passwordResetTokenRepository.deleteByEmailAndUserType(email, userType);
-
-        String token = UUID.randomUUID().toString();
-        PasswordResetToken resetToken = new PasswordResetToken();
-        resetToken.setToken(token);
-        resetToken.setEmail(email);
-        resetToken.setUserType(userType);
-        resetToken.setExpiryDate(LocalDateTime.now().plusHours(1));
-        resetToken.setUsed(false);
-        resetToken.setCreatedAt(LocalDateTime.now());
-
-        passwordResetTokenRepository.save(resetToken);
-        emailService.sendPasswordResetEmail(email, token, userType);
+        PasswordOtpRequestDto dto = new PasswordOtpRequestDto();
+        dto.setEmail(forgotPasswordDto.getEmail());
+        dto.setUserType(forgotPasswordDto.getUserType());
+        sendPasswordResetOtp(dto);
     }
 
-    public void resetPassword(ResetPasswordDto resetPasswordDto) {
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(resetPasswordDto.getToken())
-                .orElseThrow(() -> new BadRequestException("Invalid reset token"));
-
-        if (resetToken.isUsed()) {
-            throw new BadRequestException("Token already used");
+    public void sendPasswordResetOtp(PasswordOtpRequestDto dto) {
+        String email = dto.getEmail();
+        Role userType = dto.getUserType();
+        boolean exists = (userType == Role.STUDENT) ? userRepository.existsByEmail(email) : vendorRepository.existsByEmail(email);
+        if (!exists) {
+            return;
         }
-
-        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Token has expired");
+        var existingOpt = passwordResetTokenRepository.findByEmailAndUserType(email, userType.name());
+        if (existingOpt.isPresent()) {
+            PasswordResetToken existing = existingOpt.get();
+            if (existing.getLastSentAt() != null && existing.getLastSentAt().plusSeconds(PASSWORD_OTP_RESEND_COOLDOWN_SECONDS).isAfter(LocalDateTime.now())) {
+                throw new BadRequestException("Please wait before requesting another password reset code");
+            }
+            passwordResetTokenRepository.deleteByEmailAndUserType(email, userType);
         }
+        String otp = generateNumericOtp(6);
+        String hash = passwordEncoder.encode(otp);
+        PasswordResetToken token = new PasswordResetToken();
+        token.setEmail(email);
+        token.setUserType(userType);
+        token.setToken(hash);
+        token.setExpiryDate(LocalDateTime.now().plusMinutes(PASSWORD_OTP_EXPIRATION_MINUTES));
+        token.setUsed(false);
+        token.setCreatedAt(LocalDateTime.now());
+        token.setAttempts(0);
+        token.setLastSentAt(LocalDateTime.now());
+        passwordResetTokenRepository.save(token);
+        emailService.sendPasswordResetOtp(email, otp, PASSWORD_OTP_EXPIRATION_MINUTES);
+    }
 
-        Role typeRole;
-        try {
-            typeRole = Role.valueOf(resetPasswordDto.getType());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Invalid user type");
+    public void resetPasswordWithOtp(ResetPasswordOtpDto dto) {
+        String email = dto.getEmail();
+        Role userType = dto.getUserType();
+        String otp = dto.getOtp();
+        PasswordResetToken token = passwordResetTokenRepository.findByEmailAndUserType(email, userType.name())
+                .orElseThrow(() -> new BadRequestException("Invalid or expired code"));
+        if (token.isUsed()) {
+            throw new BadRequestException("Code already used");
         }
-
-        if (!resetToken.getUserType().equals(typeRole)) {
-            throw new BadRequestException("Invalid token type");
+        if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Code has expired");
         }
-
-        String encodedPassword = passwordEncoder.encode(resetPasswordDto.getNewPassword());
-
-        if (Role.STUDENT.equals(typeRole)) {
-            User user = userRepository.findByEmail(resetToken.getEmail())
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        int attempts = token.getAttempts() == null ? 0 : token.getAttempts();
+        if (attempts >= PASSWORD_OTP_MAX_ATTEMPTS) {
+            throw new BadRequestException("Too many attempts. Request a new code");
+        }
+        if (!passwordEncoder.matches(otp, token.getToken())) {
+            token.setAttempts(attempts + 1);
+            passwordResetTokenRepository.save(token);
+            throw new BadRequestException("Incorrect code");
+        }
+        String encodedPassword = passwordEncoder.encode(dto.getNewPassword());
+        if (userType == Role.STUDENT) {
+            User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
             user.setPassword(encodedPassword);
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
-        } else if (Role.VENDOR.equals(typeRole)) {
-            Vendor vendor = vendorRepository.findByEmail(resetToken.getEmail())
-                    .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
+        } else if (userType == Role.VENDOR) {
+            Vendor vendor = vendorRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
             vendor.setPassword(encodedPassword);
             vendor.setUpdatedAt(LocalDateTime.now());
             vendorRepository.save(vendor);
         }
-
-        resetToken.setUsed(true);
-        passwordResetTokenRepository.save(resetToken);
+        token.setUsed(true);
+        passwordResetTokenRepository.save(token);
     }
 
-    public void validateResetToken(String token, String type) {
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
-                .orElseThrow(() -> new BadRequestException("Invalid reset token"));
+    public void verifyEmailOtp(EmailOtpVerifyDto dto) {
+        String email = dto.getEmail();
+        Role userType = dto.getUserType();
+        String otp = dto.getOtp();
 
-        if (resetToken.isUsed()) {
-            throw new BadRequestException("Token already used");
+        EmailVerificationToken token = emailVerificationTokenRepository.findByEmailAndUserType(email, userType.name())
+                .orElseThrow(() -> new BadRequestException("Invalid or expired code"));
+
+        if (token.isUsed()) {
+            throw new BadRequestException("Code already used");
+        }
+        if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Code has expired");
+        }
+        int attempts = token.getAttempts() == null ? 0 : token.getAttempts();
+        if (attempts >= EMAIL_OTP_MAX_ATTEMPTS) {
+            throw new BadRequestException("Too many attempts. Please request a new code");
         }
 
-        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Token has expired");
+        if (!passwordEncoder.matches(otp, token.getToken())) {
+            token.setAttempts(attempts + 1);
+            emailVerificationTokenRepository.save(token);
+            throw new BadRequestException("Incorrect code");
         }
 
-        Role typeRole;
-        try {
-            typeRole = Role.valueOf(type);
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Invalid user type");
-        }
-
-        if (!resetToken.getUserType().equals(typeRole)) {
-            throw new BadRequestException("Invalid token type");
-        }
-    }
-
-    public void changePassword(String email, ChangePasswordDto changePasswordDto) {
-        var userOpt = userRepository.findByEmail(email);
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            if (!passwordEncoder.matches(changePasswordDto.getCurrentPassword(), user.getPassword())) {
-                throw new BadRequestException("Current password is incorrect");
-            }
-            user.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
+        if (userType == Role.STUDENT) {
+            User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            user.setEmailVerified(true);
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
-            return;
-        }
-
-        var vendorOpt = vendorRepository.findByEmail(email);
-        if (vendorOpt.isPresent()) {
-            Vendor vendor = vendorOpt.get();
-            if (!passwordEncoder.matches(changePasswordDto.getCurrentPassword(), vendor.getPassword())) {
-                throw new BadRequestException("Current password is incorrect");
-            }
-            vendor.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
+        } else if (userType == Role.VENDOR) {
+            Vendor vendor = vendorRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
+            vendor.setEmailVerified(true);
             vendor.setUpdatedAt(LocalDateTime.now());
             vendorRepository.save(vendor);
-            return;
         }
 
-        throw new ResourceNotFoundException("User not found");
-    }
-
-    private void createAndSendVerificationToken(String email, Role userType) {
-        emailVerificationTokenRepository.deleteByEmailAndUserType(email, userType);
-
-        long expirationHours = Secrets.EMAIL_VERIFICATION_TOKEN_EXPIRATION / (1000 * 60 * 60);
-
-        String token = UUID.randomUUID().toString();
-        EmailVerificationToken verificationToken = new EmailVerificationToken();
-        verificationToken.setToken(token);
-        verificationToken.setEmail(email);
-        verificationToken.setUserType(userType);
-        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(expirationHours));
-        verificationToken.setUsed(false);
-        verificationToken.setCreatedAt(LocalDateTime.now());
-
-        emailVerificationTokenRepository.save(verificationToken);
-        emailService.sendVerificationEmail(email, token, userType);
+        token.setUsed(true);
+        emailVerificationTokenRepository.save(token);
     }
 
     public void resendVerificationEmail(String email, Role userType) {
@@ -460,19 +430,16 @@ public class AuthService {
     }
 
     public AuthResponseDto refreshToken(String refreshTokenValue) {
-        // Generate new access token
         String newAccessToken = refreshTokenService.generateNewAccessToken(refreshTokenValue);
 
-        // Rotate refresh token (generate new one, revoke old one)
         RefreshToken newRefreshToken = refreshTokenService.rotateRefreshToken(refreshTokenValue);
 
         AuthResponseDto response = new AuthResponseDto();
 
-        // Create tokens object with new access and refresh tokens
         TokensDto tokens = TokensDto.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken.getToken())
-                .expiresIn(Secrets.JWT_EXPIRATION / 1000) // Convert milliseconds to seconds
+                .expiresIn(Secrets.JWT_EXPIRATION / 1000)
                 .tokenType("Bearer")
                 .build();
 
@@ -508,5 +475,140 @@ public class AuthService {
     public void logout(String refreshTokenValue) {
         refreshTokenService.revokeRefreshToken(refreshTokenValue);
     }
-}
 
+    private void createAndSendVerificationToken(String email, Role userType) {
+        emailVerificationTokenRepository.deleteByEmailAndUserType(email, userType);
+
+        long expirationHours = Secrets.EMAIL_VERIFICATION_TOKEN_EXPIRATION / (1000 * 60 * 60);
+
+        String token = UUID.randomUUID().toString();
+        EmailVerificationToken verificationToken = new EmailVerificationToken();
+        verificationToken.setToken(token);
+        verificationToken.setEmail(email);
+        verificationToken.setUserType(userType);
+        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(expirationHours));
+        verificationToken.setUsed(false);
+        verificationToken.setCreatedAt(LocalDateTime.now());
+
+        emailVerificationTokenRepository.save(verificationToken);
+        emailService.sendVerificationEmail(email, token, userType);
+    }
+
+    private String generateNumericOtp(int length) {
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(random.nextInt(10));
+        }
+        return sb.toString();
+    }
+
+    private void createAndSendEmailOtp(String email, Role userType) {
+        emailVerificationTokenRepository.deleteByEmailAndUserType(email, userType);
+
+        String otp = generateNumericOtp(6);
+        String otpHash = passwordEncoder.encode(otp);
+
+        EmailVerificationToken token = new EmailVerificationToken();
+        token.setEmail(email);
+        token.setUserType(userType);
+        token.setToken(otpHash);
+        token.setExpiryDate(LocalDateTime.now().plusMinutes(EMAIL_OTP_EXPIRATION_MINUTES));
+        token.setUsed(false);
+        token.setCreatedAt(LocalDateTime.now());
+        token.setAttempts(0);
+        token.setLastSentAt(LocalDateTime.now());
+
+        emailVerificationTokenRepository.save(token);
+
+        emailService.sendEmailVerificationOtp(email, otp, userType, EMAIL_OTP_EXPIRATION_MINUTES);
+    }
+
+    public void validateResetToken(String token, String type) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new BadRequestException("Invalid reset token"));
+        if (resetToken.isUsed()) {
+            throw new BadRequestException("Token already used");
+        }
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Token has expired");
+        }
+        Role role;
+        try { role = Role.valueOf(type); } catch (IllegalArgumentException e) { throw new BadRequestException("Invalid user type"); }
+        if (!resetToken.getUserType().equals(role)) {
+            throw new BadRequestException("Invalid token type");
+        }
+    }
+
+    public void resetPassword(ResetPasswordDto resetPasswordDto) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(resetPasswordDto.getToken())
+                .orElseThrow(() -> new BadRequestException("Invalid reset token"));
+        if (resetToken.isUsed()) {
+            throw new BadRequestException("Token already used");
+        }
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Token has expired");
+        }
+        Role role;
+        try { role = Role.valueOf(resetPasswordDto.getType()); } catch (IllegalArgumentException e) { throw new BadRequestException("Invalid user type"); }
+        if (!resetToken.getUserType().equals(role)) {
+            throw new BadRequestException("Invalid token type");
+        }
+        String encoded = passwordEncoder.encode(resetPasswordDto.getNewPassword());
+        if (role == Role.STUDENT) {
+            User user = userRepository.findByEmail(resetToken.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            user.setPassword(encoded); user.setUpdatedAt(LocalDateTime.now()); userRepository.save(user);
+        } else if (role == Role.VENDOR) {
+            Vendor vendor = vendorRepository.findByEmail(resetToken.getEmail()).orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
+            vendor.setPassword(encoded); vendor.setUpdatedAt(LocalDateTime.now()); vendorRepository.save(vendor);
+        } else {
+            throw new BadRequestException("Unsupported role type");
+        }
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
+    }
+
+    public void changePassword(String email, ChangePasswordDto changePasswordDto) {
+        var userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (!passwordEncoder.matches(changePasswordDto.getCurrentPassword(), user.getPassword())) {
+                throw new BadRequestException("Current password is incorrect");
+            }
+            user.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+            return;
+        }
+        var vendorOpt = vendorRepository.findByEmail(email);
+        if (vendorOpt.isPresent()) {
+            Vendor vendor = vendorOpt.get();
+            if (!passwordEncoder.matches(changePasswordDto.getCurrentPassword(), vendor.getPassword())) {
+                throw new BadRequestException("Current password is incorrect");
+            }
+            vendor.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
+            vendor.setUpdatedAt(LocalDateTime.now());
+            vendorRepository.save(vendor);
+            return;
+        }
+        throw new ResourceNotFoundException("User not found");
+    }
+
+    public void sendEmailOtp(EmailOtpRequestDto dto) {
+        String email = dto.getEmail();
+        Role userType = dto.getUserType();
+        boolean exists = (userType == Role.STUDENT) ? userRepository.existsByEmail(email) : vendorRepository.existsByEmail(email);
+        if (!exists) {
+            return;
+        }
+        var existingOpt = emailVerificationTokenRepository.findByEmailAndUserType(email, userType.name());
+        if (existingOpt.isPresent()) {
+            EmailVerificationToken existing = existingOpt.get();
+            if (existing.getLastSentAt() != null && existing.getLastSentAt().plusSeconds(EMAIL_OTP_RESEND_COOLDOWN_SECONDS).isAfter(LocalDateTime.now())) {
+                throw new BadRequestException("Please wait before requesting another code");
+            }
+            emailVerificationTokenRepository.deleteByEmailAndUserType(email, userType);
+        }
+        createAndSendEmailOtp(email, userType);
+    }
+}

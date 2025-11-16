@@ -26,5 +26,6 @@ public class PasswordResetToken {
 
     private LocalDateTime createdAt;
 
-
+    private Integer attempts;
+    private LocalDateTime lastSentAt;
 }
