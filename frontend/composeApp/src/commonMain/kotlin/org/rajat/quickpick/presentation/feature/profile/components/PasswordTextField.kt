@@ -27,13 +27,15 @@ fun PasswordTextField(
     label: String,
     isVisible: Boolean,
     onVisibilityChange: () -> Unit,
-    showError: Boolean = false
+    showError: Boolean = false,
+    placeholder: String? = null,
+    showLabel: Boolean = true
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = Modifier.fillMaxWidth(),
-        label = { Text(label) },
+        placeholder = if (!showLabel && !placeholder.isNullOrBlank()) { { Text(placeholder) } } else null,
         singleLine = true,
         visualTransformation = if(isVisible) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),

@@ -3,7 +3,8 @@ package org.rajat.quickpick.utils
 object Constants {
     const val DATASTORE_FILE_NAME = "quick_pick.preferences_pb"
 //    const val BASE_URL = "https://0771701c2b50.ngrok-free.app"
-    const val BASE_URL = "https://jq4ftr-ip-139-5-1-214.tunnelmole.net"
+//    const val BASE_URL = "https://jq4ftr-ip-139-5-1-214.tunnelmole.net"
+    const val BASE_URL = "https://jessika-interganglionic-goggly.ngrok-free.dev"
 
 object Endpoints {
         // Auth
@@ -16,6 +17,11 @@ object Endpoints {
         const val RESET_PASSWORD = "/api/auth/reset-password"
         const val LOGOUT = "/api/auth/logout"
         const val RESEND_EMAIL_VERIFICATION = "/api/auth/resend-verification"// + {email} + /{userType}
+        const val CHANGE_PASSWORD = "/api/auth/change-password"
+        const val RESET_PASSWORD_OTP = "/api/auth/reset-password-otp"
+        const val SEND_PASSWORD_OTP = "/api/auth/send-password-otp"
+        const val SEND_EMAIL_OTP = "/api/auth/send-email-otp"
+        const val VERIFY_EMAIL_OTP = "/api/auth/verify-email-otp"
 
 
         // Admin

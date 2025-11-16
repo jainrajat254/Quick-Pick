@@ -19,7 +19,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,7 +42,6 @@ import androidx.navigation.NavController
 import co.touchlab.kermit.Logger
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.data.local.LocalDataStore
-import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.domain.modal.auth.LoginVendorRequest
 import org.rajat.quickpick.domain.modal.auth.LoginVendorResponse
 import org.rajat.quickpick.presentation.components.CustomLoader
@@ -53,9 +54,9 @@ import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators.isLoginFormValid
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.session.AuthSessionSaver
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.burger
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -75,34 +76,56 @@ fun VendorLoginScreen(
 
     val vendorLoginState by authViewModel.vendorLoginState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+        logoutLogger.d { "VENDOR_LOGIN - Screen loaded" }
+        logoutLogger.d { "VENDOR_LOGIN - Current vendorLoginState: $vendorLoginState" }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+            logoutLogger.d { "VENDOR_LOGIN - Screen disposed, resetting auth states" }
+            authViewModel.resetAuthStates()
+        }
+    }
+
     LaunchedEffect(vendorLoginState) {
+        val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+        logoutLogger.d { "VENDOR_LOGIN - LaunchedEffect triggered, vendorLoginState: $vendorLoginState" }
+
         when (vendorLoginState) {
             is UiState.Success -> {
+                logoutLogger.d { "VENDOR_LOGIN - Success state detected, auto-logging in!" }
                 val response = (vendorLoginState as UiState.Success<LoginVendorResponse>).data
-                TokenProvider.token = response.tokens.accessToken
-                dataStore.saveToken(response.tokens.accessToken)
-                dataStore.saveRefreshToken(response.tokens.refreshToken)
-
-                val expiryMillis = Clock.System.now().toEpochMilliseconds() + (response.tokens.expiresIn * 1000)
-                dataStore.saveTokenExpiryMillis(expiryMillis)
-
-                dataStore.saveId(response.userId)
-                dataStore.saveUserRole("VENDOR")
-                dataStore.saveVendorProfile(response)
-                dataStore.clearUserProfile()
+                logoutLogger.d { "VENDOR_LOGIN - Calling AuthSessionSaver.saveVendorSession" }
+                AuthSessionSaver.saveVendorSession(dataStore, response)
                 showToast("Vendor Signed In Successfully")
+                logoutLogger.d { "VENDOR_LOGIN - Navigating to VendorDashboard" }
                 navController.navigate(AppScreenVendor.VendorDashboard) {
-                    popUpTo(AppScreenUser.VendorLogin) { inclusive = true }
+                    popUpTo(0) { inclusive = true }
+                    launchSingleTop = true
                 }
             }
 
             is UiState.Error -> {
                 val message = (vendorLoginState as UiState.Error).message ?: "Unknown error"
-                showToast(message)
-                logger.e { message }
+                if (message.contains("verify your email", ignoreCase = true)) {
+                    val emailLower = email.trim().lowercase()
+                    navController.navigate(AppScreenUser.EmailOtpVerify(email = emailLower, userType = "VENDOR")) {
+                        popUpTo(AppScreenUser.VendorLogin) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                } else {
+                    logoutLogger.d { "VENDOR_LOGIN - Error state: $message" }
+                    showToast(message)
+                    logger.e { message }
+                }
             }
 
-            else -> Unit
+            else -> {
+                logoutLogger.d { "VENDOR_LOGIN - State is Empty or Loading" }
+            }
         }
     }
 
@@ -128,7 +151,7 @@ fun VendorLoginScreen(
             Card(
                 Modifier
                     .fillMaxWidth()
-                    .padding(top = 480.dp)
+                    .padding(top = 420.dp)
                     .shadow(
                         elevation = 32.dp,
                         shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
@@ -140,7 +163,7 @@ fun VendorLoginScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
@@ -186,6 +209,17 @@ fun VendorLoginScreen(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
                     )
+
+                    TextButton(
+                        onClick = {
+                            navController.navigate(AppScreenUser.ForgotPassword(userType = "VENDOR"))
+                        },
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .padding(vertical = 0.dp)
+                    ) {
+                        Text("Forgot Password?", color = MaterialTheme.colorScheme.primary)
+                    }
 
                     RegisterButton(
                         onClick = {

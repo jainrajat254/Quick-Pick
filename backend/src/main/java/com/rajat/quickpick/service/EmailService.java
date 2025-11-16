@@ -76,4 +76,43 @@ public class EmailService {
             throw new RuntimeException("Failed to send password reset email");
         }
     }
+
+    public void sendEmailVerificationOtp(String toEmail, String otp, Role userType, long expiryMinutes) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("QuickPick - Your Verification Code");
+
+            String body = "Your verification code is: " + otp + "\n\n" +
+                    "This code will expire in " + expiryMinutes + " minutes.\n" +
+                    "If you didn't request this, you can ignore this email.";
+
+            message.setText(body);
+            mailSender.send(message);
+            log.info("Verification OTP email sent to: {}", toEmail);
+        } catch (Exception e) {
+            log.error("Error sending verification OTP to {}: {}", toEmail, e.getMessage());
+            throw new RuntimeException("Failed to send verification OTP");
+        }
+    }
+
+    public void sendPasswordResetOtp(String toEmail, String otp, long expiryMinutes) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("QuickPick - Password Reset Code");
+            String body = "You requested a password reset.\n\n" +
+                    "Your password reset code is: " + otp + "\n" +
+                    "It expires in " + expiryMinutes + " minutes.\n\n" +
+                    "If you did not request this, you can ignore this email.";
+            message.setText(body);
+            mailSender.send(message);
+            log.info("Password reset OTP sent to: {}", toEmail);
+        } catch (Exception e) {
+            log.error("Error sending password reset OTP to {}: {}", toEmail, e.getMessage());
+            throw new RuntimeException("Failed to send password reset OTP");
+        }
+    }
 }

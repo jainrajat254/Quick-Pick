@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import org.rajat.quickpick.presentation.components.CustomDropdown
 
 @Composable
 fun MenuItemDetailsForm(
@@ -39,7 +40,8 @@ fun MenuItemDetailsForm(
     onIsVegChange: (Boolean) -> Unit,
     isAvailable: Boolean,
     onIsAvailableChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    categoryOptions: List<String>? = null
 ) {
     Card(
         modifier = modifier
@@ -111,12 +113,15 @@ fun MenuItemDetailsForm(
                 )
             }
 
-            FormInfoField(
-                label = "Category",
+            CustomDropdown(
                 value = category,
                 onValueChange = onCategoryChange,
-                icon = Icons.Default.Category,
-                placeholder = "e.g. Main Course, Drinks"
+                label = "Select Category",
+                leadingIcon = Icons.Default.Category,
+                options = categoryOptions ?: emptyList(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
             )
 
             ToggleRow(

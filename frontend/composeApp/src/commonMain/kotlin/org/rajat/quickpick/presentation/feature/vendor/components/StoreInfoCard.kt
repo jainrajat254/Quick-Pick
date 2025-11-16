@@ -28,29 +28,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import org.rajat.quickpick.data.dummy.DummyData
 import org.rajat.quickpick.domain.modal.search.GetVendorByIDResponse
+import org.rajat.quickpick.domain.modal.review.GetVendorRatingStatsResponse
+import org.rajat.quickpick.utils.UiState
 
 @Composable
 fun StoreInfoCard(
     vendor: GetVendorByIDResponse,
-    rating: DummyData.VendorRating?,
+    ratingState: UiState<GetVendorRatingStatsResponse>,
+    onRatingClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.inverseOnSurface
-        ),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.inverseOnSurface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Text(
                 text = vendor.storeName ?: "Store Name",
                 style = MaterialTheme.typography.headlineSmall,
@@ -70,54 +64,81 @@ fun StoreInfoCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (rating != null) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable {
-                        // TODO: Navigate to reviews screen
+            if (ratingState !is UiState.Empty) {
+                when (ratingState) {
+                    is UiState.Loading -> {
+                        Text(
+                            "Loading ratings...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(Modifier.height(12.dp))
                     }
-                ) {
-                    Surface(
-                        shape = MaterialTheme.shapes.small,
-                        color = MaterialTheme.colorScheme.primaryContainer
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Star,
-                                contentDescription = "Rating",
-                                modifier = Modifier.size(18.dp),
-                                tint = Color(0xFFFFB800)
-                            )
-                            Text(
-                                text = (kotlin.math.round(rating.averageRating * 10) / 10.0).toString(),
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+
+                    is UiState.Error -> {
+                        Text(
+                            "Failed to load ratings",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+
+                        Spacer(Modifier.height(12.dp))
+                    }
+
+                    is UiState.Success -> {
+                        val rating = ratingState.data
+                        if (rating.averageRating != null && rating.totalReviews != null) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.clickable { onRatingClick() }
+                            ) {
+                                Surface(
+                                    shape = MaterialTheme.shapes.small,
+                                    color = MaterialTheme.colorScheme.primaryContainer
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Star,
+                                            contentDescription = "Rating",
+                                            modifier = Modifier.size(18.dp),
+                                            tint = Color(0xFFFFB800)
+                                        )
+                                        Text(
+                                            text = (kotlin.math.round(rating.averageRating * 10) / 10.0).toString(),
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Text(
+                                    "${rating.totalReviews} reviews",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+
+                                Icon(
+                                    imageVector = Icons.Outlined.LocationOn,
+                                    contentDescription = "View reviews",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = "${rating.totalReviews} reviews",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Icon(
-                        imageVector = Icons.Outlined.LocationOn,
-                        contentDescription = "View reviews",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    UiState.Empty -> Unit
                 }
-
-                Spacer(modifier = Modifier.height(12.dp))
             }
 
             if (!vendor.vendorDescription.isNullOrBlank()) {

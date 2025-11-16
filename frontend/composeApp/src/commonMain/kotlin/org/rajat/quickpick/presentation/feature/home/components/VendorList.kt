@@ -9,8 +9,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.rajat.quickpick.data.dummy.DummyData
-import org.rajat.quickpick.domain.modal.search.GetVendorByIDResponse
 import org.rajat.quickpick.domain.modal.search.Vendor
 
 
@@ -29,11 +27,8 @@ fun VendorsList(
             items = vendors,
             key = { it.id }
         ) { vendor ->
-            val rating = DummyData.getRatingByVendorId(vendor.id ?: "")
-
             VendorCard(
                 vendor = vendor,
-                rating = rating,
                 onVendorClick = { onVendorClick(vendor.id ?: "") }
             )
         }

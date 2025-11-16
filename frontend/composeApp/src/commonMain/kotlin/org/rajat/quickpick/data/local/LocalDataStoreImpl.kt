@@ -31,6 +31,9 @@ class LocalDataStoreImpl(
 
         private val HAS_ONBOARDED_KEY = booleanPreferencesKey("has_onboarded")
 
+        private val PENDING_VERIFICATION_EMAIL_KEY = stringPreferencesKey("pending_verification_email")
+        private val PENDING_VERIFICATION_USER_TYPE_KEY = stringPreferencesKey("pending_verification_user_type")
+
         private val json = Json { ignoreUnknownKeys = true }
     }
 
@@ -126,6 +129,25 @@ class LocalDataStoreImpl(
             prefs[HAS_ONBOARDED_KEY] ?: false
         }
 
+    override suspend fun savePendingVerification(email: String, userType: String) {
+        dataStore.edit { prefs ->
+            prefs[PENDING_VERIFICATION_EMAIL_KEY] = email
+            prefs[PENDING_VERIFICATION_USER_TYPE_KEY] = userType
+        }
+    }
+
+    override suspend fun getPendingVerificationEmail(): String? =
+        dataStore.data.first()[PENDING_VERIFICATION_EMAIL_KEY]
+
+    override suspend fun getPendingVerificationUserType(): String? =
+        dataStore.data.first()[PENDING_VERIFICATION_USER_TYPE_KEY]
+
+    override suspend fun clearPendingVerification() {
+        dataStore.edit { prefs ->
+            prefs.remove(PENDING_VERIFICATION_EMAIL_KEY)
+            prefs.remove(PENDING_VERIFICATION_USER_TYPE_KEY)
+        }
+    }
 
     override suspend fun clearAll() {
         dataStore.edit { it.clear() }

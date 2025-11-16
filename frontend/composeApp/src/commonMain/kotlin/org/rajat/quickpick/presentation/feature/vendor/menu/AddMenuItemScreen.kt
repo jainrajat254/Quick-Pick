@@ -1,4 +1,4 @@
-package org.rajat.quickpick.presentation.feature.menu
+package org.rajat.quickpick.presentation.feature.vendor.menu
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,18 +9,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import org.rajat.quickpick.domain.modal.menuitems.CreateMenuItemRequest
 import org.rajat.quickpick.presentation.feature.vendor.menu.components.AddMenuItemButton
 import org.rajat.quickpick.presentation.feature.vendor.menu.components.MenuItemDetailsForm
 import org.rajat.quickpick.presentation.feature.vendor.menu.components.MenuItemImagePicker
+import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
+import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.presentation.viewmodel.MenuCategoryViewModel
 
 @Composable
 fun AddMenuItemScreen(
     navController: NavController,
     paddingValues: PaddingValues,
+    menuItemViewModel: MenuItemViewModel = koinInject(),
+    menuCategoryViewModel: MenuCategoryViewModel = koinInject()
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
@@ -31,7 +35,36 @@ fun AddMenuItemScreen(
     var isVeg by rememberSaveable { mutableStateOf(true) }
     var imageUri by remember { mutableStateOf<Any?>(null) }
     var isLoading by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+
+    val createState by menuItemViewModel.createMenuItemState.collectAsState()
+    val defaultCategoriesState by menuCategoryViewModel.getDefaultCategoriesState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        menuCategoryViewModel.getDefaultVendorCategories()
+    }
+
+    val categoryOptions: List<String> = when (val state = defaultCategoriesState) {
+        is UiState.Success -> state.data.categories
+        else -> emptyList()
+    }
+
+    LaunchedEffect(createState) {
+        when (createState) {
+            is UiState.Success -> {
+                showToast("Menu item added successfully")
+                menuItemViewModel.resetCreateMenuItemState()
+                menuItemViewModel.getMyMenuItems(page = 0, size = 100)
+                navController.popBackStack()
+            }
+            is UiState.Error -> {
+                showToast((createState as UiState.Error).message ?: "Failed to create menu item")
+                isLoading = false
+                menuItemViewModel.resetCreateMenuItemState()
+            }
+            is UiState.Loading -> isLoading = true
+            UiState.Empty -> Unit
+        }
+    }
 
     fun handleAddItemClick() {
         if (name.isBlank() || price.isBlank()) {
@@ -44,6 +77,27 @@ fun AddMenuItemScreen(
             return
         }
 
+        when (defaultCategoriesState) {
+            is UiState.Success -> {
+                if (category.isBlank()) {
+                    showToast("Please select a category.")
+                    return
+                }
+                if (category !in categoryOptions) {
+                    showToast("Please select a valid category from the list.")
+                    return
+                }
+            }
+            is UiState.Loading, UiState.Empty -> {
+                showToast("Loading categories. Please wait...")
+                return
+            }
+            is UiState.Error -> {
+                showToast("Couldn't load categories. Pull to refresh and try again.")
+                return
+            }
+        }
+
         val request = CreateMenuItemRequest(
             name = name,
             description = description.ifBlank { null },
@@ -52,16 +106,9 @@ fun AddMenuItemScreen(
             quantity = quantity.toIntOrNull(),
             isVeg = isVeg,
             isAvailable = isAvailable,
-            imageUrl = null
+            imageUrl = null // TODO integrate uploaded image URL
         )
-
-        coroutineScope.launch {
-            isLoading = true
-            delay(1500)
-            isLoading = false
-            showToast("Menu item added successfully (dummy)")
-            navController.popBackStack()
-        }
+        menuItemViewModel.createMenuItem(request)
     }
 
     Column(
@@ -72,16 +119,13 @@ fun AddMenuItemScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         MenuItemImagePicker(
             imageUri = imageUri,
             onImagePickerClick = {
-                // Logic to launch image picker
+                // TODO integrate image picker and upload
             }
         )
-
         Spacer(modifier = Modifier.height(8.dp))
-
         MenuItemDetailsForm(
             name = name,
             onNameChange = { name = it },
@@ -96,14 +140,10 @@ fun AddMenuItemScreen(
             isVeg = isVeg,
             onIsVegChange = { isVeg = it },
             isAvailable = isAvailable,
-            onIsAvailableChange = { isAvailable = it }
+            onIsAvailableChange = { isAvailable = it },
+            categoryOptions = categoryOptions
         )
-
         Spacer(modifier = Modifier.height(16.dp))
-
-        AddMenuItemButton(
-            isLoading = isLoading,
-            onClick = ::handleAddItemClick
-        )
+        AddMenuItemButton(isLoading = isLoading, onClick = ::handleAddItemClick)
     }
 }

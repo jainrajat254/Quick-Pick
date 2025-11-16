@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import org.rajat.quickpick.data.dummy.DummyData
 import org.rajat.quickpick.domain.modal.search.GetVendorByIDResponse
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.components.ErrorState
@@ -22,8 +21,10 @@ import org.rajat.quickpick.presentation.feature.vendor.components.CategoryCard
 import org.rajat.quickpick.presentation.feature.vendor.components.OffersSection
 import org.rajat.quickpick.presentation.feature.vendor.components.VendorHeaderSection
 import org.rajat.quickpick.presentation.feature.vendor.components.VendorNotFound
+import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
+import org.rajat.quickpick.presentation.viewmodel.ReviewViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
 
@@ -34,14 +35,17 @@ fun VendorScreen(
     navController: NavController,
     vendorViewModel: VendorViewModel,
     menuItemViewModel: MenuItemViewModel,
+    reviewViewModel: ReviewViewModel,
     vendorId: String,
     onBackClick: () -> Unit = { navController.navigateUp() }
 ) {
     val vendorDetailsState by vendorViewModel.vendorsDetailState.collectAsState()
+    val ratingState by reviewViewModel.vendorRatingState.collectAsState()
     var selectedCategoryId by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(vendorId) {
         vendorViewModel.getVendorsDetails(vendorId)
+        reviewViewModel.getVendorRating(vendorId)
     }
 
     LaunchedEffect(vendorDetailsState) {
@@ -60,9 +64,7 @@ fun VendorScreen(
             menuItemViewModel = menuItemViewModel,
             vendorId = vendorId,
             category = selectedCategoryId!!,
-            onBackClick = {
-                selectedCategoryId = null
-            }
+            onBackClick = { selectedCategoryId = null }
         )
         return
     }
@@ -134,7 +136,6 @@ fun VendorScreen(
 
             is UiState.Success -> {
                 val vendor = (vendorDetailsState as UiState.Success<GetVendorByIDResponse>).data
-                val rating = DummyData.getRatingByVendorId(vendor.id ?: "")
                 val categories = vendor.foodCategories?.filterNotNull() ?: emptyList()
 
                 LazyColumn(
@@ -146,7 +147,8 @@ fun VendorScreen(
                     item {
                         VendorHeaderSection(
                             vendor = vendor,
-                            rating = rating
+                            ratingState = ratingState,
+                            onRatingClick = { navController.navigate(AppScreenVendor.VendorReviewsScreen(vendor.id ?: "")) }
                         )
                     }
 
@@ -197,7 +199,7 @@ fun VendorScreen(
                     }
 
                     item {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(60.dp))
                     }
                 }
             }

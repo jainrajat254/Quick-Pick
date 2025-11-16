@@ -19,7 +19,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,7 +43,6 @@ import co.touchlab.kermit.Logger
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.rajat.quickpick.data.local.LocalDataStore
-import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.domain.modal.auth.LoginUserRequest
 import org.rajat.quickpick.domain.modal.auth.LoginUserResponse
 import org.rajat.quickpick.presentation.components.CustomLoader
@@ -53,6 +54,7 @@ import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators.isLoginFormValid
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.session.AuthSessionSaver
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.burger
 import kotlin.time.Clock
@@ -76,31 +78,46 @@ fun UserLoginScreen(
 
     val userLoginState by authViewModel.userLoginState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+        logoutLogger.d { "USER_LOGIN - Screen loaded" }
+        logoutLogger.d { "USER_LOGIN - Current userLoginState: $userLoginState" }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+            logoutLogger.d { "USER_LOGIN - Screen disposed, resetting auth states" }
+            authViewModel.resetAuthStates()
+        }
+    }
+
     LaunchedEffect(userLoginState) {
+        val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+        logoutLogger.d { "USER_LOGIN - LaunchedEffect triggered, userLoginState: $userLoginState" }
         when (userLoginState) {
             is UiState.Success -> {
                 val response = (userLoginState as UiState.Success<LoginUserResponse>).data
-                TokenProvider.token = response.tokens.accessToken
-                dataStore.saveToken(response.tokens.accessToken)
-                dataStore.saveRefreshToken(response.tokens.refreshToken)
-
-                val expiryMillis = Clock.System.now().toEpochMilliseconds() + (response.tokens.expiresIn * 1000)
-                dataStore.saveTokenExpiryMillis(expiryMillis)
-
-                dataStore.saveId(response.userId)
-                dataStore.saveUserRole("USER")
-                dataStore.saveUserProfile(response)
-                dataStore.clearVendorProfile()
+                AuthSessionSaver.saveUserSession(dataStore, response)
                 showToast("User Signed In Successfully")
                 navController.navigate(AppScreenUser.HomeScreen) {
-                    popUpTo(AppScreenUser.UserLogin) { inclusive = true }
+                    popUpTo(0) { inclusive = true }
+                    launchSingleTop = true
                 }
             }
 
             is UiState.Error -> {
                 val message = (userLoginState as UiState.Error).message ?: "Unknown error"
-                showToast(message)
-                logger.e { message }
+                if (message.contains("verify your email", ignoreCase = true)) {
+                    val emailLower = email.trim().lowercase()
+                    navController.navigate(AppScreenUser.EmailOtpVerify(email = emailLower, userType = "STUDENT")) {
+                        popUpTo(AppScreenUser.UserLogin) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                } else {
+                    showToast(message)
+                    logger.e { message }
+                }
             }
 
             else -> Unit
@@ -130,7 +147,7 @@ fun UserLoginScreen(
             Card(
                 Modifier
                     .fillMaxWidth()
-                    .padding(top = 480.dp)
+                    .padding(top = 420.dp)
                     .shadow(
                         elevation = 32.dp,
                         shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
@@ -142,7 +159,7 @@ fun UserLoginScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
@@ -188,6 +205,17 @@ fun UserLoginScreen(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
                     )
+
+                    TextButton(
+                        onClick = {
+                            navController.navigate(AppScreenUser.ForgotPassword(userType = "STUDENT"))
+                        },
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .padding(vertical = 0.dp)
+                    ) {
+                        Text("Forgot Password?", color = MaterialTheme.colorScheme.primary)
+                    }
 
                     RegisterButton(
                         onClick = {

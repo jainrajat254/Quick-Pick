@@ -1,5 +1,9 @@
 package org.rajat.quickpick.data.repository
 
+import org.rajat.quickpick.domain.modal.auth.ChangePasswordRequest
+import org.rajat.quickpick.domain.modal.auth.ChangePasswordResponse
+import org.rajat.quickpick.domain.modal.auth.EmailOtpRequest
+import org.rajat.quickpick.domain.modal.auth.EmailOtpVerifyRequest
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordResponse
 import org.rajat.quickpick.domain.modal.auth.LoginUserRequest
@@ -14,6 +18,9 @@ import org.rajat.quickpick.domain.modal.auth.RegisterUserRequest
 import org.rajat.quickpick.domain.modal.auth.RegisterVendorRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordResponse
+import org.rajat.quickpick.domain.modal.auth.SimpleMessageResponse
+import org.rajat.quickpick.domain.modal.auth.PasswordOtpRequest
+import org.rajat.quickpick.domain.modal.auth.ResetPasswordOtpRequest
 import org.rajat.quickpick.domain.repository.AuthRepository
 import org.rajat.quickpick.domain.service.AuthApiService
 
@@ -64,5 +71,25 @@ class AuthRepositoryImpl(private val authApiService: AuthApiService) : AuthRepos
         return runCatching {
             authApiService.logout(logoutRequest = logoutRequest)
         }
+    }
+
+    override suspend fun changePassword(changePasswordRequest: ChangePasswordRequest): Result<ChangePasswordResponse> {
+        return runCatching { authApiService.changePassword(changePasswordRequest) }
+    }
+
+    override suspend fun sendEmailOtp(request: EmailOtpRequest): Result<SimpleMessageResponse> {
+        return runCatching { authApiService.sendEmailOtp(request) }
+    }
+
+    override suspend fun verifyEmailOtp(request: EmailOtpVerifyRequest): Result<SimpleMessageResponse> {
+        return runCatching { authApiService.verifyEmailOtp(request) }
+    }
+
+    override suspend fun sendPasswordOtp(request: PasswordOtpRequest): Result<SimpleMessageResponse> {
+        return runCatching { authApiService.sendPasswordOtp(request) }
+    }
+
+    override suspend fun resetPasswordOtp(request: ResetPasswordOtpRequest): Result<SimpleMessageResponse> {
+        return runCatching { authApiService.resetPasswordOtp(request) }
     }
 }

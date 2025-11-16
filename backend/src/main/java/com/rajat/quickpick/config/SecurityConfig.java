@@ -44,28 +44,28 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(
-                        csrf -> csrf.disable()
-                )
+        http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/admin/create").permitAll()
-                                .requestMatchers("/api/admin/login").permitAll()
-
-//                        .requestMatchers("/ws/**").permitAll()
-
-
+                        .requestMatchers("/api/auth/register/**").permitAll()
+                        .requestMatchers("/api/auth/login/**").permitAll()
+                        .requestMatchers("/api/auth/verify-email").permitAll()
+                        .requestMatchers("/api/auth/forgot-password").permitAll()
+                        .requestMatchers("/api/auth/reset-password").permitAll()
+                        .requestMatchers("/api/auth/resend-verification").permitAll()
+                        .requestMatchers("/api/auth/refresh-token").permitAll()
+                        .requestMatchers("/api/auth/send-email-otp").permitAll()
+                        .requestMatchers("/api/auth/verify-email-otp").permitAll()
+                        .requestMatchers("/api/auth/send-password-otp").permitAll()
+                        .requestMatchers("/api/auth/reset-password-otp").permitAll()
+                        .requestMatchers("/api/admin/create").permitAll()
+                        .requestMatchers("/api/admin/login").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)
                 )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
-
-
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

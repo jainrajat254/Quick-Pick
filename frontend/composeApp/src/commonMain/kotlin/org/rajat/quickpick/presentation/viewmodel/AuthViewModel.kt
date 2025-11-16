@@ -5,6 +5,10 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.rajat.quickpick.domain.modal.auth.ChangePasswordRequest
+import org.rajat.quickpick.domain.modal.auth.ChangePasswordResponse
+import org.rajat.quickpick.domain.modal.auth.EmailOtpRequest
+import org.rajat.quickpick.domain.modal.auth.EmailOtpVerifyRequest
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ForgotPasswordResponse
 import org.rajat.quickpick.domain.modal.auth.LoginUserRequest
@@ -19,6 +23,9 @@ import org.rajat.quickpick.domain.modal.auth.RegisterUserRequest
 import org.rajat.quickpick.domain.modal.auth.RegisterVendorRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordResponse
+import org.rajat.quickpick.domain.modal.auth.SimpleMessageResponse
+import org.rajat.quickpick.domain.modal.auth.PasswordOtpRequest
+import org.rajat.quickpick.domain.modal.auth.ResetPasswordOtpRequest
 import org.rajat.quickpick.domain.repository.AuthRepository
 import org.rajat.quickpick.utils.UiState
 
@@ -52,6 +59,42 @@ class AuthViewModel(
 
     private val _logoutState = MutableStateFlow<UiState<LogoutResponse>>(UiState.Empty)
     val logoutState: StateFlow<UiState<LogoutResponse>> = _logoutState
+
+    private val _changePasswordState = MutableStateFlow<UiState<ChangePasswordResponse>>(UiState.Empty)
+    val changePasswordState: StateFlow<UiState<ChangePasswordResponse>> = _changePasswordState
+
+    private val _sendEmailOtpState = MutableStateFlow<UiState<SimpleMessageResponse>>(UiState.Empty)
+    val sendEmailOtpState: StateFlow<UiState<SimpleMessageResponse>> = _sendEmailOtpState
+
+    private val _verifyEmailOtpState = MutableStateFlow<UiState<SimpleMessageResponse>>(UiState.Empty)
+    val verifyEmailOtpState: StateFlow<UiState<SimpleMessageResponse>> = _verifyEmailOtpState
+
+    private val _sendPasswordOtpState = MutableStateFlow<UiState<SimpleMessageResponse>>(UiState.Empty)
+    val sendPasswordOtpState: StateFlow<UiState<SimpleMessageResponse>> = _sendPasswordOtpState
+    private val _resetPasswordOtpState = MutableStateFlow<UiState<SimpleMessageResponse>>(UiState.Empty)
+    val resetPasswordOtpState: StateFlow<UiState<SimpleMessageResponse>> = _resetPasswordOtpState
+
+    private var pendingEmail: String? = null
+    private var pendingPassword: String? = null
+    private var pendingUserType: String? = null
+
+    fun setPendingRegistrationCredentials(email: String, password: String, userType: String) {
+        pendingEmail = email
+        pendingPassword = password
+        pendingUserType = userType
+    }
+
+    fun consumePendingRegistrationCredentials(): Triple<String, String, String>? {
+        val triple = if (pendingEmail != null && pendingPassword != null && pendingUserType != null) {
+            Triple(pendingEmail!!, pendingPassword!!, pendingUserType!!)
+        } else null
+        pendingEmail = null
+        pendingPassword = null
+        pendingUserType = null
+        return triple
+    }
+
+    fun hasPendingRegistrationCredentials(): Boolean = pendingEmail != null && pendingPassword != null && pendingUserType != null
 
     private fun <T> executeWithUiState(
         stateFlow: MutableStateFlow<UiState<T>>,
@@ -115,6 +158,36 @@ class AuthViewModel(
         }
     }
 
+    fun changePassword(request: ChangePasswordRequest) {
+        executeWithUiState(_changePasswordState) {
+            authRepository.changePassword(request)
+        }
+    }
+
+    fun sendEmailOtp(request: EmailOtpRequest) {
+        executeWithUiState(_sendEmailOtpState) {
+            authRepository.sendEmailOtp(request)
+        }
+    }
+
+    fun verifyEmailOtp(request: EmailOtpVerifyRequest) {
+        executeWithUiState(_verifyEmailOtpState) {
+            authRepository.verifyEmailOtp(request)
+        }
+    }
+
+    fun sendPasswordOtp(request: PasswordOtpRequest) {
+        executeWithUiState(_sendPasswordOtpState) {
+            authRepository.sendPasswordOtp(request)
+        }
+    }
+
+    fun resetPasswordOtp(request: ResetPasswordOtpRequest) {
+        executeWithUiState(_resetPasswordOtpState) {
+            authRepository.resetPasswordOtp(request)
+        }
+    }
+
     fun resetAuthStates() {
         _userLoginState.value = UiState.Empty
         _vendorLoginState.value = UiState.Empty
@@ -124,6 +197,11 @@ class AuthViewModel(
         _forgotPasswordState.value = UiState.Empty
         _resetPasswordState.value = UiState.Empty
         _logoutState.value = UiState.Empty
+        _changePasswordState.value = UiState.Empty
+        _sendEmailOtpState.value = UiState.Empty
+        _verifyEmailOtpState.value = UiState.Empty
+        _sendPasswordOtpState.value = UiState.Empty
+        _resetPasswordOtpState.value = UiState.Empty
     }
 
 }

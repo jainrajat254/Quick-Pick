@@ -21,13 +21,15 @@ import org.rajat.quickpick.presentation.feature.auth.onboarding.OnboardingScreen
 import org.rajat.quickpick.presentation.feature.auth.onboarding.OnboardingScreen2
 import org.rajat.quickpick.presentation.feature.auth.onboarding.OnboardingScreen3
 import org.rajat.quickpick.presentation.feature.auth.onboarding.WelcomeScreen
+import org.rajat.quickpick.presentation.feature.auth.password.ForgotPasswordScreen
+import org.rajat.quickpick.presentation.feature.auth.password.ResetPasswordOtpScreen
 import org.rajat.quickpick.presentation.feature.auth.register.UserRegisterScreen
 import org.rajat.quickpick.presentation.feature.auth.register.VendorRegisterScreen
+import org.rajat.quickpick.presentation.feature.auth.verify.EmailOtpVerifyScreen
 import org.rajat.quickpick.presentation.feature.cart.CartScreen
 import org.rajat.quickpick.presentation.feature.cart.CheckoutScreen
 import org.rajat.quickpick.presentation.feature.cart.OrderConfirmationScreen
 import org.rajat.quickpick.presentation.feature.home.HomeScreen
-import org.rajat.quickpick.presentation.feature.menu.AddMenuItemScreen
 import org.rajat.quickpick.presentation.feature.myorders.CancelOrderScreen
 import org.rajat.quickpick.presentation.feature.myorders.MyOrderScreen
 import org.rajat.quickpick.presentation.feature.myorders.OrderCancelledConfirmationScreen
@@ -43,6 +45,7 @@ import org.rajat.quickpick.presentation.feature.profile.ProfileScreen
 import org.rajat.quickpick.presentation.feature.profile.SettingsScreen
 import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
 import org.rajat.quickpick.presentation.feature.vendor.dashboard.VendorDashboardScreen
+import org.rajat.quickpick.presentation.feature.vendor.menu.AddMenuItemScreen
 import org.rajat.quickpick.presentation.feature.vendor.menu.UpdateMenuItemScreen
 import org.rajat.quickpick.presentation.feature.vendor.menu.VendorMenuScreen
 import org.rajat.quickpick.presentation.feature.vendor.orders.VendorOrderDetailScreen
@@ -50,6 +53,7 @@ import org.rajat.quickpick.presentation.feature.vendor.orders.VendorOrdersScreen
 import org.rajat.quickpick.presentation.feature.vendor.profile.HelpAndSupportScreenVendor
 import org.rajat.quickpick.presentation.feature.vendor.profile.VendorProfileScreen
 import org.rajat.quickpick.presentation.feature.vendor.profile.VendorProfileUpdateScreen
+import org.rajat.quickpick.presentation.feature.vendor.reviews.VendorReviewsScreen
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.navigation.getAppScreenUserFromRoute
@@ -58,6 +62,7 @@ import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.presentation.viewmodel.HomeViewModel
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
+import org.rajat.quickpick.presentation.viewmodel.ReviewViewModel
 import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
 
@@ -72,6 +77,7 @@ fun AppNavigation(
     val orderViewModel: OrderViewModel = koinInject()
     val dataStore: LocalDataStore = koinInject()
     val refreshTokenManager: RefreshTokenManager = koinInject()
+    val reviewViewModel : ReviewViewModel = koinInject()
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRouteString = backStackEntry?.destination?.route
@@ -108,6 +114,7 @@ fun AppNavigation(
         AppScreenUser.VendorLogin,
         AppScreenUser.UserRegister,
         AppScreenUser.VendorRegister,
+        AppScreenUser.EmailOtpVerify, // hide base UI on OTP screen
         AppScreenUser.ReviewOrderConfirmation,
         AppScreenUser.CancelOrderConfirmation,
         AppScreenUser.ConfirmOrder -> false
@@ -257,12 +264,24 @@ private fun AppNavHost(
             )
         }
 
+        composable<AppScreenUser.EmailOtpVerify> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenUser.EmailOtpVerify>()
+            EmailOtpVerifyScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                email = route.email,
+                userType = route.userType,
+                dataStore = dataStore
+            )
+        }
+
         composable<AppScreenUser.HomeScreen> {
             HomeScreen(
                 navController = navController,
                 paddingValues = appPaddingValues,
                 homeViewModel = homeViewModel,
                 vendorViewModel = vendorViewModel,
+                reviewViewModel = koinInject(),
                 menuItemViewModel = menuItemViewModel
             )
         }
@@ -273,6 +292,15 @@ private fun AppNavHost(
                 navController = navController,
                 vendorViewModel = vendorViewModel,
                 menuItemViewModel = menuItemViewModel,
+                reviewViewModel = koinInject(),
+                vendorId = route.vendorId
+            )
+        }
+        // Vendor reviews screen
+        composable<AppScreenVendor.VendorReviewsScreen> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenVendor.VendorReviewsScreen>()
+            VendorReviewsScreen(
+                navController = navController,
                 vendorId = route.vendorId
             )
         }
@@ -468,6 +496,24 @@ private fun AppNavHost(
             HelpAndFaqsScreen(
                 paddingValues = appPaddingValues,
                 navController = navController
+            )
+        }
+
+        composable<AppScreenUser.ForgotPassword> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenUser.ForgotPassword>()
+            ForgotPasswordScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                userType = route.userType
+            )
+        }
+        composable<AppScreenUser.ResetPasswordOtp> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenUser.ResetPasswordOtp>()
+            ResetPasswordOtpScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                email = route.email,
+                userType = route.userType
             )
         }
     }
