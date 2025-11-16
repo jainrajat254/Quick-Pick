@@ -147,7 +147,7 @@ fun UserLoginScreen(
             Card(
                 Modifier
                     .fillMaxWidth()
-                    .padding(top = 480.dp)
+                    .padding(top = 420.dp)
                     .shadow(
                         elevation = 32.dp,
                         shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
@@ -159,7 +159,7 @@ fun UserLoginScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
@@ -206,9 +206,14 @@ fun UserLoginScreen(
                         imeAction = ImeAction.Done
                     )
 
-                    TextButton(onClick = {
-                        navController.navigate(AppScreenUser.ForgotPassword(userType = "STUDENT"))
-                    }, modifier = Modifier.align(Alignment.End)) {
+                    TextButton(
+                        onClick = {
+                            navController.navigate(AppScreenUser.ForgotPassword(userType = "STUDENT"))
+                        },
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .padding(vertical = 0.dp)
+                    ) {
                         Text("Forgot Password?", color = MaterialTheme.colorScheme.primary)
                     }
 
