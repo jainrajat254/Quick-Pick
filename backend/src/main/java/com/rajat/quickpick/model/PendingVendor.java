@@ -1,7 +1,6 @@
 package com.rajat.quickpick.model;
 
 import com.rajat.quickpick.enums.Role;
-import com.rajat.quickpick.enums.VendorVerificationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,8 +13,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "vendors")
-public class Vendor {
+@Document(collection = "pending_vendors")
+public class PendingVendor {
 
     @Id
     private String id;
@@ -25,34 +24,22 @@ public class Vendor {
     private String email;
     private String phone;
     private String address;
-    private String profileImageUrl;
-
-    private boolean isPhoneVerified;
-    private boolean isEmailVerified;
-
     private String password;
-
     private List<String> foodCategories;
-
     private String collegeName;
-
     private String vendorDescription;
-
     private String gstNumber;
     private String licenseNumber;
     private String foodLicenseNumber;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
     private Role role = Role.VENDOR;
 
-    private VendorVerificationStatus verificationStatus = VendorVerificationStatus.VERIFIED; //set to pending
-    private LocalDateTime verifiedAt;
-    private LocalDateTime rejectedAt;
-    private String rejectionReason;
-    private boolean suspended = false;
-    private String suspensionReason;
-    private LocalDateTime suspendedAt;
+    private String otp;
+    private LocalDateTime otpCreatedAt;
+    private LocalDateTime otpExpiresAt;
+    private Integer otpAttempts;
 
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
+

@@ -1,5 +1,6 @@
 package com.rajat.quickpick.service;
 
+import com.rajat.quickpick.enums.Role;
 import com.rajat.quickpick.model.User;
 import com.rajat.quickpick.model.Vendor;
 import com.rajat.quickpick.repository.UserRepository;
@@ -37,6 +38,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 u.getEmail(), u.isEmailVerified(), u.isSuspended(), u.getRole());
             log.info("Password hash from DB starts with: {}", u.getPassword().substring(0, Math.min(20, u.getPassword().length())));
 
+            boolean isDisabled = u.getRole() == Role.ADMIN ? false : !u.isEmailVerified();
+
             return org.springframework.security.core.userdetails.User.builder()
                     .username(u.getEmail())
                     .password(u.getPassword())
@@ -44,7 +47,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .accountExpired(false)
                     .accountLocked(u.isSuspended())
                     .credentialsExpired(false)
-                    .disabled(!u.isEmailVerified())
+                    .disabled(isDisabled)
                     .build();
         }
 

@@ -111,6 +111,7 @@ fun VendorRegisterScreen(
                     password = password.trim(),
                     userType = "VENDOR"
                 )
+                authViewModel.resetAuthStates()
                 navController.navigate(AppScreenUser.EmailOtpVerify(email = emailLower, userType = "VENDOR")) {
                     popUpTo(AppScreenUser.VendorRegister) { inclusive = true }
                     launchSingleTop = true
@@ -121,6 +122,7 @@ fun VendorRegisterScreen(
                 val message = (vendorRegisterState as UiState.Error).message ?: "Unknown error"
                 showToast(message)
                 logger.e { message }
+                authViewModel.resetAuthStates()
             }
 
             else -> Unit

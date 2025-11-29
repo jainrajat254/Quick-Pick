@@ -105,4 +105,16 @@ public class AdminService {
             throw new BadRequestException("Invalid admin credentials");
         }
     }
+
+    public void deleteAdmin(String email) {
+        User admin = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("Admin not found"));
+
+        if (admin.getRole() != Role.ADMIN) {
+            throw new BadRequestException("User is not an admin");
+        }
+
+        userRepository.delete(admin);
+        log.info("Admin deleted: {}", email);
+    }
 }

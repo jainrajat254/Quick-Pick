@@ -107,6 +107,7 @@ fun UserRegisterScreen(
                     password = password.trim(),
                     userType = "STUDENT"
                 )
+                authViewModel.resetAuthStates()
                 navController.navigate(AppScreenUser.EmailOtpVerify(email = emailLower, userType = "STUDENT")) {
                     popUpTo(AppScreenUser.UserRegister) { inclusive = true }
                     launchSingleTop = true
@@ -117,6 +118,7 @@ fun UserRegisterScreen(
                 Logger.withTag("REGISTER").d { "USER_REGISTER error: $message" }
                 showToast(message)
                 logger.e { message }
+                authViewModel.resetAuthStates()
             }
             else -> Unit
         }
