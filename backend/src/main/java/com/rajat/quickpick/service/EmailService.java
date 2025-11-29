@@ -25,7 +25,6 @@ public class EmailService {
     @Value("${app.baseUrl}")
     private String baseUrl;
 
-    // ---- Constructor for Spring (Fix for error) ----
     public EmailService(@Value("${brevo.api.key}") String apiKey) {
         this.webClient = WebClient.builder()
                 .baseUrl("https://api.brevo.com/v3")
@@ -34,7 +33,6 @@ public class EmailService {
                 .build();
     }
 
-    // ---- Generic Email Sender ----
     private void sendEmail(String to, String subject, String textBody) {
         Map<String, Object> requestBody = Map.of(
                 "sender", Map.of("email", senderEmail, "name", senderName),
@@ -59,39 +57,25 @@ public class EmailService {
         }
     }
 
-    // ---- Email Types ----
-    public void sendVerificationEmail(String toEmail, String token, Role role) {
-        String link = baseUrl + "/api/auth/verify-email?token=" + token + "&type=" + role;
-        long hours = Secrets.EMAIL_VERIFICATION_TOKEN_EXPIRATION / (1000 * 60 * 60);
 
-        sendEmail(toEmail,
-                "QuickPick - Email Verification",
-                "Welcome to QuickPick 🎉<br><br>" +
-                        "Click to verify your account:<br>" +
-                        "<a href=\"" + link + "\">Verify Email</a><br><br>" +
-                        "⏳ Expires in <b>" + hours + " hours</b>.");
-    }
-
-    public void sendPasswordResetEmail(String toEmail, String token, Role role) {
-        String link = baseUrl + "/api/auth/reset-password?token=" + token + "&type=" + role;
-        long hours = Secrets.PASSWORD_RESET_TOKEN_EXPIRATION / (1000 * 60 * 60);
-
-        sendEmail(toEmail,
-                "QuickPick - Reset Password",
-                "Reset your password:<br>" +
-                        "<a href=\"" + link + "\">Reset Now</a><br><br>" +
-                        "⏳ Expires in: <b>" + hours + " hours</b>.");
-    }
 
     public void sendEmailVerificationOtp(String toEmail, String otp, Role role, long expires) {
         sendEmail(toEmail,
-                "QuickPick Verification Code",
-                "Your OTP:<br><h2>" + otp + "</h2><br>Expires in <b>" + expires + " minutes</b>.");
+                "QuickPick - Verification Code",
+                "Welcome to QuickPick 🎉<br><br>" +
+                        "Your verification code is:<br>" +
+                        "<h2 style='color: #4CAF50;'>" + otp + "</h2><br>" +
+                        "⏳ This code expires in <b>" + expires + " minutes</b>.<br><br>" +
+                        "If you didn't request this, please ignore this email.");
     }
 
     public void sendPasswordResetOtp(String toEmail, String otp, long expires) {
         sendEmail(toEmail,
-                "QuickPick Reset Code",
-                "Your reset OTP:<br><h2>" + otp + "</h2><br>Expires in <b>" + expires + "minutes</b>.");
+                "QuickPick - Password Reset Code",
+                "You requested to reset your password.<br><br>" +
+                        "Your password reset code is:<br>" +
+                        "<h2 style='color: #FF5722;'>" + otp + "</h2><br>" +
+                        "⏳ This code expires in <b>" + expires + " minutes</b>.<br><br>" +
+                        "If you didn't request this, please ignore this email and your password will remain unchanged.");
     }
 }

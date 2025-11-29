@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "1044488517133",
+    "project_id": "quickpick-c17ee",
+    "storage_bucket": "quickpick-c17ee.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1044488517133:android:2dc35898f783608fbac744",
+        "android_client_info": {
+          "package_name": "com.restaurant.quickpicktemp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkIOncuZMgv2JSYabBuJ0eWjcmDtBixrU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1044488517133:android:cace1cd256a66b4cbac744",
+        "android_client_info": {
+          "package_name": "com.users.quickpick2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkIOncuZMgv2JSYabBuJ0eWjcmDtBixrU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1044488517133:android:e4cd265674ce695abac744",
+        "android_client_info": {
+          "package_name": "org.rajat.quickpick"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkIOncuZMgv2JSYabBuJ0eWjcmDtBixrU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

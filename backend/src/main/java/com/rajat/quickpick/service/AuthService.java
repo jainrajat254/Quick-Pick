@@ -399,8 +399,6 @@ public class AuthService {
 
     public void resendVerificationEmail(String email, Role userType) {
 
-        long expirationHours = Secrets.PASSWORD_RESET_TOKEN_EXPIRATION / (1000 * 60 * 60);
-
         boolean userExists = false;
         boolean emailVerified = false;
 
@@ -426,7 +424,7 @@ public class AuthService {
             throw new BadRequestException("Email already verified");
         }
 
-        createAndSendVerificationToken(email, userType);
+        createAndSendEmailOtp(email, userType);
     }
 
     public AuthResponseDto refreshToken(String refreshTokenValue) {
@@ -476,23 +474,6 @@ public class AuthService {
         refreshTokenService.revokeRefreshToken(refreshTokenValue);
     }
 
-    private void createAndSendVerificationToken(String email, Role userType) {
-        emailVerificationTokenRepository.deleteByEmailAndUserType(email, userType);
-
-        long expirationHours = Secrets.EMAIL_VERIFICATION_TOKEN_EXPIRATION / (1000 * 60 * 60);
-
-        String token = UUID.randomUUID().toString();
-        EmailVerificationToken verificationToken = new EmailVerificationToken();
-        verificationToken.setToken(token);
-        verificationToken.setEmail(email);
-        verificationToken.setUserType(userType);
-        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(expirationHours));
-        verificationToken.setUsed(false);
-        verificationToken.setCreatedAt(LocalDateTime.now());
-
-        emailVerificationTokenRepository.save(verificationToken);
-        emailService.sendVerificationEmail(email, token, userType);
-    }
 
     private String generateNumericOtp(int length) {
         SecureRandom random = new SecureRandom();
