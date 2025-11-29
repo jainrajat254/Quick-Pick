@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/reset-password-otp").permitAll()
                         .requestMatchers("/api/admin/create").permitAll()
                         .requestMatchers("/api/admin/login").permitAll()
+                        .requestMatchers("/api/admin/delete/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception

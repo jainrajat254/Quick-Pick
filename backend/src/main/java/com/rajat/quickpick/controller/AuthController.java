@@ -54,11 +54,6 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/verify-email")
-    public ResponseEntity<Map<String, String>> verifyEmail(@RequestParam String token, @RequestParam String type) {
-        authService.verifyEmail(token, type);
-        return ResponseEntity.ok(Map.of("message", "Email verified successfully"));
-    }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordDto forgotPasswordDto) {
@@ -167,11 +162,6 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
-    @PostMapping("/send-email-otp")
-    public ResponseEntity<Map<String, String>> sendEmailOtp(@Valid @RequestBody EmailOtpRequestDto requestDto) {
-        authService.sendEmailOtp(requestDto);
-        return ResponseEntity.ok(Map.of("message", "If an account exists, a verification code has been sent"));
-    }
 
     @PostMapping("/verify-email-otp")
     public ResponseEntity<Map<String, String>> verifyEmailOtp(@Valid @RequestBody EmailOtpVerifyDto verifyDto) {

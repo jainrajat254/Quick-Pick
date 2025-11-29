@@ -49,6 +49,9 @@ public class AdminManagementService {
     @Autowired
     private MenuItemRepository menuItemRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     public Page<AdminUserDto> getAllUsers(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<User> userPage = userRepository.findAll(pageable);
@@ -118,6 +121,13 @@ public class AdminManagementService {
         Vendor savedVendor = vendorRepository.save(vendor);
         log.info("Vendor rejected: {} - Reason: {}", vendorId, rejectionReason);
 
+        emailService.sendVendorRejectionNotification(
+                savedVendor.getEmail(),
+                savedVendor.getVendorName(),
+                savedVendor.getStoreName(),
+                rejectionReason
+        );
+
         return mapToAdminVendorDto(savedVendor);
     }
 
@@ -131,6 +141,12 @@ public class AdminManagementService {
 
         Vendor savedVendor = vendorRepository.save(vendor);
         log.info("Vendor verified: {} - Notes: {}", vendorId, adminNotes);
+
+        emailService.sendVendorApprovalNotification(
+                savedVendor.getEmail(),
+                savedVendor.getVendorName(),
+                savedVendor.getStoreName()
+        );
 
         return mapToAdminVendorDto(savedVendor);
     }
