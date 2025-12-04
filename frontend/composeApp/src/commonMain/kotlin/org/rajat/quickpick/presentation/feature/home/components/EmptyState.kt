@@ -18,13 +18,15 @@ fun EmptyState(
     searchQuery: String,
     modifier: Modifier = Modifier
 ) {
+    val isSearching = searchQuery.isNotBlank()
+
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "🔍",
+            text = if (isSearching) "🔍" else "📇",
             style = MaterialTheme.typography.displayLarge,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -39,7 +41,11 @@ fun EmptyState(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "No stores match \"$searchQuery\".\nTry different keywords.",
+            text = if (isSearching) {
+                "No stores match \"$searchQuery\".\nTry different keywords."
+            } else {
+                "There are currently no vendors\navailable in your college.\nCheck back later!"
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

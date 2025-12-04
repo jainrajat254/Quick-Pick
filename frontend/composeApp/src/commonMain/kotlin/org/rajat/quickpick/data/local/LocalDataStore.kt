@@ -22,6 +22,7 @@ interface LocalDataStore {
 
     suspend fun saveUserRole(role: String)
     suspend fun getUserRole(): String?
+    fun getUserRoleFlow(): Flow<String?>
     suspend fun clearUserRole()
 
     suspend fun saveVendorProfile(loginVendorResponse: LoginVendorResponse)

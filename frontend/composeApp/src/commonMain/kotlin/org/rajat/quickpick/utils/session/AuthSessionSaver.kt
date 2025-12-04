@@ -12,6 +12,7 @@ object AuthSessionSaver {
     @OptIn(ExperimentalTime::class)
     suspend fun saveUserSession(dataStore: LocalDataStore, response: LoginUserResponse) {
         val logger = Logger.withTag("LOGOUT_DEBUG")
+        val themeLogger = Logger.withTag("ThemeLogs")
         logger.d { "AuthSessionSaver - saveUserSession called" }
         val tokens = response.tokens
         if (tokens == null) {
@@ -27,6 +28,7 @@ object AuthSessionSaver {
         dataStore.saveTokenExpiryMillis(expiryMillis)
         dataStore.saveId(response.userId)
         dataStore.saveUserRole("USER")
+        themeLogger.d { "AuthSessionSaver - Saved user role as USER (Student)" }
         dataStore.saveUserProfile(response)
         dataStore.clearVendorProfile()
 
@@ -36,6 +38,7 @@ object AuthSessionSaver {
     @OptIn(ExperimentalTime::class)
     suspend fun saveVendorSession(dataStore: LocalDataStore, response: LoginVendorResponse) {
         val logger = Logger.withTag("LOGOUT_DEBUG")
+        val themeLogger = Logger.withTag("ThemeLogs")
         logger.d { "AuthSessionSaver - saveVendorSession called" }
         val tokens = response.tokens
         if (tokens == null) {
@@ -51,6 +54,7 @@ object AuthSessionSaver {
         dataStore.saveTokenExpiryMillis(expiryMillis)
         dataStore.saveId(response.userId)
         dataStore.saveUserRole("VENDOR")
+        themeLogger.d { "AuthSessionSaver - Saved user role as VENDOR" }
         dataStore.saveVendorProfile(response)
         dataStore.clearUserProfile()
 

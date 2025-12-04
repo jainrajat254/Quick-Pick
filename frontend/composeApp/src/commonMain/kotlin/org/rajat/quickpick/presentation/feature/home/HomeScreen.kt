@@ -114,13 +114,20 @@ fun HomeScreen(
             is UiState.Success -> {
                 val vendors = (vendorsState as UiState.Success<GetAllVendorsInCollegeResponse>).data
 
-                VendorsList(
-                    vendors = vendors.vendors,
-                    onVendorClick = { vendorId ->
-                        homeViewModel.setSelectedVendorId(vendorId)
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
+                if (vendors.vendors.isEmpty()) {
+                    EmptyState(
+                        searchQuery = searchQuery,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    VendorsList(
+                        vendors = vendors.vendors,
+                        onVendorClick = { vendorId ->
+                            homeViewModel.setSelectedVendorId(vendorId)
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         }
     }
