@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,11 +15,11 @@ import androidx.navigation.NavController
 import org.rajat.quickpick.domain.modal.search.GetVendorByIDResponse
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.components.ErrorState
-import org.rajat.quickpick.presentation.feature.menuitem.MenuItemScreen
 import org.rajat.quickpick.presentation.feature.vendor.components.CategoryCard
 import org.rajat.quickpick.presentation.feature.vendor.components.OffersSection
 import org.rajat.quickpick.presentation.feature.vendor.components.VendorHeaderSection
 import org.rajat.quickpick.presentation.feature.vendor.components.VendorNotFound
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
@@ -41,7 +40,6 @@ fun VendorScreen(
 ) {
     val vendorDetailsState by vendorViewModel.vendorsDetailState.collectAsState()
     val ratingState by reviewViewModel.vendorRatingState.collectAsState()
-    var selectedCategoryId by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(vendorId) {
         vendorViewModel.getVendorsDetails(vendorId)
@@ -58,17 +56,6 @@ fun VendorScreen(
         }
     }
 
-    if (selectedCategoryId != null) {
-        MenuItemScreen(
-            navController = navController,
-            menuItemViewModel = menuItemViewModel,
-            vendorId = vendorId,
-            category = selectedCategoryId!!,
-            onBackClick = { selectedCategoryId = null }
-        )
-        return
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -82,14 +69,6 @@ fun VendorScreen(
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -178,7 +157,12 @@ fun VendorScreen(
                                 CategoryCard(
                                     category = rowCategories[0],
                                     onClick = {
-                                        selectedCategoryId = rowCategories[0]
+                                        navController.navigate(
+                                            AppScreenUser.MenuItemCategory(
+                                                vendorId = vendorId,
+                                                category = rowCategories[0]
+                                            )
+                                        )
                                     },
                                     modifier = Modifier.weight(1f)
                                 )
@@ -188,7 +172,12 @@ fun VendorScreen(
                                 CategoryCard(
                                     category = rowCategories[1],
                                     onClick = {
-                                        selectedCategoryId = rowCategories[1]
+                                        navController.navigate(
+                                            AppScreenUser.MenuItemCategory(
+                                                vendorId = vendorId,
+                                                category = rowCategories[1]
+                                            )
+                                        )
                                     },
                                     modifier = Modifier.weight(1f)
                                 )

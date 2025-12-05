@@ -14,12 +14,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import org.koin.compose.koinInject
 import org.rajat.quickpick.presentation.feature.myorders.components.OrderList
 import org.rajat.quickpick.presentation.feature.myorders.components.OrderTab
@@ -27,10 +30,13 @@ import org.rajat.quickpick.presentation.feature.myorders.components.StyledTabRow
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.viewmodel.CartViewModel
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
+import org.rajat.quickpick.utils.BackHandler
 import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
 
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun MyOrderScreen(
     navController: NavHostController,
@@ -40,8 +46,20 @@ fun MyOrderScreen(
 ) {
     val tabs = listOf(OrderTab.Active, OrderTab.Completed, OrderTab.Cancelled)
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var backPressedTime by remember { mutableStateOf(0L) }
 
     val myOrdersState by orderViewModel.myOrdersState.collectAsState()
+
+    // Double back press to exit
+    BackHandler(enabled = true) {
+        val currentTime = Clock.System.now().toEpochMilliseconds()
+        if (currentTime - backPressedTime < 2000) {
+            exitApp()
+        } else {
+            backPressedTime = currentTime
+            showToast("Press back again to exit")
+        }
+    }
 
     LaunchedEffect(Unit) {
         orderViewModel.getMyOrders()
