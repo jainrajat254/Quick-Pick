@@ -246,7 +246,6 @@ public class DeletionService {
         return result;
     }
 
-    // ==================== REVIEW DELETIONS ====================
 
     @Transactional
     public Map<String, Object> deleteAllReviews() {

@@ -15,6 +15,7 @@ object AuthSessionSaver {
     suspend fun saveUserSession(dataStore: LocalDataStore, response: LoginUserResponse) {
         val logger = Logger.withTag("LOGOUT_DEBUG")
         val themeLogger = Logger.withTag("ThemeLogs")
+        val fcmLogger = Logger.withTag("FCMDEBUG")
         logger.d { "AuthSessionSaver - saveUserSession called" }
         val tokens = response.tokens
         if (tokens == null) {
@@ -36,15 +37,18 @@ object AuthSessionSaver {
 
         logger.d { "AuthSessionSaver - User session saved successfully" }
 
-        // Register FCM token after successful login
+        fcmLogger.d { "user login - registering fcm token" }
+        fcmLogger.d { "access token: ${tokens.accessToken.take(20)}..." }
         logger.d { "AuthSessionSaver - Registering FCM token for user" }
         FcmPlatformManager.initializeAndSendToken(tokens.accessToken)
+        fcmLogger.d { "fcm registration initiated for user" }
     }
 
     @OptIn(ExperimentalTime::class)
     suspend fun saveVendorSession(dataStore: LocalDataStore, response: LoginVendorResponse) {
         val logger = Logger.withTag("LOGOUT_DEBUG")
         val themeLogger = Logger.withTag("ThemeLogs")
+        val fcmLogger = Logger.withTag("FCMDEBUG")
         logger.d { "AuthSessionSaver - saveVendorSession called" }
         val tokens = response.tokens
         if (tokens == null) {
@@ -66,11 +70,12 @@ object AuthSessionSaver {
 
         logger.d { "AuthSessionSaver - Vendor session saved successfully" }
 
-        // Register FCM token after successful login
+        fcmLogger.d { "vendor login - registering fcm token" }
+        fcmLogger.d { "access token: ${tokens.accessToken.take(20)}..." }
         logger.d { "AuthSessionSaver - Registering FCM token for vendor" }
         FcmPlatformManager.initializeAndSendToken(tokens.accessToken)
+        fcmLogger.d { "fcm registration initiated for vendor" }
 
-        // Connect WebSocket for vendor to receive real-time order notifications
         logger.d { "AuthSessionSaver - Connecting WebSocket for vendor" }
         VendorWebSocketManager.connect(tokens.accessToken, "VENDOR")
     }

@@ -7,17 +7,21 @@ import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import org.rajat.quickpick.MainActivity
 
 object NotificationHelper {
 
+    private const val TAG = "FCMDEBUG"
     private const val CHANNEL_ID_ORDERS = "orders"
     private const val CHANNEL_NAME_ORDERS = "Order Updates"
     private const val CHANNEL_DESC_ORDERS = "Notifications for new orders and order updates"
 
     fun createNotificationChannels(context: Context) {
+        Log.d(TAG, "create notification channels called")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.d(TAG, "android o+, creating notification channels")
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             val orderChannel = NotificationChannel(
@@ -31,6 +35,9 @@ object NotificationHelper {
             }
 
             notificationManager.createNotificationChannel(orderChannel)
+            Log.d(TAG, "order notification channel created: $CHANNEL_ID_ORDERS")
+        } else {
+            Log.d(TAG, "android < o, notification channels not needed")
         }
     }
 
@@ -41,6 +48,9 @@ object NotificationHelper {
         message: String,
         type: String = "NEW_ORDER"
     ) {
+        Log.d(TAG, "show order notification called")
+        Log.d(TAG, "orderId: $orderId, title: $title, message: $message, type: $type")
+
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -49,6 +59,7 @@ object NotificationHelper {
             putExtra("notificationType", type)
             putExtra("openOrderDetails", true)
         }
+        Log.d(TAG, "intent created with extras")
 
         val pendingIntent = PendingIntent.getActivity(
             context,
@@ -56,11 +67,12 @@ object NotificationHelper {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+        Log.d(TAG, "pending intent created")
 
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
         val notificationBuilder = NotificationCompat.Builder(context, CHANNEL_ID_ORDERS)
-            .setSmallIcon(android.R.drawable.ic_dialog_info) // Replace with your app icon
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(title)
             .setContentText(message)
             .setAutoCancel(true)
@@ -69,7 +81,10 @@ object NotificationHelper {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
 
-        notificationManager.notify(orderId.hashCode(), notificationBuilder.build())
+        val notificationId = orderId.hashCode()
+        Log.d(TAG, "showing notification with id: $notificationId")
+        notificationManager.notify(notificationId, notificationBuilder.build())
+        Log.d(TAG, "notification displayed successfully")
     }
 
     @Suppress("unused")
