@@ -5,6 +5,8 @@ import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.domain.modal.auth.LoginUserResponse
 import org.rajat.quickpick.domain.modal.auth.LoginVendorResponse
+import org.rajat.quickpick.fcm.FcmPlatformManager
+import org.rajat.quickpick.utils.websocket.VendorWebSocketManager
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -33,6 +35,10 @@ object AuthSessionSaver {
         dataStore.clearVendorProfile()
 
         logger.d { "AuthSessionSaver - User session saved successfully" }
+
+        // Register FCM token after successful login
+        logger.d { "AuthSessionSaver - Registering FCM token for user" }
+        FcmPlatformManager.initializeAndSendToken(tokens.accessToken)
     }
 
     @OptIn(ExperimentalTime::class)
@@ -59,5 +65,13 @@ object AuthSessionSaver {
         dataStore.clearUserProfile()
 
         logger.d { "AuthSessionSaver - Vendor session saved successfully" }
+
+        // Register FCM token after successful login
+        logger.d { "AuthSessionSaver - Registering FCM token for vendor" }
+        FcmPlatformManager.initializeAndSendToken(tokens.accessToken)
+
+        // Connect WebSocket for vendor to receive real-time order notifications
+        logger.d { "AuthSessionSaver - Connecting WebSocket for vendor" }
+        VendorWebSocketManager.connect(tokens.accessToken, "VENDOR")
     }
 }

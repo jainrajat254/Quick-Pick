@@ -1,7 +1,7 @@
 package org.rajat.quickpick.fcm
 
 expect object FcmPlatformManager {
-    fun initializeAndSendToken()
-    fun sendTokenToServer(fcmToken: String)
-    fun removeTokenFromServer()
+    fun initializeAndSendToken(authToken: String)
+    fun sendTokenToServer(fcmToken: String, authToken: String)
+    fun removeTokenFromServer(authToken: String)
 }

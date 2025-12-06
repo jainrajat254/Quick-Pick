@@ -37,6 +37,7 @@ import org.koin.compose.koinInject
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.domain.modal.auth.LogoutRequest
+import org.rajat.quickpick.fcm.FcmPlatformManager
 import org.rajat.quickpick.presentation.feature.profile.components.LogoutConfirmationDialog
 import org.rajat.quickpick.presentation.feature.profile.components.ProfileHeader
 import org.rajat.quickpick.presentation.feature.profile.components.ProfileMenuItem
@@ -232,6 +233,12 @@ fun ProfileScreen(
                     logger.d { "USER - Before clear - UserId: $userIdBefore" }
 
                     val refreshToken = dataStore.getRefreshToken()
+                    val authToken = dataStore.getToken()
+
+                    authToken?.let { token ->
+                        logger.d { "USER - Removing FCM token from server" }
+                        FcmPlatformManager.removeTokenFromServer(token)
+                    }
 
                     authViewModel.resetAuthStates()
                     profileViewModel.resetProfileStates()

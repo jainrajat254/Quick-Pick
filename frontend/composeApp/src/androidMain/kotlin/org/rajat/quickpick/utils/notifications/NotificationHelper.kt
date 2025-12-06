@@ -12,7 +12,7 @@ import org.rajat.quickpick.MainActivity
 
 object NotificationHelper {
 
-    private const val CHANNEL_ID_ORDERS = "order_notifications"
+    private const val CHANNEL_ID_ORDERS = "orders"
     private const val CHANNEL_NAME_ORDERS = "Order Updates"
     private const val CHANNEL_DESC_ORDERS = "Notifications for new orders and order updates"
 
@@ -43,7 +43,6 @@ object NotificationHelper {
     ) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Create intent to open the app when notification is tapped
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("orderId", orderId)

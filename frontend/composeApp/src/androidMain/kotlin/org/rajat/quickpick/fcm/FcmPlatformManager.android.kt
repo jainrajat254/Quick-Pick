@@ -26,37 +26,31 @@ actual object FcmPlatformManager {
         appContext = context.applicationContext
     }
 
-    actual fun initializeAndSendToken() {
+    actual fun initializeAndSendToken(authToken: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val token = FirebaseMessaging.getInstance().token.await()
                 Log.d(TAG, "FCM Token obtained: $token")
-                sendTokenToServerInternal(token)
+                sendTokenToServerInternal(token, authToken)
             } catch (e: Exception) {
                 Log.e(TAG, "Error getting FCM token", e)
             }
         }
     }
 
-    actual fun sendTokenToServer(fcmToken: String) {
+    actual fun sendTokenToServer(fcmToken: String, authToken: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            sendTokenToServerInternal(fcmToken)
+            sendTokenToServerInternal(fcmToken, authToken)
         }
     }
 
-    private fun sendTokenToServerInternal(fcmToken: String) {
+    private fun sendTokenToServerInternal(fcmToken: String, authToken: String) {
         val context = appContext ?: run {
             Log.e(TAG, "App context not initialized. Call FcmTokenManager.init(context) first.")
             return
         }
 
         try {
-            val prefs = context.getSharedPreferences("QuickPickPrefs", Context.MODE_PRIVATE)
-            val authToken = prefs.getString("auth_token", null) ?: run {
-                Log.d(TAG, "Auth token not found — skipping sendTokenToServer")
-                return
-            }
-
             val deviceId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
             val deviceName = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}"
 
@@ -87,24 +81,19 @@ actual object FcmPlatformManager {
         }
     }
 
-    actual fun removeTokenFromServer() {
+    actual fun removeTokenFromServer(authToken: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            removeTokenFromServerInternal()
+            removeTokenFromServerInternal(authToken)
         }
     }
 
-    private fun removeTokenFromServerInternal() {
+    private fun removeTokenFromServerInternal(authToken: String) {
         val context = appContext ?: run {
             Log.e(TAG, "App context not initialized. Call FcmTokenManager.init(context) first.")
             return
         }
 
         try {
-            val prefs = context.getSharedPreferences("QuickPickPrefs", Context.MODE_PRIVATE)
-            val authToken = prefs.getString("auth_token", null) ?: run {
-                Log.d(TAG, "Auth token not found — skipping removeTokenFromServer")
-                return
-            }
 
             val deviceId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
 

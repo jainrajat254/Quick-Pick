@@ -1,16 +1,31 @@
 package org.rajat.quickpick.fcm
 
-import android.content.Context
 import android.util.Log
-import androidx.core.content.edit
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.utils.notifications.NotificationHelper
 
-class MyFirebaseMessagingService : FirebaseMessagingService() {
+class MyFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
 
     companion object {
         private const val TAG = "MyFcmService"
+    }
+
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private val dataStore: LocalDataStore? by lazy {
+        try {
+            getKoin().getOrNull<LocalDataStore>()
+        } catch (_: Exception) {
+            Log.w(TAG, "Koin not initialized yet, cannot get DataStore")
+            null
+        }
     }
 
     override fun onCreate() {
@@ -22,11 +37,21 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         super.onNewToken(token)
         Log.d(TAG, "New FCM token: $token")
 
-        getSharedPreferences("QuickPickPrefs", Context.MODE_PRIVATE).edit {
-            putString("fcm_token", token)
+        val localDataStore = dataStore
+        if (localDataStore == null) {
+            Log.w(TAG, "DataStore not available, FCM token will be sent after login")
+            return
         }
 
-        FcmPlatformManager.sendTokenToServer(token)
+        serviceScope.launch {
+            val authToken = localDataStore.getToken()
+            if (authToken != null) {
+                Log.d(TAG, "User is logged in, sending new FCM token to server")
+                FcmPlatformManager.sendTokenToServer(token, authToken)
+            } else {
+                Log.d(TAG, "User not logged in, FCM token will be sent after login")
+            }
+        }
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
