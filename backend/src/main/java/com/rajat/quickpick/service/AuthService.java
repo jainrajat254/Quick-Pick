@@ -207,12 +207,30 @@ public class AuthService {
 
     public AuthResponseDto login(String email, String password, String userType) {
         final Logger logger = Logger.getLogger(AuthService.class.getName());
+        logger.info("=== LOGIN ATTEMPT ===");
+        logger.info("Email: " + email);
+        logger.info("UserType: " + userType);
+        logger.info("Password length: " + password.length());
+
         try {
+            var tempUserOpt = userRepository.findByEmail(email);
+            if (tempUserOpt.isPresent()) {
+                User u = tempUserOpt.get();
+                logger.info("User found in DB - ID: " + u.getId());
+                logger.info("Email verified: " + u.isEmailVerified());
+                logger.info("Suspended: " + u.isSuspended());
+                logger.info("Password hash in DB: " + u.getPassword());
+                logger.info("Testing password match: " + passwordEncoder.matches(password, u.getPassword()));
+            } else {
+                logger.info("User NOT found in users collection");
+            }
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            logger.info("Authentication successful!");
 
             var userOpt = userRepository.findByEmail(email);
             if (userOpt.isPresent()) {
