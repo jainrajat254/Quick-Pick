@@ -25,6 +25,13 @@ public class OrderNotificationService {
     private final WebSocketConnectionManager connectionManager;
 
     public void notifyNewOrder(Order order, Vendor vendor) {
+        log.info("order notification new order to vendor");
+        log.info("order notif orderid {}", order.getId());
+        log.info("order notif vendorid {}", vendor.getId());
+        log.info("order notif vendor email {}", vendor.getEmail());
+        log.info("order notif order status {}", order.getOrderStatus());
+        log.info("order notif total amount {}", order.getTotalAmount());
+
         OrderNotificationDto notification = OrderNotificationDto.builder()
                 .orderId(order.getId())
                 .type("NEW_ORDER")
@@ -36,8 +43,13 @@ public class OrderNotificationService {
                 .build();
 
         boolean sentViaWebSocket = false;
-        if (connectionManager.isUserConnected(vendor.getId())) {
+        boolean isVendorConnected = connectionManager.isUserConnected(vendor.getId());
+
+        log.info("order notif vendor websocket connected {}", isVendorConnected);
+
+        if (isVendorConnected) {
             try {
+                log.info("order notif attempting to send via websocket to vendor {}", vendor.getId());
                 messagingTemplate.convertAndSendToUser(
                         vendor.getId(),
                         "/queue/orders",
@@ -45,21 +57,34 @@ public class OrderNotificationService {
                 );
 
                 sentViaWebSocket = true;
-                log.info("Sent new order notification via WebSocket to vendor: {}", vendor.getId());
+                log.info("order notif sent new order notification via websocket to vendor {}", vendor.getId());
             } catch (Exception e) {
-                log.error("Failed to send WebSocket notification to vendor: {}", vendor.getId(), e);
+                log.error("order notif failed to send websocket notification to vendor {}", vendor.getId(), e);
             }
         }
 
         if (!sentViaWebSocket) {
+            log.info("order notif vendor {} is offline or websocket failed sending fcm notification", vendor.getId());
             notificationService.sendOrderNotification(order, "ORDER_CREATED", vendor.getId(), "VENDOR");
-            log.info("Vendor {} is offline, sent FCM notification", vendor.getId());
+        } else {
+            log.info("order notif websocket successful skipping fcm notification");
         }
+
+        log.info("order notification new order complete");
     }
 
     public void notifyOrderStatusUpdate(Order order, User user) {
+        log.info("order notification status update to user");
+        log.info("order notif orderid {}", order.getId());
+        log.info("order notif userid {}", user != null ? user.getId() : "NULL");
+        log.info("order notif user email {}", user != null ? user.getEmail() : "NULL");
+        log.info("order notif new status {}", order.getOrderStatus());
+
         String templateKey = getTemplateKeyForStatus(order.getOrderStatus());
         String message = getStatusMessage(order.getOrderStatus());
+
+        log.info("order notif template key {}", templateKey);
+        log.info("order notif message {}", message);
 
         OrderNotificationDto notification = OrderNotificationDto.builder()
                 .orderId(order.getId())
@@ -72,26 +97,41 @@ public class OrderNotificationService {
                 .build();
 
         if (user != null) {
-            // Try WebSocket first
-            if (connectionManager.isUserConnected(user.getId())) {
+            boolean isUserConnected = connectionManager.isUserConnected(user.getId());
+            log.info("order notif user websocket connected {}", isUserConnected);
+
+            if (isUserConnected) {
                 try {
+                    log.info("order notif attempting to send via websocket to user {}", user.getId());
                     messagingTemplate.convertAndSendToUser(
                             user.getId(),
                             "/queue/orders",
                             notification
                     );
-                    log.info("Sent order status update via WebSocket to user: {}", user.getId());
+                    log.info("order notif sent order status update via websocket to user {}", user.getId());
                 } catch (Exception e) {
-                    log.error("Failed to send WebSocket notification to user: {}", user.getId(), e);
+                    log.error("order notif failed to send websocket notification to user {}", user.getId(), e);
                 }
+            } else {
+                log.info("order notif user is not connected via websocket");
             }
 
             // Always send FCM for important status updates
+            log.info("order notif sending fcm notification for status update");
             notificationService.sendOrderNotification(order, templateKey, user.getId(), "USER");
+        } else {
+            log.warn("order notif user is null cannot send notification");
         }
+
+        log.info("order notification status update complete");
     }
 
     public void notifyOrderCancellation(Order order, Vendor vendor) {
+        log.info("order notification cancellation to vendor");
+        log.info("order notif orderid {}", order.getId());
+        log.info("order notif vendorid {}", vendor.getId());
+        log.info("order notif vendor email {}", vendor.getEmail());
+
         OrderNotificationDto notification = OrderNotificationDto.builder()
                 .orderId(order.getId())
                 .type("ORDER_CANCELLED")
@@ -102,22 +142,27 @@ public class OrderNotificationService {
                 .timestamp(order.getUpdatedAt())
                 .build();
 
-        // Try WebSocket
-        if (connectionManager.isUserConnected(vendor.getId())) {
+        boolean isVendorConnected = connectionManager.isUserConnected(vendor.getId());
+        log.info("order notif vendor websocket connected {}", isVendorConnected);
+
+        if (isVendorConnected) {
             try {
+                log.info("order notif attempting to send via websocket to vendor {}", vendor.getId());
                 messagingTemplate.convertAndSendToUser(
                         vendor.getId(),
                         "/queue/orders",
                         notification
                 );
-                log.info("Sent order cancellation via WebSocket to vendor: {}", vendor.getId());
+                log.info("order notif sent order cancellation via websocket to vendor {}", vendor.getId());
             } catch (Exception e) {
-                log.error("Failed to send WebSocket notification to vendor: {}", vendor.getId(), e);
+                log.error("order notif failed to send websocket notification to vendor {}", vendor.getId(), e);
             }
         }
 
-        // Always send FCM notification
+        log.info("order notif sending fcm notification for cancellation");
         notificationService.sendOrderNotification(order, "ORDER_CANCELLED", vendor.getId(), "VENDOR");
+
+        log.info("order notification cancellation complete");
     }
 
     private String getTemplateKeyForStatus(com.rajat.quickpick.enums.OrderStatus status) {

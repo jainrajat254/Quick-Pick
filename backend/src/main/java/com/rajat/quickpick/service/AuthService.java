@@ -25,7 +25,6 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 @Service
 @RequiredArgsConstructor
@@ -206,13 +205,30 @@ public class AuthService {
     }
 
     public AuthResponseDto login(String email, String password, String userType) {
-        final Logger logger = Logger.getLogger(AuthService.class.getName());
+        log.info("login attempt");
+        log.info("email {}", email);
+        log.info("usertype {}", userType);
+        log.info("password length {}", password.length());
+
         try {
+            var tempUserOpt = userRepository.findByEmail(email);
+            if (tempUserOpt.isPresent()) {
+                User u = tempUserOpt.get();
+                log.info("user found in db id {}", u.getId());
+                log.info("email verified {}", u.isEmailVerified());
+                log.info("suspended {}", u.isSuspended());
+                log.info("password hash in db {}", u.getPassword());
+                log.info("testing password match {}", passwordEncoder.matches(password, u.getPassword()));
+            } else {
+                log.info("user not found in users collection");
+            }
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            log.info("authentication successful");
 
             var userOpt = userRepository.findByEmail(email);
             if (userOpt.isPresent()) {
@@ -230,7 +246,7 @@ public class AuthService {
                 TokensDto tokens = TokensDto.builder()
                         .accessToken(token)
                         .refreshToken(refreshToken.getToken())
-                        .expiresIn(Secrets.JWT_EXPIRATION / 1000) // Convert milliseconds to seconds
+                        .expiresIn(Secrets.JWT_EXPIRATION / 1000)
                         .tokenType("Bearer")
                         .build();
 
@@ -260,7 +276,7 @@ public class AuthService {
                 TokensDto tokens = TokensDto.builder()
                         .accessToken(token)
                         .refreshToken(refreshToken.getToken())
-                        .expiresIn(Secrets.JWT_EXPIRATION / 1000) // Convert milliseconds to seconds
+                        .expiresIn(Secrets.JWT_EXPIRATION / 1000)
                         .tokenType("Bearer")
                         .build();
 
@@ -271,14 +287,14 @@ public class AuthService {
                 response.setRole(vendor.getRole());
                 response.setMessage("Login successful");
 
-                logger.info("Login successful for email: " + email);
+                log.info("login successful for email {}", email);
                 return response;
             }
 
             throw new BadRequestException("Invalid credentials or user type mismatch");
 
         } catch (Exception e) {
-            logger.info("Login failed for email: " + email + " - " + e.getMessage());
+            log.info("login failed for email {} error {}", email, e.getMessage());
             throw new BadRequestException("Invalid credentials");
 
         }

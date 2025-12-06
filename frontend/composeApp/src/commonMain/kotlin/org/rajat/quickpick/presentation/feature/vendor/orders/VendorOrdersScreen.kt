@@ -9,12 +9,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.feature.vendor.orders.components.VendorOrderCard
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
+import org.rajat.quickpick.utils.BackHandler
 import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.exitApp
+import org.rajat.quickpick.utils.toast.showToast
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun VendorOrdersScreen(
     navController: NavController,
@@ -23,10 +29,22 @@ fun VendorOrdersScreen(
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     var selectedAcceptedSubTab by remember { mutableStateOf(0) }
+    var backPressedTime by remember { mutableStateOf(0L) }
     val tabs = listOf("Pending", "Accepted", "Completed")
     val acceptedSubTabs = listOf("Preparing", "Ready")
 
     val vendorOrdersByStatusState by orderViewModel.vendorOrdersByStatusState.collectAsState()
+
+    // Double back press to exit
+    BackHandler(enabled = true) {
+        val currentTime = Clock.System.now().toEpochMilliseconds()
+        if (currentTime - backPressedTime < 2000) {
+            exitApp()
+        } else {
+            backPressedTime = currentTime
+            showToast("Press back again to exit")
+        }
+    }
 
     LaunchedEffect(selectedTab, selectedAcceptedSubTab) {
         val status = when (selectedTab) {

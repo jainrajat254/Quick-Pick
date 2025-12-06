@@ -29,14 +29,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        log.info("Loading user by email: {}", email);
+        log.info("loading user by email {}", email);
 
         var user = userRepository.findByEmail(email);
         if (user.isPresent()) {
             User u = user.get();
-            log.info("Found STUDENT: email={}, emailVerified={}, suspended={}, role={}",
+            log.info("found student email {} emailverified {} suspended {} role {}",
                 u.getEmail(), u.isEmailVerified(), u.isSuspended(), u.getRole());
-            log.info("Password hash from DB starts with: {}", u.getPassword().substring(0, Math.min(20, u.getPassword().length())));
+            log.info("password hash from db starts with {}", u.getPassword().substring(0, Math.min(20, u.getPassword().length())));
 
             boolean isDisabled = u.getRole() == Role.ADMIN ? false : !u.isEmailVerified();
 
@@ -54,7 +54,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         var vendor = vendorRepository.findByEmail(email);
         if (vendor.isPresent()) {
             Vendor v = vendor.get();
-            log.info("Found VENDOR: email={}, emailVerified={}, suspended={}, role={}",
+            log.info("found vendor email {} emailverified {} suspended {} role {}",
                 v.getEmail(), v.isEmailVerified(), v.isSuspended(), v.getRole());
 
             return org.springframework.security.core.userdetails.User.builder()
@@ -68,7 +68,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .build();
         }
 
-        log.error("User not found with email: {}", email);
+        log.error("user not found with email {}", email);
         throw new UsernameNotFoundException("User not found with email: " + email);
     }
 }

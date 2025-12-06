@@ -12,12 +12,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import org.rajat.quickpick.presentation.feature.vendor.dashboard.components.QuickActionsSection
 import org.rajat.quickpick.presentation.feature.vendor.dashboard.components.StatsCard
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
+import org.rajat.quickpick.utils.BackHandler
 import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.exitApp
+import org.rajat.quickpick.utils.toast.showToast
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun VendorDashboardScreen(
     navController: NavController,
@@ -25,6 +31,18 @@ fun VendorDashboardScreen(
     orderViewModel: OrderViewModel
 ) {
     val vendorOrderStatsState by orderViewModel.vendorOrderStatsState.collectAsState()
+    var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Double back press to exit
+    BackHandler(enabled = true) {
+        val currentTime = Clock.System.now().toEpochMilliseconds()
+        if (currentTime - backPressedTime < 2000) {
+            exitApp()
+        } else {
+            backPressedTime = currentTime
+            showToast("Press back again to exit")
+        }
+    }
 
     LaunchedEffect(Unit) {
         orderViewModel.getVendorOrderStats()
@@ -159,4 +177,3 @@ fun VendorDashboardScreen(
         }
     }
 }
-

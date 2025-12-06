@@ -82,6 +82,9 @@ class LocalDataStoreImpl(
     override suspend fun getUserRole(): String? =
         dataStore.data.first()[USER_ROLE_KEY]
 
+    override fun getUserRoleFlow(): Flow<String?> =
+        dataStore.data.map { it[USER_ROLE_KEY] }.distinctUntilChanged()
+
     override suspend fun clearUserRole() {
         dataStore.edit { it.remove(USER_ROLE_KEY) }
     }

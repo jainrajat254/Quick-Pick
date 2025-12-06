@@ -94,11 +94,20 @@ fun UserLoginScreen(
 
     LaunchedEffect(userLoginState) {
         val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+        val fcmLogger = Logger.withTag("FCMDEBUG")
+        fcmLogger.d { "========================================" }
+        fcmLogger.d { "USER_LOGIN - LaunchedEffect triggered" }
+        fcmLogger.d { "USER_LOGIN - State: $userLoginState" }
         logoutLogger.d { "USER_LOGIN - LaunchedEffect triggered, userLoginState: $userLoginState" }
         when (userLoginState) {
             is UiState.Success -> {
+                fcmLogger.d { "USER_LOGIN - SUCCESS STATE DETECTED" }
                 val response = (userLoginState as UiState.Success<LoginUserResponse>).data
+                fcmLogger.d { "USER_LOGIN - Response received, userId: ${response.userId}" }
+                fcmLogger.d { "USER_LOGIN - Calling AuthSessionSaver.saveUserSession" }
                 AuthSessionSaver.saveUserSession(dataStore, response)
+                fcmLogger.d { "USER_LOGIN - AuthSessionSaver.saveUserSession completed" }
+                fcmLogger.d { "========================================" }
                 showToast("User Signed In Successfully")
                 navController.navigate(AppScreenUser.HomeScreen) {
                     popUpTo(0) { inclusive = true }
@@ -107,6 +116,7 @@ fun UserLoginScreen(
             }
 
             is UiState.Error -> {
+                fcmLogger.d { "USER_LOGIN - ERROR STATE: ${(userLoginState as UiState.Error).message}" }
                 val message = (userLoginState as UiState.Error).message ?: "Unknown error"
                 if (message.contains("verify your email", ignoreCase = true)) {
                     val emailLower = email.trim().lowercase()

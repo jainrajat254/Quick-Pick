@@ -11,14 +11,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import org.koin.compose.koinInject
 import org.rajat.quickpick.presentation.feature.cart.components.CartItemRow
 import org.rajat.quickpick.presentation.feature.cart.components.CartSummary
 import org.rajat.quickpick.presentation.feature.cart.components.EmptyCartView
 import org.rajat.quickpick.presentation.viewmodel.CartViewModel
+import org.rajat.quickpick.utils.BackHandler
 import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun CartScreen(
     paddingValues: PaddingValues,
@@ -29,6 +34,18 @@ fun CartScreen(
     val updateCartState by cartViewModel.updateCartState.collectAsState()
     val removeFromCartState by cartViewModel.removeFromCartState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+    var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Double back press to exit
+    BackHandler(enabled = true) {
+        val currentTime = Clock.System.now().toEpochMilliseconds()
+        if (currentTime - backPressedTime < 2000) {
+            exitApp()
+        } else {
+            backPressedTime = currentTime
+            showToast("Press back again to exit")
+        }
+    }
 
     LaunchedEffect(Unit) {
         cartViewModel.getCart()

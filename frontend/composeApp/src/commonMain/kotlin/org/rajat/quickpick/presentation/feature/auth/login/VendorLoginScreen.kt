@@ -92,14 +92,22 @@ fun VendorLoginScreen(
 
     LaunchedEffect(vendorLoginState) {
         val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
+        val fcmLogger = Logger.withTag("FCMDEBUG")
+        fcmLogger.d { "========================================" }
+        fcmLogger.d { "VENDOR_LOGIN - LaunchedEffect triggered" }
+        fcmLogger.d { "VENDOR_LOGIN - State: $vendorLoginState" }
         logoutLogger.d { "VENDOR_LOGIN - LaunchedEffect triggered, vendorLoginState: $vendorLoginState" }
-
         when (vendorLoginState) {
             is UiState.Success -> {
+                fcmLogger.d { "VENDOR_LOGIN - SUCCESS STATE DETECTED" }
                 logoutLogger.d { "VENDOR_LOGIN - Success state detected, auto-logging in!" }
                 val response = (vendorLoginState as UiState.Success<LoginVendorResponse>).data
+                fcmLogger.d { "VENDOR_LOGIN - Response received, userId: ${response.userId}" }
+                fcmLogger.d { "VENDOR_LOGIN - Calling AuthSessionSaver.saveVendorSession" }
                 logoutLogger.d { "VENDOR_LOGIN - Calling AuthSessionSaver.saveVendorSession" }
                 AuthSessionSaver.saveVendorSession(dataStore, response)
+                fcmLogger.d { "VENDOR_LOGIN - AuthSessionSaver.saveVendorSession completed" }
+                fcmLogger.d { "========================================" }
                 showToast("Vendor Signed In Successfully")
                 logoutLogger.d { "VENDOR_LOGIN - Navigating to VendorDashboard" }
                 navController.navigate(AppScreenVendor.VendorDashboard) {
@@ -109,6 +117,7 @@ fun VendorLoginScreen(
             }
 
             is UiState.Error -> {
+                fcmLogger.d { "VENDOR_LOGIN - ERROR STATE: ${(vendorLoginState as UiState.Error).message}" }
                 val message = (vendorLoginState as UiState.Error).message ?: "Unknown error"
                 if (message.contains("verify your email", ignoreCase = true)) {
                     val emailLower = email.trim().lowercase()

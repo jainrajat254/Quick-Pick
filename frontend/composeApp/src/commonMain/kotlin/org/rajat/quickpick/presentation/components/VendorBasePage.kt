@@ -3,7 +3,6 @@ package org.rajat.quickpick.presentation.components
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -18,7 +17,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.presentation.navigation.BottomNavItem
-// --- FIX: Add import for AppScreenVendor ---
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.bgrem
@@ -137,16 +135,7 @@ fun VendorBasePage(
                             )
                         }
                     },
-                    navigationIcon = {
-                        if (showBackButton) {
-                            IconButton(onClick = onBackClick) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back"
-                                )
-                            }
-                        }
-                    },
+
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         titleContentColor = MaterialTheme.colorScheme.onSurface,

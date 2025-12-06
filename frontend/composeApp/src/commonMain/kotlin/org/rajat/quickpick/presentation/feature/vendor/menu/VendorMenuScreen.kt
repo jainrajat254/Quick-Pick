@@ -13,14 +13,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import org.koin.compose.koinInject
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.feature.vendor.menu.components.VendorMenuItemCard
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
+import org.rajat.quickpick.utils.BackHandler
 import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun VendorMenuScreen(
     navController: NavController,
@@ -29,6 +34,7 @@ fun VendorMenuScreen(
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     var searchQuery by remember { mutableStateOf("") }
+    var backPressedTime by remember { mutableStateOf(0L) }
 
     val tabs = listOf("All Items", "Available", "Unavailable")
 
@@ -40,6 +46,17 @@ fun VendorMenuScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var pendingDeleteId by remember { mutableStateOf<String?>(null) }
     var isDeleting by remember { mutableStateOf(false) }
+
+    // Double back press to exit
+    BackHandler(enabled = true) {
+        val currentTime = Clock.System.now().toEpochMilliseconds()
+        if (currentTime - backPressedTime < 2000) {
+            exitApp()
+        } else {
+            backPressedTime = currentTime
+            showToast("Press back again to exit")
+        }
+    }
 
     LaunchedEffect(Unit) { menuItemViewModel.getMyMenuItems(page = 0, size = 100) }
 

@@ -3,7 +3,6 @@ package org.rajat.quickpick.presentation.components
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
@@ -20,11 +19,16 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.navigation.BottomNavItem
+import org.rajat.quickpick.utils.BackHandler
+import org.rajat.quickpick.utils.exitApp
+import org.rajat.quickpick.utils.toast.showToast
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.bgrem
 import quickpick.composeapp.generated.resources.bgremlight
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun BasePage(
 
@@ -39,7 +43,21 @@ fun BasePage(
         AppScreenUser.Orders::class.simpleName,
         AppScreenUser.Profile::class.simpleName
     )
-    val showBackButton = currentRoute !in rootScreens && currentRoute.isNotEmpty()
+    val isRootScreen = currentRoute in rootScreens
+    val showBackButton = !isRootScreen && currentRoute.isNotEmpty()
+
+    var backPressedTime by remember { mutableStateOf(0L) }
+
+    BackHandler(enabled = isRootScreen) {
+        val currentTime = Clock.System.now().toEpochMilliseconds()
+        if (currentTime - backPressedTime < 2000) {
+            exitApp()
+        } else {
+            backPressedTime = currentTime
+            showToast("Press back again to exit")
+        }
+    }
+
     val userName: String = "Current User"
     val userEmail: String = "currentuser@gmail.com"
 
@@ -115,20 +133,6 @@ fun BasePage(
                             verticalAlignment = Alignment.CenterVertically
                         ){
 
-                            if(!showBackButton){
-                                Icon(
-                                    painter = if (isSystemInDarkTheme()) {
-                                        painterResource(resource = Res.drawable.bgremlight)
-                                    } else {
-
-                                        painterResource(resource = Res.drawable.bgrem)
-                                    },
-                                    contentDescription = null,
-                                    modifier = Modifier.size(35.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                            }
                             Text(
                                 text = getScreenTitle(currentRoute),
                                 style = MaterialTheme.typography.titleLarge,
@@ -137,16 +141,7 @@ fun BasePage(
                             )
                         }
                     },
-                    navigationIcon = {
-                        if (showBackButton) {
-                            IconButton(onClick = onBackClick) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back"
-                                )
-                            }
-                        }
-                    },
+
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         titleContentColor = MaterialTheme.colorScheme.onSurface,

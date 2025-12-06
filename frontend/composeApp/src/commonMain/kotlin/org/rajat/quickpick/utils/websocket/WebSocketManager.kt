@@ -14,7 +14,7 @@ data class OrderNotification(
 )
 
 expect class WebSocketManager() {
-    fun connect(authToken: String)
+    fun connect(authToken: String, userRole: String)
     fun disconnect()
     fun setOrderReceivedListener(listener: (OrderNotification) -> Unit)
     fun setConnectionListener(listener: (Boolean) -> Unit)
