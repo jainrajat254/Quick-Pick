@@ -17,21 +17,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import org.koin.viewmodel.resolveViewModel
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import org.rajat.quickpick.domain.modal.search.GetAllVendorsInCollegeResponse
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.components.ErrorState
 import org.rajat.quickpick.presentation.feature.home.components.EmptyState
 import org.rajat.quickpick.presentation.feature.home.components.SearchBar
 import org.rajat.quickpick.presentation.feature.home.components.VendorsList
-import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
+import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.viewmodel.HomeViewModel
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.presentation.viewmodel.ReviewViewModel
 import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
+import org.rajat.quickpick.utils.BackHandler
 import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -42,9 +46,19 @@ fun HomeScreen(
     menuItemViewModel: MenuItemViewModel
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    var backPressedTime by remember { mutableStateOf(0L) }
 
     val vendorsState by homeViewModel.vendorsInCollegeState.collectAsState()
-    val selectedVendorId by homeViewModel.selectedVendorId.collectAsState()
+
+    BackHandler(enabled = true) {
+        val currentTime = Clock.System.now().toEpochMilliseconds()
+        if (currentTime - backPressedTime < 2000) {
+            exitApp()
+        } else {
+            backPressedTime = currentTime
+            showToast("Press back again to exit")
+        }
+    }
 
     LaunchedEffect(Unit) {
         homeViewModel.getVendorsInCollege()
@@ -58,20 +72,6 @@ fun HomeScreen(
             }
             else -> Unit
         }
-    }
-
-    if (selectedVendorId != null) {
-        VendorScreen(
-            navController = navController,
-            vendorViewModel = vendorViewModel,
-            menuItemViewModel = menuItemViewModel,
-            reviewViewModel = reviewViewModel,
-            vendorId = selectedVendorId!!,
-            onBackClick = {
-                homeViewModel.setSelectedVendorId(null)
-            }
-        )
-        return
     }
 
     Column(
@@ -114,13 +114,20 @@ fun HomeScreen(
             is UiState.Success -> {
                 val vendors = (vendorsState as UiState.Success<GetAllVendorsInCollegeResponse>).data
 
-                VendorsList(
-                    vendors = vendors.vendors,
-                    onVendorClick = { vendorId ->
-                        homeViewModel.setSelectedVendorId(vendorId)
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
+                if (vendors.vendors.isEmpty()) {
+                    EmptyState(
+                        searchQuery = searchQuery,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    VendorsList(
+                        vendors = vendors.vendors,
+                        onVendorClick = { vendorId ->
+                            navController.navigate(AppScreenUser.VendorDetail(vendorId))
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         }
     }

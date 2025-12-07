@@ -15,10 +15,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import org.koin.compose.koinInject
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.domain.modal.auth.LogoutRequest
+import org.rajat.quickpick.fcm.FcmPlatformManager
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.feature.profile.components.LogoutConfirmationDialog
 import org.rajat.quickpick.presentation.feature.vendor.profile.components.VendorProfileOption
@@ -26,10 +29,14 @@ import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.presentation.viewmodel.ProfileViewModel
+import org.rajat.quickpick.utils.BackHandler
 import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
 import org.rajat.quickpick.utils.tokens.PlatformScheduler
+import org.rajat.quickpick.utils.websocket.VendorWebSocketManager
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun VendorProfileScreen(
     navController: NavController,
@@ -43,6 +50,18 @@ fun VendorProfileScreen(
     val coroutineScope = rememberCoroutineScope()
 
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var backPressedTime by remember { mutableStateOf(0L) }
+
+    // Double back press to exit
+    BackHandler(enabled = true) {
+        val currentTime = Clock.System.now().toEpochMilliseconds()
+        if (currentTime - backPressedTime < 2000) {
+            exitApp()
+        } else {
+            backPressedTime = currentTime
+            showToast("Press back again to exit")
+        }
+    }
 
     LaunchedEffect(Unit) {
         profileViewModel.getVendorProfile()
@@ -94,6 +113,17 @@ fun VendorProfileScreen(
                     logger.d { "VENDOR - Before clear - UserId: $userIdBefore" }
 
                     val refreshToken = dataStore.getRefreshToken() ?: ""
+                    val authToken = dataStore.getToken()
+
+                    // Remove FCM token from server before clearing local data
+                    authToken?.let { token ->
+                        logger.d { "VENDOR - Removing FCM token from server" }
+                        FcmPlatformManager.removeTokenFromServer(token)
+                    }
+
+                    // Disconnect WebSocket for vendor
+                    logger.d { "VENDOR - Disconnecting WebSocket" }
+                    VendorWebSocketManager.disconnect()
 
                     // Reset auth states FIRST to prevent auto-login
                     authViewModel.resetAuthStates()

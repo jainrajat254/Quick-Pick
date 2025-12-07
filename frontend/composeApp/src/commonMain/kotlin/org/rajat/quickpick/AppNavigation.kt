@@ -54,6 +54,7 @@ import org.rajat.quickpick.presentation.feature.vendor.profile.HelpAndSupportScr
 import org.rajat.quickpick.presentation.feature.vendor.profile.VendorProfileScreen
 import org.rajat.quickpick.presentation.feature.vendor.profile.VendorProfileUpdateScreen
 import org.rajat.quickpick.presentation.feature.vendor.reviews.VendorReviewsScreen
+import org.rajat.quickpick.presentation.feature.menuitem.MenuItemScreen
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.navigation.getAppScreenUserFromRoute
@@ -296,7 +297,18 @@ private fun AppNavHost(
                 vendorId = route.vendorId
             )
         }
-        // Vendor reviews screen
+
+        composable<AppScreenUser.MenuItemCategory> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppScreenUser.MenuItemCategory>()
+            MenuItemScreen(
+                navController = navController,
+                menuItemViewModel = menuItemViewModel,
+                vendorId = route.vendorId,
+                category = route.category,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
         composable<AppScreenVendor.VendorReviewsScreen> { backStackEntry ->
             val route = backStackEntry.toRoute<AppScreenVendor.VendorReviewsScreen>()
             VendorReviewsScreen(

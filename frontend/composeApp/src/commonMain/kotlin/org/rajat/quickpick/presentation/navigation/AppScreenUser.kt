@@ -44,6 +44,9 @@ sealed class AppScreenUser {
     data class VendorDetail(val vendorId: String) : AppScreenUser()
 
     @Serializable
+    data class MenuItemCategory(val vendorId: String, val category: String) : AppScreenUser()
+
+    @Serializable
     data object Orders : AppScreenUser()
 
     @Serializable
@@ -120,6 +123,7 @@ fun getAppScreenUserFromRoute(route: String?): AppScreenUser? {
         "EmailOtpVerify" to AppScreenUser.EmailOtpVerify(email = "", userType = ""),
         "HomeScreen" to AppScreenUser.HomeScreen,
         "VendorDetail" to AppScreenUser.VendorDetail(vendorId = ""),
+        "MenuItemCategory" to AppScreenUser.MenuItemCategory(vendorId = "", category = ""),
         "Orders" to AppScreenUser.Orders,
         "OrderDetail" to AppScreenUser.OrderDetail(
             orderId = ""

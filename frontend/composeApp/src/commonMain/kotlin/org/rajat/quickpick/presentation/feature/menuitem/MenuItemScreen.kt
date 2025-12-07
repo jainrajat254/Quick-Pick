@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -91,22 +90,7 @@ fun MenuItemScreen(
                         }
                     }
                 },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        if (showSearchBar) {
-                            showSearchBar = false
-                            localSearchQuery = ""
-                            menuItemViewModel.updateSearchQuery("")
-                        } else {
-                            onBackClick()
-                        }
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
+
                 actions = {
                     if (!showSearchBar) {
                         IconButton(onClick = { showSearchBar = true }) {

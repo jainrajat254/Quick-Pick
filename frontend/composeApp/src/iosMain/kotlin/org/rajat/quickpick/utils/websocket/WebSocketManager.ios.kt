@@ -2,16 +2,16 @@ package org.rajat.quickpick.utils.websocket
 
 actual class WebSocketManager {
 
-    actual fun connect(authToken: String) {
+    actual fun connect(authToken: String, userRole: String) {
         // iOS WebSocket implementation - to be added later
-        println("iOS WebSocket connect called")
+        println("iOS WebSocket connect called with userRole: $userRole")
     }
 
     actual fun disconnect() {
         // iOS WebSocket implementation - to be added later
     }
 
-    actual fun setOrderReceivedListener(listener: (WebSocketManager.OrderNotification) -> Unit) {
+    actual fun setOrderReceivedListener(listener: (OrderNotification) -> Unit) {
         // iOS WebSocket implementation - to be added later
     }
 
@@ -19,4 +19,3 @@ actual class WebSocketManager {
         // iOS WebSocket implementation - to be added later
     }
 }
-
