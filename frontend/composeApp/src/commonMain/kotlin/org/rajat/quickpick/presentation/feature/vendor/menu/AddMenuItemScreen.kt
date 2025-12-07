@@ -106,7 +106,7 @@ fun AddMenuItemScreen(
             quantity = quantity.toIntOrNull(),
             isVeg = isVeg,
             isAvailable = isAvailable,
-            imageUrl = null // TODO integrate uploaded image URL
+            imageUrl = null
         )
         menuItemViewModel.createMenuItem(request)
     }

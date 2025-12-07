@@ -65,6 +65,7 @@ public class MenuItemService {
         dto.setPrice(menuItem.getPrice());
         dto.setQuantity(menuItem.getQuantity());
         dto.setCategory(menuItem.getCategory());
+        dto.setVeg(menuItem.isVeg());
         dto.setImageUrl(menuItem.getImageUrl());
         dto.setIsAvailable(menuItem.getIsAvailable());
         dto.setCreatedAt(menuItem.getCreatedAt());
@@ -97,6 +98,7 @@ public class MenuItemService {
         menuItem.setPrice(createDto.getPrice());
         menuItem.setQuantity(createDto.getQuantity());
         menuItem.setCategory(createDto.getCategory().trim());
+        menuItem.setVeg(createDto.isVeg());
         menuItem.setImageUrl(createDto.getImageUrl());
         menuItem.setIsAvailable(createDto.isAvailable());
         menuItem.setCreatedAt(LocalDateTime.now());
@@ -201,6 +203,9 @@ public class MenuItemService {
         }
         if (updateDto.getCategory() != null) {
             menuItem.setCategory(updateDto.getCategory().trim());
+        }
+        if (updateDto.getIsVeg() != null) {
+            menuItem.setVeg(updateDto.getIsVeg());
         }
         if (updateDto.getImageUrl() != null) {
             menuItem.setImageUrl(updateDto.getImageUrl());

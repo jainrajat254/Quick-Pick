@@ -71,7 +71,7 @@ fun UpdateMenuItemScreen(
                 category = item.category ?: ""
                 quantity = item.quantity?.toString() ?: ""
                 isAvailable = item.available ?: true
-                isVeg = item.veg ?: false
+                isVeg = item.isVeg ?: false
                 imageUri = item.imageUrl
                 isPageLoading = false
             }

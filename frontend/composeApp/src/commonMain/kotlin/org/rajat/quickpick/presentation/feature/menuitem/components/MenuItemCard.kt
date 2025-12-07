@@ -89,7 +89,7 @@ fun MenuItemCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        VegNonVegBadge(isVeg = menuItem.veg ?: true)
+                        VegNonVegBadge(isVeg = menuItem.isVeg ?: true)
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = menuItem.name ?: "Item",

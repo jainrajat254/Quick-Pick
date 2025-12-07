@@ -157,8 +157,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout(@Valid @RequestBody RefreshTokenDto refreshTokenDto) {
-        authService.logout(refreshTokenDto.getRefreshToken());
+    public ResponseEntity<Map<String, String>> logout(@Valid @RequestBody LogoutDto logoutDto) {
+        authService.logout(logoutDto.getUserId(), logoutDto.getRefreshToken());
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 

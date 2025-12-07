@@ -26,13 +26,11 @@ actual class WebSocketManager {
 
     companion object {
         private const val TAG = "WebSocketManager"
-        // SockJS is enabled on backend, so we need to use /ws/websocket suffix
         private val WS_URL = Constants.BASE_URL
             .replace("https://", "wss://")
             .replace("http://", "ws://") + "/ws/websocket"
 
         init {
-            // Set global RxJava error handler to prevent crashes from unhandled errors
             RxJavaPlugins.setErrorHandler { throwable ->
                 Log.e(TAG, "RxJava global error handler caught: ${throwable.message}", throwable)
             }

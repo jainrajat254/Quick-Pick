@@ -220,6 +220,7 @@ public class SearchService {
         dto.setPrice(menuItem.getPrice());
         dto.setQuantity(menuItem.getQuantity());
         dto.setCategory(menuItem.getCategory());
+        dto.setVeg(menuItem.isVeg());
         dto.setImageUrl(menuItem.getImageUrl() != null ? menuItem.getImageUrl() : "");
         dto.setIsAvailable(menuItem.getIsAvailable());
         dto.setCreatedAt(menuItem.getCreatedAt());
