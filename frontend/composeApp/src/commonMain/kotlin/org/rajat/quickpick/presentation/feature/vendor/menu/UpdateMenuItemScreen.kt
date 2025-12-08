@@ -20,6 +20,12 @@ import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
 import org.rajat.quickpick.presentation.viewmodel.MenuCategoryViewModel
+import org.rajat.quickpick.utils.ImagePickerHelper
+import org.rajat.quickpick.utils.ImageUploadState
+import org.rajat.quickpick.presentation.viewmodel.ProfileViewModel
+import co.touchlab.kermit.Logger
+
+private val logger = Logger.withTag("CLOUDINARY_IMAGE_DEBUG")
 
 @Composable
 fun UpdateMenuItemScreen(
@@ -27,7 +33,9 @@ fun UpdateMenuItemScreen(
     paddingValues: PaddingValues,
     menuItemId: String,
     menuItemViewModel: MenuItemViewModel = koinInject(),
-    menuCategoryViewModel: MenuCategoryViewModel = koinInject()
+    menuCategoryViewModel: MenuCategoryViewModel = koinInject(),
+    imagePickerHelper: ImagePickerHelper,
+    profileViewModel: ProfileViewModel = koinInject()
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
@@ -36,7 +44,8 @@ fun UpdateMenuItemScreen(
     var quantity by rememberSaveable { mutableStateOf("") }
     var isAvailable by rememberSaveable { mutableStateOf(true) }
     var isVeg by rememberSaveable { mutableStateOf(true) }
-    var imageUri by remember { mutableStateOf<Any?>(null) }
+    var existingImageUrl by remember { mutableStateOf<String?>(null) }
+    var uploadedImageUrl by remember { mutableStateOf<String?>(null) }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var pendingDeleteId by remember { mutableStateOf<String?>(null) }
@@ -44,8 +53,8 @@ fun UpdateMenuItemScreen(
     val singleState by menuItemViewModel.singleMenuItemState.collectAsState()
     val updateState by menuItemViewModel.updateMenuItemState.collectAsState()
     val deleteState by menuItemViewModel.deleteMenuItemState.collectAsState()
-
     val defaultCategoriesState by menuCategoryViewModel.getDefaultCategoriesState.collectAsState()
+    val imageUploadState by profileViewModel.imageUploadState.collectAsState()
 
     var isSaving by remember { mutableStateOf(false) }
     var isPageLoading by remember { mutableStateOf(true) }
@@ -72,7 +81,7 @@ fun UpdateMenuItemScreen(
                 quantity = item.quantity?.toString() ?: ""
                 isAvailable = item.available ?: true
                 isVeg = item.isVeg ?: false
-                imageUri = item.imageUrl
+                existingImageUrl = item.imageUrl
                 isPageLoading = false
             }
             is UiState.Error -> {
@@ -91,6 +100,7 @@ fun UpdateMenuItemScreen(
             is UiState.Success -> {
                 showToast("Menu item updated successfully")
                 menuItemViewModel.resetUpdateMenuItemState()
+                profileViewModel.clearUploadedImage()
                 menuItemViewModel.getMyMenuItems(page = 0, size = 100)
                 navController.popBackStack()
             }
@@ -122,6 +132,34 @@ fun UpdateMenuItemScreen(
         }
     }
 
+    LaunchedEffect(imageUploadState) {
+        logger.d { "UpdateMenuItemScreen: imageUploadState changed to ${imageUploadState::class.simpleName}" }
+        when (imageUploadState) {
+            is ImageUploadState.Success -> {
+                uploadedImageUrl = (imageUploadState as ImageUploadState.Success).imageUrl
+                logger.d { "UpdateMenuItemScreen: Image upload successful, URL=$uploadedImageUrl" }
+                showToast("Image uploaded successfully")
+            }
+            is ImageUploadState.Error -> {
+                val errorMessage = (imageUploadState as ImageUploadState.Error).message
+                logger.e { "UpdateMenuItemScreen: Image upload failed with error=$errorMessage" }
+                showToast("Image upload failed: $errorMessage")
+            }
+            is ImageUploadState.Uploading -> {
+                logger.d { "UpdateMenuItemScreen: Image is uploading..." }
+            }
+            is ImageUploadState.Idle -> {
+                logger.d { "UpdateMenuItemScreen: Image upload state is Idle" }
+            }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            profileViewModel.clearUploadedImage()
+        }
+    }
+
     fun handleUpdateItemClick() {
         if (name.isBlank() || price.isBlank()) {
             showToast("Item Name and Price are required.")
@@ -150,7 +188,7 @@ fun UpdateMenuItemScreen(
             quantity = quantity.toIntOrNull(),
             isVeg = isVeg,
             isAvailable = isAvailable,
-            imageUrl = null // TODO: Replace with uploaded image URL
+            imageUrl = uploadedImageUrl ?: existingImageUrl
         )
         menuItemViewModel.updateMenuItem(menuItemId, request)
     }
@@ -182,9 +220,24 @@ fun UpdateMenuItemScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 MenuItemImagePicker(
-                    imageUri = imageUri,
+                    imageUri = uploadedImageUrl ?: existingImageUrl,
+                    imageUploadState = imageUploadState,
                     onImagePickerClick = {
-                        // TODO: Integrate image picker and upload
+                        logger.d { "UpdateMenuItemScreen: Image picker clicked" }
+                        imagePickerHelper.pickImage(
+                            onImageSelected = { imageData ->
+                                logger.d { "UpdateMenuItemScreen: Image selected - fileName=${imageData.fileName}, size=${imageData.sizeInBytes} bytes" }
+                                logger.d { "UpdateMenuItemScreen: Calling profileViewModel.uploadProfileImage" }
+                                profileViewModel.uploadProfileImage(
+                                    imageBytes = imageData.bytes,
+                                    fileName = imageData.fileName
+                                )
+                            },
+                            onError = { error ->
+                                logger.e { "UpdateMenuItemScreen: Image picker error=$error" }
+                                showToast("Failed to pick image: $error")
+                            }
+                        )
                     }
                 )
 
@@ -211,14 +264,14 @@ fun UpdateMenuItemScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 UpdateMenuItemButton(
-                    isLoading = isSaving,
+                    isLoading = isSaving || imageUploadState is ImageUploadState.Uploading,
                     onClick = ::handleUpdateItemClick
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
                 TextButton(
                     onClick = { confirmDelete(menuItemId) },
-                    enabled = !(isSaving || isDeleting)
+                    enabled = !(isSaving || isDeleting || imageUploadState is ImageUploadState.Uploading)
                 ) {
                     Text(
                         "Delete Item",

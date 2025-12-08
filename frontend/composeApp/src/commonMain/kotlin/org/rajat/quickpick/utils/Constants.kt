@@ -23,6 +23,8 @@ object Endpoints {
         const val SEND_EMAIL_OTP = "/api/auth/send-email-otp"
         const val VERIFY_EMAIL_OTP = "/api/auth/verify-email-otp"
 
+        // Image Upload
+        const val UPLOAD_IMAGE = "/api/upload"
 
         // Admin
         const val ADMIN_LOGIN = "/api/admin/login"

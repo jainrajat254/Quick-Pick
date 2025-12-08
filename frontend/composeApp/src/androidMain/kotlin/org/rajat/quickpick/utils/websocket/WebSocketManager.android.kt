@@ -59,7 +59,6 @@ actual class WebSocketManager {
                 withServerHeartbeat(10000)
             }
 
-            // Subscribe to lifecycle events with error handler
             val lifecycleDisposable = stompClient?.lifecycle()
                 ?.subscribeOn(Schedulers.io())
                 ?.observeOn(AndroidSchedulers.mainThread())

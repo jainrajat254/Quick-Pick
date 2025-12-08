@@ -18,13 +18,21 @@ import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
 import org.rajat.quickpick.presentation.viewmodel.MenuCategoryViewModel
+import org.rajat.quickpick.utils.ImagePickerHelper
+import org.rajat.quickpick.utils.ImageUploadState
+import org.rajat.quickpick.presentation.viewmodel.ProfileViewModel
+import co.touchlab.kermit.Logger
+
+private val logger = Logger.withTag("CLOUDINARY_IMAGE_DEBUG")
 
 @Composable
 fun AddMenuItemScreen(
     navController: NavController,
     paddingValues: PaddingValues,
     menuItemViewModel: MenuItemViewModel = koinInject(),
-    menuCategoryViewModel: MenuCategoryViewModel = koinInject()
+    menuCategoryViewModel: MenuCategoryViewModel = koinInject(),
+    imagePickerHelper: ImagePickerHelper,
+    profileViewModel: ProfileViewModel = koinInject()
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
@@ -35,9 +43,11 @@ fun AddMenuItemScreen(
     var isVeg by rememberSaveable { mutableStateOf(true) }
     var imageUri by remember { mutableStateOf<Any?>(null) }
     var isLoading by remember { mutableStateOf(false) }
+    var uploadedImageUrl by remember { mutableStateOf<String?>(null) }
 
     val createState by menuItemViewModel.createMenuItemState.collectAsState()
     val defaultCategoriesState by menuCategoryViewModel.getDefaultCategoriesState.collectAsState()
+    val imageUploadState by profileViewModel.imageUploadState.collectAsState()
 
     LaunchedEffect(Unit) {
         menuCategoryViewModel.getDefaultVendorCategories()
@@ -63,6 +73,28 @@ fun AddMenuItemScreen(
             }
             is UiState.Loading -> isLoading = true
             UiState.Empty -> Unit
+        }
+    }
+
+    LaunchedEffect(imageUploadState) {
+        logger.d { "AddMenuItemScreen: imageUploadState changed to ${imageUploadState::class.simpleName}" }
+        when (imageUploadState) {
+            is ImageUploadState.Success -> {
+                uploadedImageUrl = (imageUploadState as ImageUploadState.Success).imageUrl
+                logger.d { "AddMenuItemScreen: Image upload successful, URL=$uploadedImageUrl" }
+                showToast("Image uploaded successfully")
+            }
+            is ImageUploadState.Error -> {
+                val errorMessage = (imageUploadState as ImageUploadState.Error).message
+                logger.e { "AddMenuItemScreen: Image upload failed with error=$errorMessage" }
+                showToast(errorMessage)
+            }
+            is ImageUploadState.Uploading -> {
+                logger.d { "AddMenuItemScreen: Image is uploading..." }
+            }
+            is ImageUploadState.Idle -> {
+                logger.d { "AddMenuItemScreen: Image upload state is Idle" }
+            }
         }
     }
 
@@ -106,7 +138,7 @@ fun AddMenuItemScreen(
             quantity = quantity.toIntOrNull(),
             isVeg = isVeg,
             isAvailable = isAvailable,
-            imageUrl = null
+            imageUrl = uploadedImageUrl
         )
         menuItemViewModel.createMenuItem(request)
     }
@@ -121,8 +153,24 @@ fun AddMenuItemScreen(
     ) {
         MenuItemImagePicker(
             imageUri = imageUri,
+            imageUploadState = imageUploadState,
             onImagePickerClick = {
-                // TODO integrate image picker and upload
+                logger.d { "AddMenuItemScreen: Image picker clicked" }
+                imagePickerHelper.pickImage(
+                    onImageSelected = { imageData ->
+                        logger.d { "AddMenuItemScreen: Image selected - fileName=${imageData.fileName}, size=${imageData.sizeInBytes} bytes" }
+                        imageUri = imageData.bytes
+                        logger.d { "AddMenuItemScreen: Calling profileViewModel.uploadProfileImage" }
+                        profileViewModel.uploadProfileImage(
+                            imageBytes = imageData.bytes,
+                            fileName = imageData.fileName
+                        )
+                    },
+                    onError = { error ->
+                        logger.e { "AddMenuItemScreen: Image picker error=$error" }
+                        showToast(error)
+                    }
+                )
             }
         )
         Spacer(modifier = Modifier.height(8.dp))

@@ -9,7 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.coil3.CoilImage
 import org.jetbrains.compose.resources.painterResource
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.storeimage
@@ -28,22 +30,36 @@ fun StoreImage(
         contentAlignment = Alignment.Center
     ) {
         if (!imageUrl.isNullOrBlank()) {
-
-            Box(
-                modifier = Modifier.fillMaxSize().background(Color.Gray)
-            ){
-                //bring image.
-            }
+            CoilImage(
+                imageModel = { imageUrl },
+                imageOptions = ImageOptions(
+                    contentScale = ContentScale.Crop,
+                    alignment = Alignment.Center
+                ),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(MaterialTheme.shapes.medium),
+                previewPlaceholder = painterResource(resource = Res.drawable.storeimage),
+                failure = {
+                    // Show default image if loading fails
+                    Image(
+                        painter = painterResource(resource = Res.drawable.storeimage),
+                        contentDescription = "Store Image",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            )
         } else {
             Image(
                 painter = painterResource(
                     resource = Res.drawable.storeimage
                 ),
                 contentDescription = "Store Image",
-                modifier = Modifier.clip(
-                    MaterialTheme.shapes.medium
-                )
-
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(MaterialTheme.shapes.medium),
+                contentScale = ContentScale.Crop
             )
         }
     }
