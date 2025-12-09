@@ -14,5 +14,5 @@ val profileModule = module {
 
     single<ProfileApiService> { ProfileApiServiceImpl(get()) }
     singleOf(::ProfileRepositoryImpl) bind ProfileRepository::class
-    viewModel { ProfileViewModel(get()) }
+    viewModel { ProfileViewModel(get(), get()) }
 }

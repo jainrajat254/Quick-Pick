@@ -39,52 +39,24 @@ public class FcmService {
             throw new IllegalArgumentException("UserId cannot be null or empty");
         }
 
-        log.info("fcm save querying database for existing token with userid {} and deviceid {}", userId, deviceId);
-        DeviceToken existingToken = deviceTokenRepository.findByUserIdAndDeviceId(userId, deviceId)
-                .orElse(null);
+        deviceTokenRepository.deleteAllByUserId(userId);
 
-        if (existingToken != null) {
-            log.info("fcm save found existing token entry id {}", existingToken.getId());
-            log.info("fcm save old token active status {}", existingToken.isActive());
-            log.info("fcm save updating token entry");
-            existingToken.setFcmToken(fcmToken);
-            existingToken.setDeviceName(deviceName);
-            existingToken.setActive(true);
-            existingToken.setUpdatedAt(LocalDateTime.now());
-            DeviceToken saved = deviceTokenRepository.save(existingToken);
-            log.info("fcm save token updated successfully id {}", saved.getId());
-            log.info("fcm save new active status {}", saved.isActive());
-        } else {
-            log.info("fcm save no existing token found creating new entry");
-            DeviceToken deviceToken = new DeviceToken();
-            deviceToken.setUserId(userId);
-            deviceToken.setUserType(userType);
-            deviceToken.setFcmToken(fcmToken);
-            deviceToken.setDeviceId(deviceId);
-            deviceToken.setDeviceName(deviceName);
-            deviceToken.setActive(true);
-            deviceToken.setCreatedAt(LocalDateTime.now());
-            deviceToken.setUpdatedAt(LocalDateTime.now());
+        DeviceToken deviceToken = new DeviceToken();
+        deviceToken.setUserId(userId);
+        deviceToken.setUserType(userType);
+        deviceToken.setFcmToken(fcmToken);
+        deviceToken.setDeviceId(deviceId);
+        deviceToken.setDeviceName(deviceName);
+        deviceToken.setActive(true);
+        deviceToken.setCreatedAt(LocalDateTime.now());
+        deviceToken.setUpdatedAt(LocalDateTime.now());
 
-            log.info("fcm save about to save new devicetoken to database");
-            DeviceToken saved = deviceTokenRepository.save(deviceToken);
-            log.info("fcm save new token created successfully id {}", saved.getId());
-            log.info("fcm save saved active status {}", saved.isActive());
-        }
-
-        // Verify the token was actually saved
-        log.info("fcm save verifying token was saved querying all tokens for user {}", userId);
-        List<DeviceToken> allTokens = deviceTokenRepository.findByUserId(userId);
-        log.info("fcm save total tokens in db for user {} count {}", userId, allTokens.size());
+        DeviceToken saved = deviceTokenRepository.save(deviceToken);
+        log.info("fcm save new token created successfully id {}", saved.getId());
+        log.info("fcm save single device enforcement complete only this device will receive notifications");
 
         List<DeviceToken> activeTokens = deviceTokenRepository.findByUserIdAndActive(userId, true);
-        log.info("fcm save active tokens in db for user {} count {}", userId, activeTokens.size());
-
-        for (int i = 0; i < activeTokens.size(); i++) {
-            DeviceToken token = activeTokens.get(i);
-            log.info("fcm save active token number {} id {} deviceid {} active {}",
-                    i + 1, token.getId(), token.getDeviceId(), token.isActive());
-        }
+        log.info("fcm save verification active tokens count {} should be 1", activeTokens.size());
 
         log.info("fcm save device token complete");
     }

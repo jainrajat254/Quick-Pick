@@ -1,5 +1,6 @@
 package org.rajat.quickpick.domain.modal.menuitems
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -14,6 +15,7 @@ data class MenuItem(
     val price: Double,
     val quantity: Int? = null,
     val updatedAt: String? = null,
-    val veg: Boolean? = null,
+    @SerialName("veg")
+    val isVeg: Boolean? = null,
     val vendorId: String? = null
 )

@@ -15,6 +15,7 @@ import org.rajat.quickpick.di.modules.profileModule
 import org.rajat.quickpick.di.modules.vendorModule
 import org.rajat.quickpick.di.modules.reviewModule
 import org.rajat.quickpick.di.modules.menuCategoryModule
+import org.rajat.quickpick.di.modules.imageUploadModule
 import org.rajat.quickpick.utils.Constants.DATASTORE_FILE_NAME
 
 val quickPickModules = listOf(
@@ -32,5 +33,6 @@ val quickPickModules = listOf(
     menuCategoryModule,
     orderModule,
     cartModule,
-    reviewModule
+    reviewModule,
+    imageUploadModule
 )

@@ -10,13 +10,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import co.touchlab.kermit.Logger
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.coil3.CoilImage
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.di.TokenProvider
@@ -35,6 +40,8 @@ import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
 import org.rajat.quickpick.utils.tokens.PlatformScheduler
 import org.rajat.quickpick.utils.websocket.VendorWebSocketManager
+import quickpick.composeapp.generated.resources.Res
+import quickpick.composeapp.generated.resources.storeimage
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -199,12 +206,34 @@ fun VendorProfileScreen(
                                     contentAlignment = Alignment.Center,
                                     modifier = Modifier.fillMaxSize()
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Store,
-                                        contentDescription = "Store",
-                                        modifier = Modifier.size(40.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
+                                    if (!profile.profileImageUrl.isNullOrBlank()) {
+                                        CoilImage(
+                                            imageModel = { profile.profileImageUrl },
+                                            imageOptions = ImageOptions(
+                                                contentScale = ContentScale.Crop,
+                                                alignment = Alignment.Center
+                                            ),
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clip(MaterialTheme.shapes.large),
+                                            previewPlaceholder = painterResource(Res.drawable.storeimage),
+                                            failure = {
+                                                Icon(
+                                                    imageVector = Icons.Default.Store,
+                                                    contentDescription = "Store",
+                                                    modifier = Modifier.size(40.dp),
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Default.Store,
+                                            contentDescription = "Store",
+                                            modifier = Modifier.size(40.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
                                 }
                             }
 

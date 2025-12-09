@@ -192,7 +192,7 @@ fun MenuItemScreen(
                                     price = menuItem.price ?: 0.0,
                                     quantity = menuItem.quantity,
                                     updatedAt = menuItem.updatedAt,
-                                    veg = menuItem.veg,
+                                    isVeg = menuItem.isVeg,
                                     vendorId = menuItem.vendorId
                                 ),
                                 onItemClick = {
@@ -202,7 +202,7 @@ fun MenuItemScreen(
                         }
 
                         item {
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(56.dp))
                         }
                     }
                 }

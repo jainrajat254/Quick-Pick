@@ -9,8 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.coil3.CoilImage
 import org.jetbrains.compose.resources.painterResource
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.storeimage
@@ -30,14 +31,25 @@ fun MenuItemImage(
         contentAlignment = Alignment.Center
     ) {
         if (!imageUrl.isNullOrBlank()) {
-            // TODO: load img from url when image loading is implemented
-            Box(
+            CoilImage(
+                imageModel = { imageUrl },
+                imageOptions = ImageOptions(
+                    contentScale = ContentScale.Crop,
+                    alignment = Alignment.Center
+                ),
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Gray)
-            ) {
-
-            }
+                    .clip(MaterialTheme.shapes.medium),
+                previewPlaceholder = painterResource(Res.drawable.storeimage),
+                failure = {
+                    Image(
+                        painter = painterResource(Res.drawable.storeimage),
+                        contentDescription = itemName,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            )
         } else {
             Image(
                 painter = painterResource(Res.drawable.storeimage),

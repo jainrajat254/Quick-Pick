@@ -43,6 +43,8 @@ public class AuthService {
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
     @Autowired
+    private DeviceTokenRepository deviceTokenRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -267,6 +269,7 @@ public class AuthService {
                 if (!vendor.isEmailVerified()) {
                     throw new BadRequestException("Please verify your email first");
                 }
+
 
                 String token = jwtUtil.generateToken(userDetails, vendor.getId(), vendor.getRole().name());
                 RefreshToken refreshToken = refreshTokenService.createRefreshToken(vendor.getId(), vendor.getEmail(), vendor.getRole().name());
@@ -539,8 +542,18 @@ public class AuthService {
         return response;
     }
 
-    public void logout(String refreshTokenValue) {
-        refreshTokenService.revokeRefreshToken(refreshTokenValue);
+    public void logout(String userId, String refreshTokenValue) {
+        log.info("logout request for user {}", userId);
+
+        if (refreshTokenValue != null && !refreshTokenValue.isEmpty()) {
+            refreshTokenService.revokeRefreshToken(refreshTokenValue);
+            log.info("revoked refresh token for user {}", userId);
+        }
+
+        deviceTokenRepository.deleteAllByUserId(userId);
+        log.info("cleared all fcm device tokens for user {}", userId);
+
+        log.info("logout successful for user {}", userId);
     }
 
     private String generateNumericOtp(int length) {

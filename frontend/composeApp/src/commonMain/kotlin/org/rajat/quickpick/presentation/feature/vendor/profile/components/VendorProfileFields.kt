@@ -21,6 +21,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.domain.modal.profile.GetVendorProfileResponse
 import org.rajat.quickpick.domain.modal.profile.UpdateVendorProfileRequest
 import org.rajat.quickpick.presentation.feature.vendor.menu.components.ProfileInfoField
+import org.rajat.quickpick.utils.ImageUploadState
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.delivery
 
@@ -43,7 +44,10 @@ fun VendorProfileFields(
     onFoodCategoriesChange: (String) -> Unit,
     isLoading: Boolean,
     isEditMode: Boolean,
+    imageUploadState: ImageUploadState,
+    uploadedImageUrl: String?,
     onEditModeChange: (Boolean) -> Unit,
+    onImagePickerClick: () -> Unit,
     onSaveProfile: (UpdateVendorProfileRequest) -> Unit
 ) {
     Column(
@@ -54,8 +58,11 @@ fun VendorProfileFields(
             modifier = Modifier.padding(vertical = 16.dp),
             contentAlignment = Alignment.BottomEnd
         ) {
+            // Show uploaded image or existing profile image
+            val displayImageUrl = uploadedImageUrl ?: profile.profileImageUrl
+
             CoilImage(
-                imageModel = { profile.profileImageUrl ?: "" },
+                imageModel = { displayImageUrl ?: "" },
                 imageOptions = ImageOptions(
                     contentScale = ContentScale.Crop
                 ),
@@ -67,25 +74,48 @@ fun VendorProfileFields(
             )
 
             if (isEditMode) {
-                IconButton(
-                    onClick = {
-                        // TODO: Logic to change the profile picture
-                    },
+                Box(
                     modifier = Modifier
                         .size(36.dp)
                         .offset(x = (4).dp, y = (4).dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Edit Profile Picture",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    when (imageUploadState) {
+                        is ImageUploadState.Uploading -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                        else -> {
+                            IconButton(
+                                onClick = onImagePickerClick,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit Profile Picture",
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
+        }
+
+        // Show upload success message
+        if (imageUploadState is ImageUploadState.Success && isEditMode) {
+            Text(
+                text = "Image uploaded successfully!",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
         }
 
         if (!isEditMode) {
@@ -212,14 +242,15 @@ fun VendorProfileFields(
                     phone = phone,
                     address = address,
                     vendorDescription = vendorDescription,
-                    foodCategories = categoriesList
+                    foodCategories = categoriesList,
+                    profileImageUrl = uploadedImageUrl ?: profile.profileImageUrl
                 )
                 onSaveProfile(request)
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            enabled = isLoading.not(),
+            enabled = isLoading.not() && imageUploadState !is ImageUploadState.Uploading,
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -249,32 +280,24 @@ fun VendorProfileFields(
         if (isEditMode) {
             OutlinedButton(
                 onClick = { onEditModeChange(false) },
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                )
+                modifier = Modifier
+                    .weight(1f)
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "Cancel",
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.size(4.dp))
-                Text("Cancel")
+                Text("Cancel", fontWeight = FontWeight.Bold)
             }
         } else {
             Button(
                 onClick = { onEditModeChange(true) },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Icon(
-                    Icons.Default.Edit,
-                    contentDescription = "Edit",
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.size(4.dp))
-                Text("Edit Profile")
+                Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Edit Profile", fontWeight = FontWeight.Bold)
             }
         }
     }

@@ -14,7 +14,11 @@ public interface DeviceTokenRepository extends MongoRepository<DeviceToken, Stri
 
     Optional<DeviceToken> findByUserIdAndDeviceId(String userId, String deviceId);
 
+    List<DeviceToken> findByUserId(String userId);
+
     void deleteByUserId(String userId);
 
-    List<DeviceToken> findByUserId(String userId);
+    void deleteAllByUserId(String userId);
+
+    Optional<DeviceToken> findByFcmToken(String fcmToken);
 }

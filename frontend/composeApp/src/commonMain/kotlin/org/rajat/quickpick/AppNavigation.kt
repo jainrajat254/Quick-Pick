@@ -66,6 +66,7 @@ import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.presentation.viewmodel.ReviewViewModel
 import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
+import org.rajat.quickpick.utils.rememberImagePickerHelper
 
 @Composable
 fun AppNavigation(
@@ -79,6 +80,7 @@ fun AppNavigation(
     val dataStore: LocalDataStore = koinInject()
     val refreshTokenManager: RefreshTokenManager = koinInject()
     val reviewViewModel : ReviewViewModel = koinInject()
+    val imagePickerHelper = rememberImagePickerHelper()
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRouteString = backStackEntry?.destination?.route
@@ -140,6 +142,7 @@ fun AppNavigation(
                 orderViewModel = orderViewModel,
                 dataStore = dataStore,
                 refreshTokenManager = refreshTokenManager,
+                imagePickerHelper = imagePickerHelper,
                 appPaddingValues = padding
             )
         }
@@ -160,6 +163,7 @@ fun AppNavigation(
                 orderViewModel = orderViewModel,
                 dataStore = dataStore,
                 refreshTokenManager = refreshTokenManager,
+                imagePickerHelper = imagePickerHelper,
                 appPaddingValues = padding
             )
         }
@@ -174,6 +178,7 @@ fun AppNavigation(
             orderViewModel = orderViewModel,
             dataStore = dataStore,
             refreshTokenManager = refreshTokenManager,
+            imagePickerHelper = imagePickerHelper,
             appPaddingValues = PaddingValues(0.dp)
         )
     }
@@ -188,6 +193,7 @@ private fun AppNavHost(
     orderViewModel: OrderViewModel,
     dataStore: LocalDataStore,
     refreshTokenManager: RefreshTokenManager,
+    imagePickerHelper: org.rajat.quickpick.utils.ImagePickerHelper,
     appPaddingValues: PaddingValues
 ) {
     NavHost(
@@ -361,13 +367,15 @@ private fun AppNavHost(
         composable<AppScreenVendor.VendorProfileUpdate> {
             VendorProfileUpdateScreen(
                 navController = navController,
-                paddingValues = appPaddingValues
+                paddingValues = appPaddingValues,
+                imagePickerHelper = imagePickerHelper
             )
         }
         composable<AppScreenVendor.AddMenuItemScreen> {
             AddMenuItemScreen(
                 navController = navController,
-                paddingValues = appPaddingValues
+                paddingValues = appPaddingValues,
+                imagePickerHelper = imagePickerHelper
             )
         }
         composable<AppScreenVendor.UpdateMenuItemScreen> { backStackEntry->
@@ -375,7 +383,8 @@ private fun AppNavHost(
             UpdateMenuItemScreen(
                 navController = navController,
                 paddingValues = appPaddingValues,
-                menuItemId = route.orderId
+                menuItemId = route.orderId,
+                imagePickerHelper = imagePickerHelper
             )
         }
         composable<AppScreenVendor.HelpAndSupportScreenVendor>{

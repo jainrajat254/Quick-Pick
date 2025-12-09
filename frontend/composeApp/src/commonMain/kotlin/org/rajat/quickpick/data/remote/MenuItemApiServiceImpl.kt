@@ -102,8 +102,6 @@ class MenuItemApiServiceImpl(private val httpClient: HttpClient) : MenuItemApiSe
 
     override suspend fun getVendorMenuByCategory(vendorId: String, category: String): GetVendorMenuByCategoryResponse {
         val endpoint = "${Constants.BASE_URL}${Constants.Endpoints.VENDOR_MENU}$vendorId/category/$category"
-        println("MenuItemApiService: Calling endpoint: $endpoint")
-        println("MenuItemApiService: vendorId=$vendorId, category=$category")
         return httpClient.safeGet(
             endpoint = endpoint
         )

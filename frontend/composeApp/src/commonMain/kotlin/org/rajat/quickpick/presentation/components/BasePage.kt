@@ -58,12 +58,6 @@ fun BasePage(
         }
     }
 
-    val userName: String = "Current User"
-    val userEmail: String = "currentuser@gmail.com"
-
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
     val cartViewModel: org.rajat.quickpick.presentation.viewmodel.CartViewModel = org.koin.compose.koinInject()
     val cartState by cartViewModel.cartState.collectAsState()
 
@@ -107,60 +101,42 @@ fun BasePage(
         )
     )
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            DrawerContent(
-                userName = userName,
-                userEmail = userEmail,
-                onItemClick = { route ->
-                    scope.launch {
-                        drawerState.close()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+
+                        Text(
+                            text = getScreenTitle(currentRoute),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 28.sp,
+                        )
                     }
-                    onNavigate(route)
-                }
+                },
+
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         },
-        gesturesEnabled = true
-    ) {
-
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-
-                            Text(
-                                text = getScreenTitle(currentRoute),
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 28.sp,
-                            )
-                        }
-                    },
-
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                )
-            },
-            bottomBar = {
-                BottomNavigationBar(
-                    items = bottomNavItems,
-                    currentRoute = currentRoute,
-                    onItemClick = { route ->
-                        onNavigate(route as String)
-                    }
-                )
-            }
-        ) { paddingValues ->
-            content(paddingValues)
+        bottomBar = {
+            BottomNavigationBar(
+                items = bottomNavItems,
+                currentRoute = currentRoute,
+                onItemClick = { route ->
+                    onNavigate(route as String)
+                }
+            )
         }
+    ) { paddingValues ->
+        content(paddingValues)
     }
 }
 

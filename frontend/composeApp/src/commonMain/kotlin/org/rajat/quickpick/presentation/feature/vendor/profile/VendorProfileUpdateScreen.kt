@@ -16,15 +16,20 @@ import org.rajat.quickpick.presentation.feature.vendor.profile.components.Vendor
 import org.rajat.quickpick.presentation.viewmodel.ProfileViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.ImagePickerHelper
+import org.rajat.quickpick.utils.ImageUploadState
 
 @Composable
 fun VendorProfileUpdateScreen(
     navController: NavController,
     paddingValues: PaddingValues,
-    profileViewModel: ProfileViewModel = koinInject()
+    profileViewModel: ProfileViewModel = koinInject(),
+    imagePickerHelper: ImagePickerHelper
 ) {
     val vendorProfileState by profileViewModel.vendorProfileState.collectAsState()
     val updateProfileState by profileViewModel.updateVendorProfileState.collectAsState()
+    val imageUploadState by profileViewModel.imageUploadState.collectAsState()
+    val uploadedImageUrl by profileViewModel.uploadedImageUrl.collectAsState()
 
     var storeName by remember { mutableStateOf("") }
     var vendorName by remember { mutableStateOf("") }
@@ -64,6 +69,7 @@ fun VendorProfileUpdateScreen(
             is UiState.Success -> {
                 showToast("Profile updated successfully")
                 isEditMode = false
+                profileViewModel.clearUploadedImage()
                 profileViewModel.getVendorProfile()
                 profileViewModel.resetProfileStates()
             }
@@ -75,7 +81,22 @@ fun VendorProfileUpdateScreen(
         }
     }
 
+    // Handle image upload errors
+    LaunchedEffect(imageUploadState) {
+        if (imageUploadState is ImageUploadState.Error) {
+            showToast("Image upload failed: ${(imageUploadState as ImageUploadState.Error).message}")
+        }
+    }
+
     val isLoading = vendorProfileState is UiState.Loading || updateProfileState is UiState.Loading
+
+    DisposableEffect(Unit) {
+        onDispose {
+            if (isEditMode) {
+                profileViewModel.clearUploadedImage()
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -124,6 +145,8 @@ fun VendorProfileUpdateScreen(
                         onFoodCategoriesChange = { foodCategories = it },
                         isLoading = isLoading,
                         isEditMode = isEditMode,
+                        imageUploadState = imageUploadState,
+                        uploadedImageUrl = uploadedImageUrl,
                         onEditModeChange = {
                             isEditMode = it
                             if (!it) {
@@ -134,10 +157,27 @@ fun VendorProfileUpdateScreen(
                                 vendorDescription = currentProfile?.vendorDescription ?: ""
                                 foodCategories = currentProfile?.foodCategories
                                     ?.filterNotNull()?.joinToString(", ") ?: ""
+                                profileViewModel.clearUploadedImage()
                             }
                         },
+                        onImagePickerClick = {
+                            imagePickerHelper.pickImage(
+                                onImageSelected = { imageData ->
+                                    profileViewModel.uploadProfileImage(
+                                        imageBytes = imageData.bytes,
+                                        fileName = imageData.fileName
+                                    )
+                                },
+                                onError = { error ->
+                                    showToast("Failed to pick image: $error")
+                                }
+                            )
+                        },
                         onSaveProfile = { request ->
-                            profileViewModel.updateVendorProfile(request)
+                            val updatedRequest = request.copy(
+                                profileImageUrl = uploadedImageUrl ?: currentProfile?.profileImageUrl
+                            )
+                            profileViewModel.updateVendorProfile(updatedRequest)
                         }
                     )
                 }

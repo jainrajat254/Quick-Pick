@@ -15,6 +15,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.coil3.CoilImage
 import org.jetbrains.compose.resources.painterResource
 import quickpick.composeapp.generated.resources.Res
 import quickpick.composeapp.generated.resources.storeimage
@@ -40,6 +42,25 @@ fun StoreBannerImage(
         contentAlignment = Alignment.Center
     ) {
         if (!imageUrl.isNullOrBlank()) {
+            CoilImage(
+                imageModel = { imageUrl },
+                imageOptions = ImageOptions(
+                    contentScale = ContentScale.Crop,
+                    alignment = Alignment.Center
+                ),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(0.dp)),
+                previewPlaceholder = painterResource(Res.drawable.storeimage),
+                failure = {
+                    Image(
+                        painter = painterResource(Res.drawable.storeimage),
+                        contentDescription = storeName,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            )
         } else {
             Image(
                 painter = painterResource(Res.drawable.storeimage),
