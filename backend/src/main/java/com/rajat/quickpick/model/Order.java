@@ -1,6 +1,8 @@
 package com.rajat.quickpick.model;
 
 import com.rajat.quickpick.enums.OrderStatus;
+import com.rajat.quickpick.enums.PaymentMethod;
+import com.rajat.quickpick.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,9 +32,16 @@ public class Order {
 
     private String specialInstructions;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
     private boolean deliveredToVendor = false;
     private LocalDateTime deliveredToVendorAt;
+
+    // Payment-related fields
+    private PaymentStatus paymentStatus;  // PENDING, PAID, FAILED, PENDING_ON_DELIVERY
+    private PaymentMethod paymentMethod;  // PAY_NOW, PAY_ON_DELIVERY
+    private String transactionId;         // PhonePe transaction ID
+    private Double amountPaid;            // Amount actually paid
+    private LocalDateTime paymentDate;    // When payment was made
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
