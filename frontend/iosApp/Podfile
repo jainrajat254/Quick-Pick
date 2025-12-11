@@ -1,0 +1,8 @@
+platform :ios, '14.0'
+use_frameworks!
+
+project 'QuickPickIOS/QuickPickIOS.xcodeproj'
+
+target 'QuickPickIOS' do
+  pod 'shared', :path => '../shared'
+end
