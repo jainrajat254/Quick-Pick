@@ -116,15 +116,11 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
-
     implementation(libs.stompprotocolandroid)
     implementation(libs.rxjava)
     implementation(libs.rxandroid)
-
-    implementation(libs.androidx.work.runtime.ktx.v290)
-
     implementation(libs.gson)
     implementation(libs.okhttp)
 }
