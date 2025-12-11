@@ -30,6 +30,5 @@ dependencyResolutionManagement {
         maven("https://jitpack.io")
     }
 }
-
-include(":composeApp")
 include(":androidApp")
+include(":shared")
