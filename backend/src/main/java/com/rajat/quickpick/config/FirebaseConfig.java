@@ -9,8 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 @Configuration
 @Slf4j
@@ -22,19 +21,24 @@ public class FirebaseConfig {
     @PostConstruct
     public void initialize() {
         try {
-            InputStream serviceAccount =
-                    new ClassPathResource(firebaseConfigPath).getInputStream();
-
+            InputStream serviceAccount;
+            File file = new File(firebaseConfigPath);
+            if (file.exists()) {
+                log.info("Loading Firebase credentials from file system: {}", firebaseConfigPath);
+                serviceAccount = new FileInputStream(file);
+            } else {
+                log.info("Loading Firebase credentials from classpath: {}", firebaseConfigPath);
+                serviceAccount = new ClassPathResource(firebaseConfigPath).getInputStream();
+            }
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
-
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
                 log.info("Firebase initialized successfully");
             }
-        } catch (IOException e) {
-            log.error("Error initializing firebase: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Error initializing Firebase: {}", e.getMessage());
             throw new RuntimeException("Failed to initialize Firebase", e);
         }
     }
