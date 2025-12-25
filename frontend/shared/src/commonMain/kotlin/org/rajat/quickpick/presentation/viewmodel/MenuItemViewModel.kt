@@ -63,6 +63,10 @@ class MenuItemViewModel(
     val deleteMenuItemState: StateFlow<UiState<DeleteMenuItemResponse>> =
         _deleteMenuItemState.asStateFlow()
 
+    // Simplified: expose a UiState<List<CreateMenuItemResponse>> for vendor menu
+    private val _vendorMenuState = MutableStateFlow<UiState<List<CreateMenuItemResponse>>>(UiState.Empty)
+    val vendorMenuState: StateFlow<UiState<List<CreateMenuItemResponse>>> = _vendorMenuState.asStateFlow()
+
     private val _selectedVendorId = MutableStateFlow<String?>(null)
     val selectedVendorId: StateFlow<String?> = _selectedVendorId.asStateFlow()
 
@@ -112,6 +116,42 @@ class MenuItemViewModel(
     fun getMenuItemsByCategory(vendorId: String, category: String) {
         executeWithUiState(_menuItemsState) {
             menuItemRepository.getVendorMenuByCategory(vendorId, category)
+        }
+    }
+
+    // Fetch all vendor menu items and expose as a UiState<List<CreateMenuItemResponse>>
+    fun getVendorMenu(vendorId: String) {
+        viewModelScope.launch {
+            _vendorMenuState.value = UiState.Loading
+            val result = menuItemRepository.getVendorMenu(vendorId)
+            _vendorMenuState.value = result.fold(
+                onSuccess = { list -> UiState.Success(list.filterNotNull()) },
+                onFailure = { throwable -> UiState.Error(throwable.message ?: "Unknown error") }
+            )
+        }
+    }
+
+    fun getVendorMenuByCategories(vendorId: String, categories: List<String>) {
+        viewModelScope.launch {
+            _vendorMenuState.value = UiState.Loading
+            val aggregated = mutableListOf<CreateMenuItemResponse>()
+            var firstErrorMessage: String? = null
+            for (category in categories) {
+                val res = menuItemRepository.getVendorMenuByCategory(vendorId, category)
+                res.fold(onSuccess = { resp ->
+                    val items = resp.menuItems ?: emptyList()
+                    aggregated.addAll(items.filterNotNull())
+                }, onFailure = { thr ->
+                    if (firstErrorMessage == null) firstErrorMessage = thr.message
+                })
+            }
+            if (aggregated.isNotEmpty()) {
+                _vendorMenuState.value = UiState.Success(aggregated)
+            } else if (firstErrorMessage != null) {
+                _vendorMenuState.value = UiState.Error(firstErrorMessage)
+            } else {
+                _vendorMenuState.value = UiState.Success(aggregated)
+            }
         }
     }
 
