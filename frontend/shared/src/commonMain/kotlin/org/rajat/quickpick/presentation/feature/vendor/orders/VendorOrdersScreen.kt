@@ -1,11 +1,14 @@
 package org.rajat.quickpick.presentation.feature.vendor.orders
 
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -19,6 +22,9 @@ import org.rajat.quickpick.utils.BackHandler
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import org.rajat.quickpick.domain.modal.ordermanagement.UpdateOrderStateRequest
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -28,14 +34,17 @@ fun VendorOrdersScreen(
     orderViewModel: OrderViewModel
 ) {
     var selectedTab by remember { mutableStateOf(0) }
-    var selectedAcceptedSubTab by remember { mutableStateOf(0) }
     var backPressedTime by remember { mutableStateOf(0L) }
     val tabs = listOf("Pending", "Accepted", "Completed")
-    val acceptedSubTabs = listOf("Preparing", "Ready")
 
+    val pendingOrdersState by orderViewModel.pendingOrdersState.collectAsState()
+    val updateOrderStatusState by orderViewModel.updateOrderStatusState.collectAsState()
     val vendorOrdersByStatusState by orderViewModel.vendorOrdersByStatusState.collectAsState()
+    val vendorAcceptedCombinedState by orderViewModel.vendorOrdersAcceptedCombinedState.collectAsState()
 
-    // Double back press to exit
+    var currentOtpDialogOrderId by remember { mutableStateOf<String?>(null) }
+    var currentDialogOtpInput by remember { mutableStateOf("") }
+
     BackHandler(enabled = true) {
         val currentTime = Clock.System.now().toEpochMilliseconds()
         if (currentTime - backPressedTime < 2000) {
@@ -46,20 +55,35 @@ fun VendorOrdersScreen(
         }
     }
 
-    LaunchedEffect(selectedTab, selectedAcceptedSubTab) {
-        val status = when (selectedTab) {
-            0 -> "PENDING"
+    LaunchedEffect(selectedTab) {
+        when (selectedTab) {
+            0 -> orderViewModel.getVendorOrdersByStatus("PENDING")
             1 -> {
-                when (selectedAcceptedSubTab) {
-                    0 -> "PREPARING"
-                    1 -> "READY_FOR_PICKUP"
-                    else -> "PREPARING"
-                }
+                orderViewModel.getCombinedAcceptedOrders()
+                orderViewModel.getVendorOrdersByStatus("PREPARING")
             }
-            2 -> "COMPLETED"
-            else -> "PENDING"
+            2 -> orderViewModel.getVendorOrdersByStatus("COMPLETED")
+            else -> orderViewModel.getVendorOrdersByStatus("PENDING")
         }
-        orderViewModel.getVendorOrdersByStatus(status)
+    }
+
+
+    LaunchedEffect(updateOrderStatusState) {
+        when (updateOrderStatusState) {
+            is UiState.Success -> {
+                showToast("Order marked as completed")
+                orderViewModel.getVendorOrdersByStatus("PENDING")
+                orderViewModel.getPendingOrdersForVendor()
+                currentOtpDialogOrderId = null
+                currentDialogOtpInput = ""
+                orderViewModel.resetUpdateOrderStatusState()
+            }
+            is UiState.Error -> {
+                showToast((updateOrderStatusState as UiState.Error).message ?: "Error completing order")
+                orderViewModel.resetUpdateOrderStatusState()
+            }
+            else -> Unit
+        }
     }
 
     Column(
@@ -76,9 +100,6 @@ fun VendorOrdersScreen(
                     selected = selectedTab == index,
                     onClick = {
                         selectedTab = index
-                        if (index == 1) {
-                            selectedAcceptedSubTab = 0
-                        }
                     },
                     text = {
                         Text(
@@ -91,127 +112,217 @@ fun VendorOrdersScreen(
             }
         }
 
-        if (selectedTab == 1) {
-            SecondaryTabRow(
-                selectedTabIndex = selectedAcceptedSubTab,
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
+        if (selectedTab == 0 || selectedTab == 1 || selectedTab == 2) {
+            var otpInput by remember { mutableStateOf("") }
+            var searchInProgress by remember { mutableStateOf(false) }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                acceptedSubTabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedAcceptedSubTab == index,
-                        onClick = { selectedAcceptedSubTab = index },
-                        text = {
-                            Text(
-                                text = title,
-                                fontWeight = if (selectedAcceptedSubTab == index) FontWeight.SemiBold else FontWeight.Normal,
-                                maxLines = 1
-                            )
+                OutlinedTextField(
+                    value = otpInput,
+                    onValueChange = { input ->
+                        // accept only digits and limit to 4 chars
+                        val filtered = input.filter { it.isDigit() }.take(4)
+                        otpInput = filtered
+                    },
+                    modifier = Modifier.weight(1f),
+                    label = { Text("Search by OTP") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+
+                Button(
+                    onClick = {
+                        if (otpInput.length == 4) {
+                            searchInProgress = true
+                            // Reuse pending search endpoint which locates order by OTP and navigates to it
+                            orderViewModel.getPendingOrdersForVendor(otpInput)
+                        } else {
+                            showToast("Enter a 4-digit OTP to search")
                         }
-                    )
+                    },
+                    modifier = Modifier.height(56.dp)
+                ) {
+                    Text("Search")
+                }
+            }
+
+            // React to pendingOrdersState result only when searching
+            LaunchedEffect(pendingOrdersState, searchInProgress) {
+                if (!searchInProgress) return@LaunchedEffect
+
+                when (pendingOrdersState) {
+                    is UiState.Loading -> Unit
+                    is UiState.Success -> {
+                        val orders = (pendingOrdersState as UiState.Success).data.orders?.filterNotNull() ?: emptyList()
+                        if (orders.isNotEmpty()) {
+                            val first = orders.first()
+                            first.id?.let { orderId ->
+                                // Navigate to the order detail screen for the found order
+                                navController.navigate(AppScreenVendor.VendorOrderDetail(orderId = orderId))
+                            }
+                        } else {
+                            showToast("No order found for this OTP")
+                        }
+                        searchInProgress = false
+                    }
+                    is UiState.Error -> {
+                        showToast((pendingOrdersState as UiState.Error).message ?: "Error searching OTP")
+                        searchInProgress = false
+                    }
+                    else -> Unit
                 }
             }
         }
 
-        when (vendorOrdersByStatusState) {
-            is UiState.Loading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CustomLoader()
+        // Determine loading & error states. For Accepted tab, prefer vendorAcceptedCombinedState
+        val isLoading = if (selectedTab == 1) vendorAcceptedCombinedState is UiState.Loading else vendorOrdersByStatusState is UiState.Loading
+        val isErrorState = if (selectedTab == 1) vendorAcceptedCombinedState is UiState.Error else vendorOrdersByStatusState is UiState.Error
+
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CustomLoader() }
+        } else if (isErrorState) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = "Error loading orders", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.error)
+                    Button(onClick = {
+                        when (selectedTab) {
+                            0 -> orderViewModel.getVendorOrdersByStatus("PENDING")
+                            1 -> { orderViewModel.getVendorOrdersByStatus("ACCEPTED") }
+                            2 -> orderViewModel.getVendorOrdersByStatus("COMPLETED")
+                            else -> orderViewModel.getVendorOrdersByStatus("PENDING")
+                        }
+                    }) { Text("Retry") }
                 }
             }
+        } else {
+            // Build final orders list; Accepted tab uses vendorAcceptedCombinedState primarily
+            val statusOrders = (vendorOrdersByStatusState as? UiState.Success)?.data?.orders?.filterNotNull() ?: emptyList()
+            val combined = when (vendorAcceptedCombinedState) {
+                is UiState.Success -> (vendorAcceptedCombinedState as UiState.Success).data
+                else -> emptyList()
+            }
 
-            is UiState.Success -> {
-                val orders = (vendorOrdersByStatusState as UiState.Success).data.orders?.filterNotNull() ?: emptyList()
-
-                if (orders.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val emptyMessage = when (selectedTab) {
-                            0 -> "No pending orders"
-                            1 -> "No ${acceptedSubTabs[selectedAcceptedSubTab].lowercase()} orders"
-                            2 -> "No completed orders"
-                            else -> "No orders"
-                        }
-                        Text(
-                            text = emptyMessage,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+            val orders = when (selectedTab) {
+                0 -> statusOrders
+                1 -> {
+                    if (vendorAcceptedCombinedState is UiState.Success) {
+                        (combined + statusOrders).distinctBy { it.id }
+                    } else {
+                        statusOrders
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(orders.size) { index ->
-                            val order = orders[index]
+                }
+                2 -> statusOrders
+                else -> emptyList()
+            }
+
+            if (orders.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    val emptyMessage = when (selectedTab) {
+                        0 -> "No pending orders"
+                        1 -> "No accepted/preparing/ready orders"
+                        2 -> "No completed orders"
+                        else -> "No orders"
+                    }
+                    Text(text = emptyMessage, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(orders.size) { index ->
+                        val order = orders[index]
+
+                        val density = LocalDensity.current
+                        val thresholdPx = with(density) { 120.dp.toPx() }
+                        var dragAccum by remember { mutableStateOf(0f) }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .pointerInput(order.id) {
+                                    detectHorizontalDragGestures(
+                                        onHorizontalDrag = { change, dragAmount ->
+                                            dragAccum += dragAmount
+                                            if (dragAccum > thresholdPx) {
+                                                currentOtpDialogOrderId = order.id
+                                                currentDialogOtpInput = ""
+                                                dragAccum = 0f
+                                            }
+                                        },
+                                        onDragEnd = { dragAccum = 0f },
+                                        onDragCancel = { dragAccum = 0f }
+                                    )
+                                }
+                        ) {
                             VendorOrderCard(
                                 order = order,
                                 onClick = {
                                     order.id?.let { orderId ->
-                                        navController.navigate(AppScreenVendor.VendorOrderDetail(
-                                            orderId = orderId
-                                        ))
+                                        navController.navigate(AppScreenVendor.VendorOrderDetail(orderId = orderId))
                                     }
                                 }
                             )
-                        }
-                    }
-                }
-            }
 
-            is UiState.Error -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = (vendorOrdersByStatusState as UiState.Error).message ?: "Error loading orders",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Button(
-                            onClick = {
-                                val status = when (selectedTab) {
-                                    0 -> "PENDING"
-                                    1 -> {
-                                        when (selectedAcceptedSubTab) {
-                                            0 -> "PREPARING"
-                                            1 -> "READY_FOR_PICKUP"
-                                            else -> "PREPARING"
+                            if (currentOtpDialogOrderId == order.id) {
+                                AlertDialog(
+                                    onDismissRequest = { currentOtpDialogOrderId = null },
+                                    title = { Text("Enter OTP to complete") },
+                                    text = {
+                                        Column {
+                                            OutlinedTextField(
+                                                value = currentDialogOtpInput,
+                                                onValueChange = { input -> currentDialogOtpInput = input.filter { it.isDigit() }.take(4) },
+                                                label = { Text("4-digit OTP") },
+                                                singleLine = true,
+                                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Text(
+                                                text = "Ask the customer for the OTP and enter it here. The vendor will not be shown the OTP beforehand.",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    },
+                                    confirmButton = {
+                                        Button(
+                                            onClick = {
+                                                if (currentDialogOtpInput.length == 4) {
+                                                    order.id?.let { id ->
+                                                        orderViewModel.updateOrderStatus(
+                                                            id,
+                                                            UpdateOrderStateRequest(orderStatus = "COMPLETED", otp = currentDialogOtpInput)
+                                                        )
+                                                    }
+                                                } else {
+                                                    showToast("Please enter a 4-digit OTP")
+                                                }
+                                            }
+                                        ) {
+                                            if (updateOrderStatusState is UiState.Loading) {
+                                                CircularProgressIndicator(modifier = Modifier.size(18.dp), color = MaterialTheme.colorScheme.onPrimary)
+                                            } else {
+                                                Text("Mark as Complete")
+                                            }
+                                        }
+                                    },
+                                    dismissButton = {
+                                        TextButton(onClick = { currentOtpDialogOrderId = null }) {
+                                            Text("Cancel")
                                         }
                                     }
-                                    2 -> "COMPLETED"
-                                    else -> "PENDING"
-                                }
-                                orderViewModel.getVendorOrdersByStatus(status)
+                                )
                             }
-                        ) {
-                            Text("Retry")
                         }
                     }
-                }
-            }
-
-            UiState.Empty -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No orders yet",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
         }

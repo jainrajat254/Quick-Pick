@@ -14,5 +14,6 @@ data class UpdateOrderStatusResponse(
     val updatedAt: String?=null,
     val userId: String?=null,
     val vendorId: String?=null,
-    val vendorName: String?=null
+    val vendorName: String?=null,
+    val otp: String?=null
 )

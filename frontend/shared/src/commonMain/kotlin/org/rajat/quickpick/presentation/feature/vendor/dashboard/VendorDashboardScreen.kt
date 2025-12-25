@@ -16,6 +16,7 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import org.rajat.quickpick.presentation.feature.vendor.dashboard.components.QuickActionsSection
 import org.rajat.quickpick.presentation.feature.vendor.dashboard.components.StatsCard
+import org.rajat.quickpick.presentation.feature.vendor.dashboard.components.VendorDashboardHeader
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.utils.BackHandler
@@ -33,7 +34,6 @@ fun VendorDashboardScreen(
     val vendorOrderStatsState by orderViewModel.vendorOrderStatsState.collectAsState()
     var backPressedTime by remember { mutableStateOf(0L) }
 
-    // Double back press to exit
     BackHandler(enabled = true) {
         val currentTime = Clock.System.now().toEpochMilliseconds()
         if (currentTime - backPressedTime < 2000) {
@@ -56,12 +56,8 @@ fun VendorDashboardScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Overview",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
+            Spacer(modifier = Modifier.height(12.dp))
+            VendorDashboardHeader()
         }
 
         item {
@@ -152,14 +148,7 @@ fun VendorDashboardScreen(
             }
         }
 
-        item {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Quick Actions",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-        }
+
 
         item {
             QuickActionsSection(

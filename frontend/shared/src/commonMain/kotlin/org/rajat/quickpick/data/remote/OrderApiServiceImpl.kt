@@ -61,9 +61,11 @@ class OrderApiServiceImpl(private val httpClient: HttpClient) : OrderApiService 
         )
     }
 
-    override suspend fun getPendingOrdersForVendor(): GetMyOrdersResponse {
+    override suspend fun getPendingOrdersForVendor(otp: String?): GetMyOrdersResponse {
+        val queryParams = if (otp != null) mapOf("otp" to otp) else emptyMap()
         return httpClient.safeGet(
-            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.GET_PENDING_ORDERS_VENDOR}"
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.GET_PENDING_ORDERS_VENDOR}",
+            queryParams = queryParams
         )
     }
 

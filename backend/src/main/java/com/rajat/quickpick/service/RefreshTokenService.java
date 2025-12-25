@@ -43,7 +43,6 @@ public class RefreshTokenService {
     private CustomUserDetailsService userDetailsService;
 
     public RefreshToken createRefreshToken(String userId, String userEmail, String userType) {
-        // Revoke existing refresh tokens for this user
         revokeUserRefreshTokens(userId);
 
         RefreshToken refreshToken = new RefreshToken();

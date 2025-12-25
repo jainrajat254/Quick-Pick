@@ -28,6 +28,10 @@ public class NotificationService {
         data.put("totalAmount", String.valueOf(order.getTotalAmount()));
         data.put("type", templateKey);
 
+        if ("ORDER_ACCEPTED".equals(templateKey) && order.getOtp() != null) {
+            data.put("otp", order.getOtp());
+        }
+
         fcmService.sendNotification(recipientId, title, body, data);
     }
 

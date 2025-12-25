@@ -30,16 +30,15 @@ fun CheckoutScreen(
     orderViewModel: OrderViewModel = koinInject()
 ) {
     var specialInstructions by remember { mutableStateOf("") }
+    var selectedPaymentMethod by remember { mutableStateOf("PAY_ON_DELIVERY") }
     val cartState by cartViewModel.cartState.collectAsState()
     val createOrderState by orderViewModel.createOrderState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
-    // Fetch cart on first composition
     LaunchedEffect(Unit) {
         cartViewModel.getCart()
     }
 
-    // Handle order creation state
     LaunchedEffect(createOrderState) {
         when (createOrderState) {
             is UiState.Success -> {
@@ -101,7 +100,8 @@ fun CheckoutScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                PaymentMethod()
+                // Pass selected payment method state down to composable
+                PaymentMethod(selectedMethod = selectedPaymentMethod, onMethodSelected = { selectedPaymentMethod = it })
 
                 SpecialInstructions(
                     specialInstructions = specialInstructions,

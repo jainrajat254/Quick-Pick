@@ -4,6 +4,7 @@ import android.content.Context
 import android.provider.Settings
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,13 +34,47 @@ actual object FcmPlatformManager {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 Log.d(TAG, "requesting fcm token from firebase")
-                val token = FirebaseMessaging.getInstance().token.await()
-                Log.d(TAG, "fcm token obtained successfully: ${token.take(20)}...")
-                sendTokenToServerInternal(token, authToken)
+                val token = fetchTokenWithRetry()
+                if (token != null) {
+                    Log.d(TAG, "fcm token obtained successfully: ${token.take(20)}...")
+                    sendTokenToServerInternal(token, authToken)
+                } else {
+                    Log.e(TAG, "failed to obtain fcm token after retries")
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "error getting fcm token: ${e.message}", e)
             }
         }
+    }
+
+    private suspend fun fetchTokenWithRetry(): String? {
+        val maxAttempts = 5
+        var attempt = 0
+        var delayMs = 2000L
+        while (attempt < maxAttempts) {
+            attempt++
+            try {
+                Log.d(TAG, "fetchTokenWithRetry - attempt $attempt")
+                val token = FirebaseMessaging.getInstance().token.await()
+                return token
+            } catch (e: Exception) {
+                val msg = e.message ?: e.toString()
+                Log.w(TAG, "fetchTokenWithRetry attempt $attempt failed: $msg")
+                if (attempt >= maxAttempts) {
+                    Log.e(TAG, "fetchTokenWithRetry - exhausted attempts: $attempt")
+                    return null
+                }
+                try {
+                    Log.d(TAG, "fetchTokenWithRetry - delaying ${delayMs}ms before next attempt")
+                    delay(delayMs)
+                } catch (ie: InterruptedException) {
+                    Log.e(TAG, "fetchTokenWithRetry sleep interrupted", ie)
+                    return null
+                }
+                delayMs = (delayMs * 2).coerceAtMost(30000L)
+            }
+        }
+        return null
     }
 
     actual fun sendTokenToServer(fcmToken: String, authToken: String) {

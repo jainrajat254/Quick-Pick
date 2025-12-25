@@ -25,7 +25,8 @@ interface OrderApiService {
 
     suspend fun getMyOrderStats(): GetMyOrderStatsResponse
 
-    suspend fun getPendingOrdersForVendor(): GetMyOrdersResponse
+
+    suspend fun getPendingOrdersForVendor(otp: String? = null): GetMyOrdersResponse
 
     suspend fun getVendorOrdersPaginated(page: Int = 0, size: Int = 20): GetVendorOrdersResponse
 

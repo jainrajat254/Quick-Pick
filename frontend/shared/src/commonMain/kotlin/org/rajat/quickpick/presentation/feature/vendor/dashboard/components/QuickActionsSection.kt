@@ -18,43 +18,35 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.rajat.quickpick.presentation.theme.AppColors
+import quickpick.shared.generated.resources.Res
+import quickpick.shared.generated.resources.managemenuimg
+import quickpick.shared.generated.resources.vieworderimage
+import quickpick.shared.generated.resources.vieworderimg
 
 @Composable
 fun QuickActionsSection(
     onViewOrders: () -> Unit,
     onManageMenu: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Button(
-            onClick = onViewOrders,
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.ShoppingBag,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("View Orders")
-        }
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-        OutlinedButton(
-            onClick = onManageMenu,
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Restaurant,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Manage Menu")
-        }
+        DashboardActionCard(
+            title = "View Orders",
+            subtitle = "Track and manage incoming orders",
+            imageRes = Res.drawable.vieworderimage,
+            backgroundColor = AppColors.SecondaryContainer,
+            onClick = { /* navigate */ }
+        )
+
+        DashboardActionCard(
+            title = "Manage Menu",
+            subtitle = "Update items, prices & availability",
+            imageRes = Res.drawable.managemenuimg,
+            backgroundColor = AppColors.PrimaryContainer,
+            onClick = { /* navigate */ }
+        )
     }
+
 }
 

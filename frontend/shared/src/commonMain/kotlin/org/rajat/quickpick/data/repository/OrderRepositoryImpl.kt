@@ -72,9 +72,9 @@ class OrderRepositoryImpl(
     }
 
     // Vendor Order Operations
-    override suspend fun getPendingOrdersForVendor(): Result<GetMyOrdersResponse> {
+    override suspend fun getPendingOrdersForVendor(otp: String?): Result<GetMyOrdersResponse> {
         return try {
-            Result.success(orderApiService.getPendingOrdersForVendor())
+            Result.success(orderApiService.getPendingOrdersForVendor(otp))
         } catch (e: Exception) {
             Result.failure(e)
         }

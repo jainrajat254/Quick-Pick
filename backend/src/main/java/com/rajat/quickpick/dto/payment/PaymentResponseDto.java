@@ -21,5 +21,6 @@ public class PaymentResponseDto {
     private String message;
     private String paymentUrl;
     private LocalDateTime createdAt;
-}
 
+    private String razorpayKeyId;
+}

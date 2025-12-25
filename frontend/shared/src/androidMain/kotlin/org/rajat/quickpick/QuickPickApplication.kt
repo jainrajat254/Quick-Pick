@@ -3,6 +3,7 @@ package org.rajat.quickpick
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import com.google.firebase.FirebaseApp
 import org.koin.android.ext.koin.androidContext
 import org.rajat.quickpick.di.initializeKoin
 import org.rajat.quickpick.fcm.FcmPlatformManager
@@ -20,6 +21,13 @@ class QuickPickApplication : Application() {
         super.onCreate()
         Log.d(TAG, "quick pick application oncreate - starting app initialization")
         appContext = applicationContext
+
+        try {
+            FirebaseApp.initializeApp(this)
+            Log.d(TAG, "FirebaseApp initialized")
+        } catch (e: Exception) {
+            Log.e(TAG, "FirebaseApp initialization failed: ${e.message}", e)
+        }
 
         Log.d(TAG, "initializing fcm platform manager")
         FcmPlatformManager.init(applicationContext)

@@ -14,5 +14,11 @@ data class GetOrderByIdResponse(
     val updatedAt: String?=null,
     val userId: String?=null,
     val vendorId: String?=null,
-    val vendorName: String?=null
+    val vendorName: String?=null,
+
+    val otp: String?=null,
+    // payment fields
+    val paymentStatus: String?=null,
+    val paymentMethod: String?=null,
+    val transactionId: String?=null
 )

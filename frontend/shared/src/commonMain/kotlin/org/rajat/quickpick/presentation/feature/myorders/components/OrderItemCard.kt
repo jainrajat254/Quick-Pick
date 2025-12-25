@@ -23,11 +23,13 @@ fun OrderItemCard(
     onRate: () -> Unit,
     onOrderAgain: () -> Unit,
     onViewDetails: () -> Unit,
-    onClick : () -> Unit
+    onClick : () -> Unit,
+    onPayNow: () -> Unit = {},
+    paymentUiState: org.rajat.quickpick.domain.service.PaymentInitiateResponse? = null
 ) {
     val status = try {
         OrderStatus.valueOf(order.orderStatus ?: "PENDING")
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         OrderStatus.PENDING
     }
 
@@ -46,7 +48,6 @@ fun OrderItemCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // --- Header: Item Name, Price, and Item Count ---
             OrderCardHeader(
                 title = title,
                 totalAmount = order.totalAmount ?: 0.0,
@@ -55,7 +56,6 @@ fun OrderItemCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // --- Body: Date and Status ---
             OrderCardBody(
                 createdAt = order.createdAt ?: "",
                 status = status
@@ -63,13 +63,19 @@ fun OrderItemCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Footer: Contextual Buttons ---
             OrderCardFooter(
                 status = status,
+                paymentStatus = order.paymentStatus,
                 onCancel = onCancel,
                 onRate = onRate,
                 onOrderAgain = onOrderAgain,
-                onViewDetails = onViewDetails
+                onViewDetails = onViewDetails,
+                onPayNow = {
+                    if (paymentUiState != null && paymentUiState.orderId == order.id && !paymentUiState.transactionId.isNullOrBlank()) {
+                        return@OrderCardFooter
+                    }
+                    onPayNow()
+                }
             )
         }
     }

@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.GetOrderByIdResponse
+import org.rajat.quickpick.domain.service.PaymentInitiateResponse
 
 @Composable
 fun OrderList(
@@ -16,7 +17,9 @@ fun OrderList(
     onOrderRate: (GetOrderByIdResponse) -> Unit,
     onOrderAgain: (GetOrderByIdResponse) -> Unit,
     onOrderViewDetails: (String) -> Unit,
-    onclick: (String) -> Unit
+    onclick: (String) -> Unit,
+    onPayNow: (String) -> Unit = {},
+    paymentUiState: PaymentInitiateResponse? = null
 ) {
     if (orders.isEmpty()) {
         EmptyOrderCard(selectedTab = tabName)
@@ -37,7 +40,9 @@ fun OrderList(
                         onclick(
                             order.id.toString()
                         )
-                    }
+                    },
+                    onPayNow = { order.id?.let { onPayNow(it) } ?: Unit },
+                    paymentUiState = paymentUiState
                 )
             }
         }

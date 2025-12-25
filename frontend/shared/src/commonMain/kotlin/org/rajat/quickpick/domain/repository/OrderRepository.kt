@@ -27,7 +27,7 @@ interface OrderRepository {
     suspend fun getMyOrderStats(): Result<GetMyOrderStatsResponse>
 
     // Vendor Order Operations
-    suspend fun getPendingOrdersForVendor(): Result<GetMyOrdersResponse>
+    suspend fun getPendingOrdersForVendor(otp: String? = null): Result<GetMyOrdersResponse>
 
     suspend fun getVendorOrdersPaginated(page: Int = 0, size: Int = 20): Result<GetVendorOrdersResponse>
 

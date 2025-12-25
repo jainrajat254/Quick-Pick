@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.composeCompiler)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -63,6 +64,9 @@ dependencies {
     // Android-only networking
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // Razorpay Android Checkout SDK (required to open native Checkout on Android)
+    implementation("com.razorpay:checkout:1.6.41")
 
     // RxJava (Android only)
     implementation("io.reactivex.rxjava2:rxjava:2.2.21")
