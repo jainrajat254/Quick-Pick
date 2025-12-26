@@ -19,6 +19,10 @@ import org.rajat.quickpick.domain.modal.review.getPaginatedReviewsforVendor.Cont
 import org.rajat.quickpick.presentation.viewmodel.ReviewViewModel
 import org.rajat.quickpick.utils.UiState
 import kotlin.math.roundToInt
+import org.rajat.quickpick.utils.ErrorUtils
+import co.touchlab.kermit.Logger
+
+private val logger = Logger.withTag("VendorReviewsScreen")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +73,9 @@ fun VendorReviewsScreen(
             when (reviewsState) {
                 is UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 is UiState.Error -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text((reviewsState as UiState.Error).message ?: "Failed to load reviews", color = MaterialTheme.colorScheme.error)
+                    val raw = (reviewsState as UiState.Error).message
+                    logger.e { "Vendor reviews load error: $raw" }
+                    Text(ErrorUtils.sanitizeError(raw), color = MaterialTheme.colorScheme.error)
                 }
                 is UiState.Success -> {
                     val reviews = (reviewsState as UiState.Success).data.content?.filterNotNull() ?: emptyList()
@@ -77,7 +83,8 @@ fun VendorReviewsScreen(
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No reviews yet") }
                     } else {
                         LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.fillMaxSize()
+                                .navigationBarsPadding(),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             contentPadding = PaddingValues(16.dp)
                         ) {
@@ -94,7 +101,7 @@ fun VendorReviewsScreen(
 }
 
 @Composable
-private fun ReviewItemCard(review: Content) {
+fun ReviewItemCard(review: Content) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),

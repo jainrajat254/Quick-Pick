@@ -65,9 +65,10 @@ public class OrderController {
 
     @GetMapping("/vendor/orders/pending")
     @PreAuthorize("hasRole('VENDOR')")
-    public ResponseEntity<OrdersResponseDto> getPendingOrders(HttpServletRequest request) {
+    public ResponseEntity<OrdersResponseDto> getPendingOrders(HttpServletRequest request,
+                                                              @RequestParam(required = false) String otp) {
         String vendorId = extractUserIdFromToken(request);
-        OrdersResponseDto response = (OrdersResponseDto) orderService.getPendingOrdersForVendor(vendorId);
+        OrdersResponseDto response = (OrdersResponseDto) orderService.getPendingOrdersForVendor(vendorId, otp);
         return ResponseEntity.ok(response);
     }
 
@@ -145,6 +146,22 @@ public class OrderController {
         String vendorId = extractUserIdFromToken(request);
         OrderStatsDto stats = orderService.getVendorOrderStats(vendorId);
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/my-orders/grouped")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<Map<String, OrdersResponseDto>> getMyOrdersGrouped(HttpServletRequest request) {
+        String userId = extractUserIdFromToken(request);
+        Map<String, OrdersResponseDto> response = orderService.getUserOrdersGrouped(userId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/vendor/orders/grouped")
+    @PreAuthorize("hasRole('VENDOR')")
+    public ResponseEntity<Map<String, OrdersResponseDto>> getVendorOrdersGrouped(HttpServletRequest request) {
+        String vendorId = extractUserIdFromToken(request);
+        Map<String, OrdersResponseDto> response = orderService.getVendorOrdersGrouped(vendorId);
+        return ResponseEntity.ok(response);
     }
 
     private String extractUserIdFromToken(HttpServletRequest request) {

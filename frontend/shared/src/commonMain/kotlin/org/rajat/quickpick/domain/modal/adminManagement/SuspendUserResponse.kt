@@ -14,7 +14,6 @@ data class SuspendUserResponse(
     val phone: String? = null,
     val phoneVerified: Boolean? = null,
     val role: String? = null,
-    val studentId: String? = null,
     val suspended: Boolean? = null,
     val suspendedAt: String? = null,
     val suspensionReason: String? = null,

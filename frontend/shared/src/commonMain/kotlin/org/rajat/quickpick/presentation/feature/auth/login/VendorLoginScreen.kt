@@ -4,13 +4,19 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -51,6 +57,8 @@ import org.rajat.quickpick.presentation.feature.auth.components.RegisterButton
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
+import org.rajat.quickpick.presentation.viewmodel.ProfileViewModel
+import org.koin.compose.koinInject
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators.isLoginFormValid
 import org.rajat.quickpick.utils.toast.showToast
@@ -64,10 +72,11 @@ import kotlin.time.ExperimentalTime
 fun VendorLoginScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    dataStore: LocalDataStore
+    dataStore: LocalDataStore,
+    profileViewModel: ProfileViewModel = koinInject()
 ) {
 
-    val logger = Logger.withTag("UserLoginScreen")
+    val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -77,7 +86,6 @@ fun VendorLoginScreen(
     val vendorLoginState by authViewModel.vendorLoginState.collectAsState()
 
     LaunchedEffect(Unit) {
-        val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
         logoutLogger.d { "VENDOR_LOGIN - Screen loaded" }
         logoutLogger.d { "VENDOR_LOGIN - Current vendorLoginState: $vendorLoginState" }
     }
@@ -91,7 +99,6 @@ fun VendorLoginScreen(
     }
 
     LaunchedEffect(vendorLoginState) {
-        val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
         val fcmLogger = Logger.withTag("FCMDEBUG")
         fcmLogger.d { "========================================" }
         fcmLogger.d { "VENDOR_LOGIN - LaunchedEffect triggered" }
@@ -109,27 +116,9 @@ fun VendorLoginScreen(
                 fcmLogger.d { "VENDOR_LOGIN - AuthSessionSaver.saveVendorSession completed" }
                 fcmLogger.d { "========================================" }
                 showToast("Vendor Signed In Successfully")
-                logoutLogger.d { "VENDOR_LOGIN - Navigating to VendorDashboard" }
-                navController.navigate(AppScreenVendor.VendorDashboard) {
-                    popUpTo(0) { inclusive = true }
-                    launchSingleTop = true
-                }
-            }
-
-            is UiState.Error -> {
-                fcmLogger.d { "VENDOR_LOGIN - ERROR STATE: ${(vendorLoginState as UiState.Error).message}" }
-                val message = (vendorLoginState as UiState.Error).message ?: "Unknown error"
-                if (message.contains("verify your email", ignoreCase = true)) {
-                    val emailLower = email.trim().lowercase()
-                    navController.navigate(AppScreenUser.EmailOtpVerify(email = emailLower, userType = "VENDOR")) {
-                        popUpTo(AppScreenUser.VendorLogin) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                } else {
-                    logoutLogger.d { "VENDOR_LOGIN - Error state: $message" }
-                    showToast(message)
-                    logger.e { message }
-                }
+                // Fetch vendor profile to get verification status before navigating
+                logoutLogger.d { "VENDOR_LOGIN - Fetching vendor profile to check verification status" }
+                profileViewModel.getVendorProfile()
             }
 
             else -> {
@@ -138,127 +127,175 @@ fun VendorLoginScreen(
         }
     }
 
-    Scaffold {
+    val vendorProfileState by profileViewModel.vendorProfileState.collectAsState()
+
+    LaunchedEffect(vendorProfileState) {
+        when (vendorProfileState) {
+            is UiState.Success -> {
+                val profile = (vendorProfileState as UiState.Success).data
+                val status = profile.verificationStatus ?: "PENDING"
+                if (status == "VERIFIED") {
+                    logoutLogger.d { "VENDOR_LOGIN - Verified: navigating to dashboard" }
+                    profileViewModel.resetProfileStates()
+                    authViewModel.resetAuthStates()
+                    navController.navigate(AppScreenVendor.VendorDashboard) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                } else if (status == "PENDING") {
+                    logoutLogger.d { "VENDOR_LOGIN - Pending verification: navigating to pending screen" }
+                    profileViewModel.resetProfileStates()
+                    authViewModel.resetAuthStates()
+                    navController.navigate(AppScreenVendor.VendorVerificationPending) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                } else if (status == "REJECTED") {
+                    logoutLogger.d { "VENDOR_LOGIN - Rejected: navigating to pending screen (rejected)" }
+                    profileViewModel.resetProfileStates()
+                    authViewModel.resetAuthStates()
+                    navController.navigate(AppScreenVendor.VendorVerificationPending) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
+            is UiState.Error -> {
+                logoutLogger.d { "VENDOR_LOGIN - Error fetching profile: navigating to dashboard" }
+                profileViewModel.resetProfileStates()
+                authViewModel.resetAuthStates()
+                navController.navigate(AppScreenVendor.VendorDashboard) {
+                    popUpTo(0) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+            else -> Unit
+        }
+    }
+
+    Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-                            MaterialTheme.colorScheme.background
-                        )
-                    )
-                )
+                .safeDrawingPadding()
         ) {
             Image(
                 painter = painterResource(resource = Res.drawable.burger),
                 contentDescription = "Background Image",
-                contentScale = ContentScale.FillBounds,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            Card(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 420.dp)
-                    .shadow(
-                        elevation = 32.dp,
-                        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
-                    ),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
-            ) {
-                Column(
+
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                val screenHeight = maxHeight
+                val cardTopPadding = (screenHeight * 0.5f).coerceAtLeast(300.dp)
+
+                Card(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .padding(top = cardTopPadding),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
-
-                    Card(
+                    Column(
                         modifier = Modifier
-                            .width(240.dp)
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        )
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp, vertical = 24.dp)
+                            .imePadding(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Vendor Sign In",
-                                style = MaterialTheme.typography.headlineMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                ),
-                                textAlign = TextAlign.Center
+                        Card(
+                            modifier = Modifier
+                                .width(240.dp)
+                                .height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primary
                             )
-                        }
-                    }
-
-                    CustomTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = "Email",
-                        leadingIcon = Icons.Filled.Email,
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Next
-                    )
-
-                    CustomTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = "Password",
-                        leadingIcon = Icons.Filled.Lock,
-                        isPassword = true,
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done
-                    )
-
-                    TextButton(
-                        onClick = {
-                            navController.navigate(AppScreenUser.ForgotPassword(userType = "VENDOR"))
-                        },
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .padding(vertical = 0.dp)
-                    ) {
-                        Text("Forgot Password?", color = MaterialTheme.colorScheme.primary)
-                    }
-
-                    RegisterButton(
-                        onClick = {
-                            if (isFormValid) {
-                                val loginVendorRequest =
-                                    LoginVendorRequest(
-                                        email = email.trim().lowercase(),
-                                        password = password.trim()
-                                    )
-                                authViewModel.loginVendor(request = loginVendorRequest)
-                            } else {
-                                showToast("Invalid email or password")
-                            }
-                        },
-                        text = "Sign In",
-                        loadingText = "Signing In...",
-                        isLoading = false,
-                        enabled = isFormValid
-                    )
-                    InlineClickableText(
-                        normalText = "Don't have an account?",
-                        clickableText = "Sign up",
-                        onClick = {
-                            navController.navigate(AppScreenUser.VendorRegister) {
-                                popUpTo(AppScreenUser.VendorLogin) { inclusive = true }
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Vendor Sign In",
+                                    style = MaterialTheme.typography.headlineMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    ),
+                                    textAlign = TextAlign.Center
+                                )
                             }
                         }
-                    )
+
+                        CustomTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = "Email",
+                            leadingIcon = Icons.Filled.Email,
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        )
+
+                        CustomTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = "Password",
+                            leadingIcon = Icons.Filled.Lock,
+                            isPassword = true,
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        )
+
+                        TextButton(
+                            onClick = {
+                                navController.navigate(AppScreenUser.ForgotPassword(userType = "VENDOR"))
+                            },
+                            modifier = Modifier
+                                .align(Alignment.End)
+                                .padding(vertical = 0.dp)
+                        ) {
+                            Text("Forgot Password?", color = MaterialTheme.colorScheme.primary)
+                        }
+
+                        RegisterButton(
+                            onClick = {
+                                if (isFormValid) {
+                                    val loginVendorRequest =
+                                        LoginVendorRequest(
+                                            email = email.trim().lowercase(),
+                                            password = password.trim()
+                                        )
+                                    authViewModel.loginVendor(request = loginVendorRequest)
+                                } else {
+                                    showToast("Invalid email or password")
+                                }
+                            },
+                            text = "Sign In",
+                            loadingText = "Signing In...",
+                            isLoading = false,
+                            enabled = isFormValid
+                        )
+
+                        InlineClickableText(
+                            normalText = "Don't have an account?",
+                            clickableText = "Sign up",
+                            onClick = {
+                                navController.navigate(AppScreenUser.VendorRegister) {
+                                    popUpTo(AppScreenUser.VendorLogin) { inclusive = true }
+                                }
+                            }
+                        )
+                    }
                 }
             }
+
             if (vendorLoginState is UiState.Loading) {
                 CustomLoader()
             }

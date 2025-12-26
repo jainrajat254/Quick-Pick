@@ -38,4 +38,6 @@ interface AuthRepository {
 
     suspend fun sendPasswordOtp(request: PasswordOtpRequest): Result<SimpleMessageResponse>
     suspend fun resetPasswordOtp(request: ResetPasswordOtpRequest): Result<SimpleMessageResponse>
+
+    suspend fun isSessionValid(): Boolean
 }

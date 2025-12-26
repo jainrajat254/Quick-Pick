@@ -38,7 +38,8 @@ fun CustomTextField(
     imeAction: ImeAction = ImeAction.Next,
     isPassword: Boolean = false,
     errorMessage: String? = null,
-    maxLength: Int? = null
+    maxLength: Int? = null,
+    enabled: Boolean = true
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -80,6 +81,7 @@ fun CustomTextField(
                 cursorColor = MaterialTheme.colorScheme.primary
             ),
             isError = errorMessage != null,
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
                 Text(

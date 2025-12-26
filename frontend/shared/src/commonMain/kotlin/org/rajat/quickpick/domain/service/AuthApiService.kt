@@ -21,6 +21,7 @@ import org.rajat.quickpick.domain.modal.auth.EmailOtpVerifyRequest
 import org.rajat.quickpick.domain.modal.auth.SimpleMessageResponse
 import org.rajat.quickpick.domain.modal.auth.PasswordOtpRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordOtpRequest
+import org.rajat.quickpick.domain.modal.auth.IsSessionValidResponse
 
 interface AuthApiService {
 
@@ -39,4 +40,6 @@ interface AuthApiService {
 
     suspend fun sendPasswordOtp(request: PasswordOtpRequest): SimpleMessageResponse
     suspend fun resetPasswordOtp(request: ResetPasswordOtpRequest): SimpleMessageResponse
+
+    suspend fun isSessionValid(): IsSessionValidResponse
 }

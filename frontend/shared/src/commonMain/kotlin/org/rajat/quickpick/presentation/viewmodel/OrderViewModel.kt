@@ -2,11 +2,11 @@ package org.rajat.quickpick.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.touchlab.kermit.Logger
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import org.rajat.quickpick.domain.modal.ordermanagement.CancelOrderResponse
 import org.rajat.quickpick.domain.modal.ordermanagement.GetMyOrderStatsResponse
 import org.rajat.quickpick.domain.modal.ordermanagement.GetMyOrdersResponse
@@ -16,11 +16,18 @@ import org.rajat.quickpick.domain.modal.ordermanagement.createOrder.CreateOrderR
 import org.rajat.quickpick.domain.modal.ordermanagement.getOrderById.GetOrderByIdResponse
 import org.rajat.quickpick.domain.modal.ordermanagement.getVendorsOrder.GetVendorOrdersResponse
 import org.rajat.quickpick.domain.repository.OrderRepository
+import org.rajat.quickpick.domain.service.PaymentApiService
+import org.rajat.quickpick.domain.service.PaymentInitiateResponse
 import org.rajat.quickpick.utils.UiState
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+
+private val razorLogger = Logger.withTag("RAZORPAYDEBUG")
 
 @OptIn(ExperimentalTime::class)
 class OrderViewModel(
-    private val orderRepository: OrderRepository
+    private val orderRepository: OrderRepository,
+    private val paymentApiService: PaymentApiService
 ) : ViewModel() {
 
     private val _createOrderState = MutableStateFlow<UiState<GetOrderByIdResponse>>(UiState.Empty)
@@ -53,11 +60,34 @@ class OrderViewModel(
     private val _vendorOrdersByStatusState = MutableStateFlow<UiState<GetVendorOrderByStatusResponse>>(UiState.Empty)
     val vendorOrdersByStatusState: StateFlow<UiState<GetVendorOrderByStatusResponse>> = _vendorOrdersByStatusState
 
+    private val _vendorOrdersAcceptedCombinedState = MutableStateFlow<UiState<List<GetOrderByIdResponse>>>(UiState.Empty)
+    val vendorOrdersAcceptedCombinedState: StateFlow<UiState<List<GetOrderByIdResponse>>> = _vendorOrdersAcceptedCombinedState
+
     private val _updateOrderStatusState = MutableStateFlow<UiState<GetOrderByIdResponse>>(UiState.Empty)
     val updateOrderStatusState: StateFlow<UiState<GetOrderByIdResponse>> = _updateOrderStatusState
 
     private val _vendorOrderStatsState = MutableStateFlow<UiState<GetMyOrderStatsResponse>>(UiState.Empty)
     val vendorOrderStatsState: StateFlow<UiState<GetMyOrderStatsResponse>> = _vendorOrderStatsState
+
+    private val _paymentUiState = MutableStateFlow<PaymentInitiateResponse?>(null)
+    val paymentUiState: StateFlow<PaymentInitiateResponse?> = _paymentUiState
+
+    private val _paymentErrorState = MutableStateFlow<String?>(null)
+    val paymentErrorState: StateFlow<String?> = _paymentErrorState
+
+    private val _paymentSuccessEvent = MutableStateFlow<String?>(null)
+    val paymentSuccessEvent: StateFlow<String?> = _paymentSuccessEvent
+
+    private val _initialVendorOrdersTab = MutableStateFlow<Int?>(null)
+    val initialVendorOrdersTab: StateFlow<Int?> = _initialVendorOrdersTab
+
+    fun setInitialVendorOrdersTab(tab: Int) {
+        _initialVendorOrdersTab.value = tab
+    }
+
+    fun resetInitialVendorOrdersTab() {
+        _initialVendorOrdersTab.value = null
+    }
 
     private var cachedMyOrders: GetMyOrdersResponse? = null
     private var cachedOrderStats: GetMyOrderStatsResponse? = null
@@ -65,7 +95,7 @@ class OrderViewModel(
 
     private var myOrdersCacheTime: Long = 0
     private var orderStatsCacheTime: Long = 0
-    private val cacheValidityDuration = 60_000L // 1 minute cache validity
+    private val cacheValidityDuration = 60_000L
 
     private fun <T> executeWithUiState(
         stateFlow: MutableStateFlow<UiState<T>>,
@@ -142,14 +172,12 @@ class OrderViewModel(
     fun cancelOrder(orderId: String) {
         executeWithUiState(_cancelOrderState) {
             val result = orderRepository.cancelOrder(orderId)
-            // Invalidate caches after cancelling
             invalidateOrderCaches()
             result
         }
     }
 
     fun getMyOrderStats(forceRefresh: Boolean = false) {
-        // Use cache if valid and not forcing refresh
         if (!forceRefresh && cachedOrderStats != null && isCacheValid(orderStatsCacheTime)) {
             _myOrderStatsState.value = UiState.Success(cachedOrderStats!!)
             return
@@ -172,6 +200,12 @@ class OrderViewModel(
         }
     }
 
+    fun getPendingOrdersForVendor(otp: String?) {
+        executeWithUiState(_pendingOrdersState) {
+            orderRepository.getPendingOrdersForVendor(otp)
+        }
+    }
+
     fun getVendorOrdersPaginated(page: Int = 0, size: Int = 20) {
         executeWithUiState(_vendorOrdersPaginatedState) {
             orderRepository.getVendorOrdersPaginated(page, size)
@@ -190,6 +224,35 @@ class OrderViewModel(
         }
     }
 
+    /**
+     * Fetch ACCEPTED, PREPARING and READY_FOR_PICKUP orders sequentially and merge them.
+     * Exposes a UiState with the merged list to avoid UI-level sequential-fetch complexity.
+     */
+    fun getCombinedAcceptedOrders() {
+        viewModelScope.launch {
+            _vendorOrdersAcceptedCombinedState.value = UiState.Loading
+            try {
+                val statuses = listOf("ACCEPTED", "PREPARING", "READY_FOR_PICKUP")
+                val combined = mutableListOf<GetOrderByIdResponse>()
+                var anySuccess = false
+                for (s in statuses) {
+                    val result = orderRepository.getVendorOrdersByStatus(s)
+                    result.onSuccess { resp ->
+                        val list = resp.orders?.filterNotNull() ?: emptyList()
+                        if (list.isNotEmpty()) {
+                            combined += list
+                            anySuccess = true
+                        }
+                    }
+                }
+                // Always succeed with a (possibly empty) list — UI can decide fallback behavior
+                _vendorOrdersAcceptedCombinedState.value = UiState.Success(combined.distinctBy { it.id })
+            } catch (e: Exception) {
+                _vendorOrdersAcceptedCombinedState.value = UiState.Error(e.message ?: "Error fetching combined orders")
+            }
+        }
+    }
+
     fun updateOrderStatus(orderId: String, updateOrderStatusRequest: UpdateOrderStateRequest) {
         executeWithUiState(_updateOrderStatusState) {
             orderRepository.updateOrderStatus(orderId, updateOrderStatusRequest)
@@ -199,6 +262,54 @@ class OrderViewModel(
     fun getVendorOrderStats() {
         executeWithUiState(_vendorOrderStatsState) {
             orderRepository.getVendorOrderStats()
+        }
+    }
+
+    fun initiatePayment(orderId: String, paymentMethod: String = "PAY_NOW") {
+        viewModelScope.launch {
+            _paymentUiState.value = null
+            _paymentErrorState.value = null
+            razorLogger.d { "OrderViewModel: initiatePayment called for orderId=$orderId" }
+            try {
+                razorLogger.d { "OrderViewModel: calling paymentApiService.initiatePayment($orderId, $paymentMethod)" }
+                val resp = paymentApiService.initiatePayment(orderId, paymentMethod)
+                razorLogger.d { "OrderViewModel: initiatePayment response: $resp" }
+                _paymentUiState.value = resp
+                // Start polling payment status automatically on successful initiation
+                // This avoids polling even when initiation failed.
+                if (!resp.transactionId.isNullOrBlank()) {
+                    pollPaymentStatus(orderId)
+                }
+            } catch (e: Exception) {
+                razorLogger.d { "OrderViewModel: initiatePayment exception: ${e.message}" }
+                _paymentErrorState.value = e.message ?: "Error initiating payment"
+            }
+        }
+    }
+
+    fun pollPaymentStatus(orderId: String, timeoutMs: Long = 45000L, intervalMs: Long = 2000L) {
+        viewModelScope.launch {
+            razorLogger.d { "OrderViewModel: pollPaymentStatus started for orderId=$orderId timeout=$timeoutMs interval=$intervalMs" }
+            val start = Clock.System.now().toEpochMilliseconds()
+            while (Clock.System.now().toEpochMilliseconds() - start < timeoutMs) {
+                try {
+                    razorLogger.d { "OrderViewModel: polling payment status for orderId=$orderId" }
+                    val statusResp = paymentApiService.getPaymentStatus(orderId)
+                    razorLogger.d { "OrderViewModel: poll response: $statusResp" }
+                    if (statusResp.paymentStatus == "PAID") {
+                        razorLogger.d { "OrderViewModel: payment status PAID for orderId=$orderId" }
+                        getMyOrders(forceRefresh = true)
+                        // emit success event for UI to show OTP dialog
+                        _paymentSuccessEvent.value = orderId
+                        _paymentUiState.value = null
+                        return@launch
+                    }
+                } catch (e: Exception) {
+                    razorLogger.d { "OrderViewModel: poll exception for orderId=$orderId: ${e.message}" }
+                }
+                delay(intervalMs)
+            }
+            razorLogger.d { "OrderViewModel: pollPaymentStatus timed out for orderId=$orderId" }
         }
     }
 
@@ -246,5 +357,13 @@ class OrderViewModel(
         _vendorOrdersByStatusState.value = UiState.Empty
         _updateOrderStatusState.value = UiState.Empty
         _vendorOrderStatsState.value = UiState.Empty
+    }
+
+    fun resetPaymentErrorState() {
+        _paymentErrorState.value = null
+    }
+
+    fun resetPaymentSuccessEvent() {
+        _paymentSuccessEvent.value = null
     }
 }

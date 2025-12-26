@@ -1,5 +1,6 @@
 package com.rajat.quickpick.dto.menu;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,8 +15,10 @@ public class MenuItemResponseDto {
     private double price;
     private int quantity;
     private String category;
-    private boolean isVeg;
+    @JsonProperty("isVeg")
+    private boolean veg;
     private String imageUrl;
+cd     @JsonProperty("isAvailable")
     private boolean isAvailable;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

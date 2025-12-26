@@ -22,6 +22,10 @@ import org.rajat.quickpick.utils.BackHandler
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.ErrorUtils
+import co.touchlab.kermit.Logger
+
+private val logger = Logger.withTag("CartScreen")
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -57,7 +61,9 @@ fun CartScreen(
                 // Cart automatically updated via main cart state
             }
             is UiState.Error -> {
-                showToast((updateCartState as UiState.Error).message)
+                val raw = (updateCartState as UiState.Error).message
+                logger.e { "Update cart error: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
             }
             else -> {}
         }
@@ -69,7 +75,9 @@ fun CartScreen(
                 showToast("Item removed from cart")
             }
             is UiState.Error -> {
-                showToast((removeFromCartState as UiState.Error).message)
+                val raw = (removeFromCartState as UiState.Error).message
+                logger.e { "Remove from cart error: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
             }
             else -> {}
         }
@@ -101,11 +109,13 @@ fun CartScreen(
                     EmptyCartView()
                 } else {
                     LazyColumn(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f)
+                            .navigationBarsPadding(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
-                        items(cartItems, key = { it.menuItemId ?: "" }) { item ->
+                        items(cartItems, key = { it.menuItemId ?: "" }) {
+                            item ->
                             CartItemRow(
                                 item = CartItem(
                                     id = item.menuItemId ?: "",
@@ -126,6 +136,9 @@ fun CartScreen(
                                 },
                                 navController = navController
                             )
+                        }
+                        item{
+                            Spacer(modifier = Modifier.height(60.dp))
                         }
                     }
 

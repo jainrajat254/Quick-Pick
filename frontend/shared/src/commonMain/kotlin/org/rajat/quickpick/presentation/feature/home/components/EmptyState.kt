@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun EmptyState(
-    searchQuery: String,
+    searchQuery: String = "",
     modifier: Modifier = Modifier
 ) {
     val isSearching = searchQuery.isNotBlank()

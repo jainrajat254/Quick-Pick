@@ -7,5 +7,6 @@ import kotlinx.serialization.Serializable
 data class CreateOrderRequest(
     val orderItems: List<OrderItem?>?=null,
     val specialInstructions: String?=null,
-    val vendorId: String?=null
+    val vendorId: String?=null,
+    val paymentMethod: String?=null
 )

@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
@@ -52,8 +51,6 @@ fun MyProfileFields(
     onFullNameChange: (String) -> Unit,
     phone: String,
     onPhoneChange: (String) -> Unit,
-    department: String,
-    onDepartmentChange: (String) -> Unit,
     profile: GetStudentProfileResponse,
     isLoading: Boolean,
     isEditMode: Boolean,
@@ -178,13 +175,6 @@ fun MyProfileFields(
                 keyboardType = KeyboardType.Phone
             )
             ProfileInfoField(
-                label = "Department",
-                value = department,
-                onValueChange = onDepartmentChange,
-                icon = Icons.Default.DateRange,
-                isEditable = isEditMode
-            )
-            ProfileInfoField(
                 label = "College Name",
                 value = profile.collegeName ?: "N/A",
                 icon = Icons.Default.AddCircle,
@@ -202,7 +192,6 @@ fun MyProfileFields(
                 val updateRequest = UpdateUserProfileRequest(
                     fullName = fullName,
                     phone = phone,
-                    department = department,
                     profileImageUrl = profile.profileImageUrl
                 )
 

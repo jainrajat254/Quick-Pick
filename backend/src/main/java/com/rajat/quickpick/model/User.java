@@ -18,7 +18,6 @@ public class User {
     private String id;
 
     private String fullName;
-    private String gender;
     private String phone;
     private String profileImageUrl;
 
@@ -29,7 +28,6 @@ public class User {
     private String password;
 
     private String collegeName;
-    private String studentId;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

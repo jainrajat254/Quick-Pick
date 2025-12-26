@@ -16,4 +16,5 @@ public class OrderNotificationDto {
     private OrderStatus orderStatus;
     private double totalAmount;
     private LocalDateTime timestamp;
+    private String otp;
 }

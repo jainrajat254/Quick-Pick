@@ -3,11 +3,13 @@ package org.rajat.quickpick.presentation.feature.cart.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material3.Icon
@@ -25,7 +27,7 @@ fun ConfirmOrderBody(
     orderId : String?
 ){
     Column(
-        modifier = Modifier.padding(horizontal = 24.dp),
+        modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
@@ -38,17 +40,19 @@ fun ConfirmOrderBody(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            "Order Placed Successfully!",
+            text = "Order Placed Successfully!",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
 
         if (orderId != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Default.ReceiptLong,
+                    Icons.AutoMirrored.Filled.ReceiptLong,
                     contentDescription = "Order ID",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(16.dp)
@@ -65,11 +69,11 @@ fun ConfirmOrderBody(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            "Your order is confirmed. You can track its status in the 'My Orders' section. Please proceed to the vendor to pick up your order and pay in cash.",
+            text = "Your order is confirmed. You can track its status in the 'My Orders' section. Please proceed to the vendor to pick up your order and pay in cash.",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 32.dp)
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)
         )
     }
 }

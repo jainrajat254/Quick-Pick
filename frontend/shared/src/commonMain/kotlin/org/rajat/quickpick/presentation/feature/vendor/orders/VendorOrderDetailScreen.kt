@@ -14,6 +14,10 @@ import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.ErrorUtils
+import co.touchlab.kermit.Logger
+
+private val logger = Logger.withTag("VendorOrderDetailScreen")
 
 @Composable
 fun VendorOrderDetailScreen(
@@ -37,7 +41,9 @@ fun VendorOrderDetailScreen(
                 orderViewModel.resetUpdateOrderStatusState()
             }
             is UiState.Error -> {
-                showToast((updateOrderStatusState as UiState.Error).message ?: "Error updating order")
+                val raw = (updateOrderStatusState as UiState.Error).message
+                logger.e { "Update order status error: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
                 orderViewModel.resetUpdateOrderStatusState()
             }
             else -> Unit
@@ -62,7 +68,8 @@ fun VendorOrderDetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .navigationBarsPadding(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
@@ -243,25 +250,25 @@ fun VendorOrderDetailScreen(
                             }
                         }
                         "READY_FOR_PICKUP" -> {
-                            Button(
-                                onClick = {
-                                    orderViewModel.updateOrderStatus(
-                                        orderId,
-                                        org.rajat.quickpick.domain.modal.ordermanagement.UpdateOrderStateRequest("COMPLETED")
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                enabled = updateOrderStatusState !is UiState.Loading
-                            ) {
-                                if (updateOrderStatusState is UiState.Loading) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(24.dp),
-                                        color = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                } else {
-                                    Text("Mark as Completed")
-                                }
-                            }
+//                            Button(
+//                                onClick = {
+//                                    orderViewModel.updateOrderStatus(
+//                                        orderId,
+//                                        org.rajat.quickpick.domain.modal.ordermanagement.UpdateOrderStateRequest("COMPLETED")
+//                                    )
+//                                },
+//                                modifier = Modifier.fillMaxWidth(),
+//                                enabled = updateOrderStatusState !is UiState.Loading
+//                            ) {
+//                                if (updateOrderStatusState is UiState.Loading) {
+//                                    CircularProgressIndicator(
+//                                        modifier = Modifier.size(24.dp),
+//                                        color = MaterialTheme.colorScheme.onPrimary
+//                                    )
+//                                } else {
+//                                    Text("Mark as Completed")
+//                                }
+//                            }
                         }
                         "COMPLETED" -> {
                             Card(
@@ -295,6 +302,8 @@ fun VendorOrderDetailScreen(
         }
 
         is UiState.Error -> {
+            val raw = (vendorOrderByIdState as UiState.Error).message
+            logger.e { "Load vendor order by id error: $raw" }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -306,7 +315,7 @@ fun VendorOrderDetailScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = (vendorOrderByIdState as UiState.Error).message ?: "Error loading order",
+                        text = ErrorUtils.sanitizeError(raw),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.error
                     )

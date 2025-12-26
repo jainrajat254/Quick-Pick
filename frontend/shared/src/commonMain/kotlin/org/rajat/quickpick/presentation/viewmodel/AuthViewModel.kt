@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.domain.modal.auth.ChangePasswordRequest
 import org.rajat.quickpick.domain.modal.auth.ChangePasswordResponse
 import org.rajat.quickpick.domain.modal.auth.EmailOtpRequest
@@ -28,9 +29,14 @@ import org.rajat.quickpick.domain.modal.auth.PasswordOtpRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordOtpRequest
 import org.rajat.quickpick.domain.repository.AuthRepository
 import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.di.TokenProvider
+import org.rajat.quickpick.fcm.FcmPlatformManager
+import org.rajat.quickpick.utils.tokens.PlatformScheduler
+import org.rajat.quickpick.utils.websocket.VendorWebSocketManager
 
 class AuthViewModel(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val dataStore: LocalDataStore
 ) : ViewModel() {
 
     private val _userLoginState = MutableStateFlow<UiState<LoginUserResponse>>(UiState.Empty)
@@ -153,8 +159,47 @@ class AuthViewModel(
     }
 
     fun logout(request: LogoutRequest) {
-        executeWithUiState(_logoutState) {
-            authRepository.logout(request)
+        viewModelScope.launch {
+            _logoutState.value = UiState.Loading
+
+            val authToken = try { dataStore.getToken() } catch (_: Exception) { null }
+            authToken?.let { token ->
+                try {
+                    FcmPlatformManager.removeTokenFromServer(token)
+                } catch (_: Exception) {
+                }
+            }
+
+            val apiResult: Result<LogoutResponse> = try {
+                authRepository.logout(request)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+
+            try {
+                resetAuthStates()
+
+                try { VendorWebSocketManager.disconnect() } catch (_: Exception) {}
+
+                try { PlatformScheduler.cancelScheduledRefresh() } catch (_: Exception) {}
+
+                try { dataStore.clearToken() } catch (_: Exception) {}
+                try { dataStore.clearRefreshToken() } catch (_: Exception) {}
+                try { dataStore.clearUserProfile() } catch (_: Exception) {}
+                try { dataStore.clearVendorProfile() } catch (_: Exception) {}
+                try { dataStore.clearUserRole() } catch (_: Exception) {}
+                try { dataStore.clearPendingVerification() } catch (_: Exception) {}
+
+                try { dataStore.clearAll() } catch (_: Exception) {}
+
+                TokenProvider.token = null
+            } catch (_: Exception) {
+            }
+
+            _logoutState.value = apiResult.fold(
+                onSuccess = { UiState.Success(it) },
+                onFailure = { UiState.Error(it.message ?: "Unknown error") }
+            )
         }
     }
 
@@ -202,6 +247,18 @@ class AuthViewModel(
         _verifyEmailOtpState.value = UiState.Empty
         _sendPasswordOtpState.value = UiState.Empty
         _resetPasswordOtpState.value = UiState.Empty
+    }
+
+    suspend fun isSessionValid(): Boolean {
+        return try {
+            authRepository.isSessionValid()
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun logout() {
+        resetAuthStates()
     }
 
 }

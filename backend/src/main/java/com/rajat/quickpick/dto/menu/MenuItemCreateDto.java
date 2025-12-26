@@ -1,5 +1,6 @@
 package com.rajat.quickpick.dto.menu;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -22,7 +23,8 @@ public class MenuItemCreateDto {
     @NotBlank(message = "Category is required")
     private String category;
 
-    private boolean isVeg;
+    @JsonProperty("isVeg")
+    private boolean veg;
     private String imageUrl;
     private boolean isAvailable = true;
 }

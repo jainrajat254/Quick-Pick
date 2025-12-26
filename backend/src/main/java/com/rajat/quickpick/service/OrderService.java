@@ -2,6 +2,7 @@ package com.rajat.quickpick.service;
 
 import com.rajat.quickpick.dto.order.*;
 import com.rajat.quickpick.enums.OrderStatus;
+import com.rajat.quickpick.enums.PaymentStatus;
 import com.rajat.quickpick.enums.VendorVerificationStatus;
 import com.rajat.quickpick.exception.BadRequestException;
 import com.rajat.quickpick.exception.ResourceNotFoundException;
@@ -19,7 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +38,8 @@ public class OrderService {
     private final MenuItemRepository menuItemRepository;
     private final OrderNotificationService notificationService;
     private final CartRepository cartRepository;
+
+    private final Random random = new Random();
 
     public OrderResponseDto createOrder(String userId, CreateOrderDto createDto) {
         User user = userRepository.findById(userId)
@@ -104,7 +110,7 @@ public class OrderService {
 
         notificationService.notifyNewOrder(savedOrder, vendor);
 
-        return mapToResponseDto(savedOrder, user, vendor);
+        return mapToResponseDto(savedOrder, user, vendor, true);
     }
 
     public OrderResponseDto updateOrderStatus(String vendorId, String orderId, UpdateOrderStatusDto updateDto) {
@@ -118,6 +124,24 @@ public class OrderService {
         validateStatusTransition(order.getOrderStatus(), updateDto.getOrderStatus());
 
         OrderStatus oldStatus = order.getOrderStatus();
+
+        if (order.getOrderStatus() == OrderStatus.PENDING && updateDto.getOrderStatus() == OrderStatus.ACCEPTED) {
+            String otp = String.format("%04d", random.nextInt(10000));
+            order.setOtp(otp);
+            log.info("Generated OTP {} for order {}", otp, orderId);
+        }
+
+        if (updateDto.getOrderStatus() == OrderStatus.COMPLETED) {
+            String providedOtp = updateDto.getOtp();
+            if (providedOtp == null || providedOtp.isEmpty()) {
+                throw new BadRequestException("OTP is required to complete the order");
+            }
+            if (order.getOtp() == null || !order.getOtp().equals(providedOtp)) {
+                throw new BadRequestException("Invalid OTP provided");
+            }
+            order.setOtp(null);
+        }
+
         order.setOrderStatus(updateDto.getOrderStatus());
         order.setUpdatedAt(LocalDateTime.now());
 
@@ -129,12 +153,28 @@ public class OrderService {
 
         notificationService.notifyOrderStatusUpdate(updatedOrder, user);
 
-        return mapToResponseDto(updatedOrder, user, vendor);
+        return mapToResponseDto(updatedOrder, user, vendor, false);
     }
 
-    public List<OrderResponseDto> getPendingOrdersForVendor(String vendorId) {
-        List<Order> undeliveredOrders = orderRepository.findByVendorIdAndDeliveredToVendorOrderByCreatedAtAsc(
-                vendorId, false);
+    public OrdersResponseDto getPendingOrdersForVendor(String vendorId) {
+        return getPendingOrdersForVendor(vendorId, null);
+    }
+
+    public OrdersResponseDto getPendingOrdersForVendor(String vendorId, String otp) {
+        List<Order> undeliveredOrders;
+
+        if (otp != null && !otp.isEmpty()) {
+            Order found = orderRepository.findByVendorIdAndOtpAndDeliveredToVendor(vendorId, otp, false);
+            if (found == null) {
+                undeliveredOrders = new ArrayList<>();
+            } else {
+                undeliveredOrders = new ArrayList<>();
+                undeliveredOrders.add(found);
+            }
+        } else {
+            undeliveredOrders = orderRepository.findByVendorIdAndDeliveredToVendorOrderByCreatedAtAsc(
+                    vendorId, false);
+        }
 
         undeliveredOrders.forEach(order -> {
             order.setDeliveredToVendor(true);
@@ -150,14 +190,14 @@ public class OrderService {
                 .map(order -> {
                     User user = userRepository.findById(order.getUserId()).orElse(null);
                     Vendor vendor = vendorRepository.findById(vendorId).orElse(null);
-                    return mapToResponseDto(order, user, vendor);
+                    return mapToResponseDto(order, user, vendor, false);
                 })
                 .collect(Collectors.toList());
 
         return OrdersResponseDto.builder()
                 .orders(orderDtos)
                 .count(orderDtos.size())
-                .build().getOrders();
+                .build();
     }
 
     public OrderResponseDto getOrderById(String orderId, String userId) {
@@ -171,7 +211,7 @@ public class OrderService {
         User user = userRepository.findById(order.getUserId()).orElse(null);
         Vendor vendor = vendorRepository.findById(order.getVendorId()).orElse(null);
 
-        return mapToResponseDto(order, user, vendor);
+        return mapToResponseDto(order, user, vendor, true);
     }
 
     public OrderResponseDto getVendorOrderById(String vendorId, String orderId) {
@@ -185,7 +225,7 @@ public class OrderService {
         User user = userRepository.findById(order.getUserId()).orElse(null);
         Vendor vendor = vendorRepository.findById(vendorId).orElse(null);
 
-        return mapToResponseDto(order, user, vendor);
+        return mapToResponseDto(order, user, vendor, false);
     }
 
     public OrdersResponseDto getUserOrders(String userId) {
@@ -194,7 +234,7 @@ public class OrderService {
                 .map(order -> {
                     User user = userRepository.findById(userId).orElse(null);
                     Vendor vendor = vendorRepository.findById(order.getVendorId()).orElse(null);
-                    return mapToResponseDto(order, user, vendor);
+                    return mapToResponseDto(order, user, vendor, true);
                 })
                 .collect(Collectors.toList());
 
@@ -213,7 +253,7 @@ public class OrderService {
         return orderPage.map(order -> {
             User user = userRepository.findById(order.getUserId()).orElse(null);
             Vendor vendor = vendorRepository.findById(vendorId).orElse(null);
-            return mapToResponseDto(order, user, vendor);
+            return mapToResponseDto(order, user, vendor, false);
         });
     }
 
@@ -224,7 +264,7 @@ public class OrderService {
         return orderPage.map(order -> {
             User user = userRepository.findById(order.getUserId()).orElse(null);
             Vendor vendor = vendorRepository.findById(vendorId).orElse(null);
-            return mapToResponseDto(order, user, vendor);
+            return mapToResponseDto(order, user, vendor, false);
         });
     }
 
@@ -234,7 +274,7 @@ public class OrderService {
                 .map(order -> {
                     User user = userRepository.findById(userId).orElse(null);
                     Vendor vendor = vendorRepository.findById(order.getVendorId()).orElse(null);
-                    return mapToResponseDto(order, user, vendor);
+                    return mapToResponseDto(order, user, vendor, true);
                 })
                 .collect(Collectors.toList());
 
@@ -250,7 +290,7 @@ public class OrderService {
                 .map(order -> {
                     User user = userRepository.findById(order.getUserId()).orElse(null);
                     Vendor vendor = vendorRepository.findById(vendorId).orElse(null);
-                    return mapToResponseDto(order, user, vendor);
+                    return mapToResponseDto(order, user, vendor, false);
                 })
                 .collect(Collectors.toList());
 
@@ -293,7 +333,6 @@ public class OrderService {
         stats.setCompletedOrders(orderRepository.countByUserIdAndOrderStatus(userId, OrderStatus.COMPLETED));
         stats.setCancelledOrders(orderRepository.countByUserIdAndOrderStatus(userId, OrderStatus.CANCELLED));
 
-        // Calculate total spent
         List<Order> completedOrders = orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.COMPLETED);
         double totalSpent = completedOrders.stream().mapToDouble(Order::getTotalAmount).sum();
 
@@ -355,7 +394,7 @@ public class OrderService {
         }
     }
 
-    private OrderResponseDto mapToResponseDto(Order order, User user, Vendor vendor) {
+    private OrderResponseDto mapToResponseDto(Order order, User user, Vendor vendor, boolean includeOtp) {
         OrderResponseDto dto = new OrderResponseDto();
         dto.setId(order.getId());
         dto.setUserId(order.getUserId());
@@ -366,13 +405,27 @@ public class OrderService {
         dto.setTotalAmount(order.getTotalAmount());
         dto.setOrderStatus(order.getOrderStatus());
         dto.setSpecialInstructions(order.getSpecialInstructions());
+
+        dto.setPaymentStatus(order.getPaymentStatus());
+        dto.setPaymentMethod(order.getPaymentMethod());
+        dto.setTransactionId(order.getTransactionId());
+        dto.setAmountPaid(order.getAmountPaid());
+        dto.setPaymentDate(order.getPaymentDate());
+
+        boolean isPaymentAvailable = order.getOrderStatus() == OrderStatus.ACCEPTED
+                && (order.getPaymentStatus() == null || order.getPaymentStatus() == PaymentStatus.PENDING);
+        dto.setPaymentAvailable(isPaymentAvailable);
+
+        if (includeOtp) {
+            dto.setOtp(order.getOtp());
+        }
+
         dto.setCreatedAt(order.getCreatedAt());
         dto.setUpdatedAt(order.getUpdatedAt());
         return dto;
     }
 
     public OrderResponseDto createOrderFromCart(String userId) {
-        // Get user's cart
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new BadRequestException("Cart is empty"));
 
@@ -380,7 +433,6 @@ public class OrderService {
             throw new BadRequestException("Cart is empty");
         }
 
-        // Create order DTO from cart
         CreateOrderDto createDto = new CreateOrderDto();
         createDto.setVendorId(cart.getVendorId());
 
@@ -395,13 +447,53 @@ public class OrderService {
 
         createDto.setOrderItems(orderItemDtos);
 
-        // Create the order using existing logic
         OrderResponseDto orderResponse = createOrder(userId, createDto);
 
-        // Clear the cart after successful order
         cartRepository.deleteByUserId(userId);
         log.info("Cart cleared after order creation for user: {}", userId);
 
         return orderResponse;
+    }
+
+    public Map<String, OrdersResponseDto> getUserOrdersGrouped(String userId) {
+        Map<String, OrdersResponseDto> result = new LinkedHashMap<>();
+        for (OrderStatus status : OrderStatus.values()) {
+            List<Order> orders = orderRepository.findByUserIdAndOrderStatus(userId, status);
+            List<OrderResponseDto> orderDtos = orders.stream()
+                    .map(order -> {
+                        User user = userRepository.findById(userId).orElse(null);
+                        Vendor vendor = vendorRepository.findById(order.getVendorId()).orElse(null);
+                        return mapToResponseDto(order, user, vendor, true);
+                    })
+                    .collect(Collectors.toList());
+
+            OrdersResponseDto resp = OrdersResponseDto.builder()
+                    .orders(orderDtos)
+                    .count(orderDtos.size())
+                    .build();
+            result.put(status.name(), resp);
+        }
+        return result;
+    }
+
+    public Map<String, OrdersResponseDto> getVendorOrdersGrouped(String vendorId) {
+        Map<String, OrdersResponseDto> result = new LinkedHashMap<>();
+        for (OrderStatus status : OrderStatus.values()) {
+            List<Order> orders = orderRepository.findByVendorIdAndOrderStatus(vendorId, status);
+            List<OrderResponseDto> orderDtos = orders.stream()
+                    .map(order -> {
+                        User user = userRepository.findById(order.getUserId()).orElse(null);
+                        Vendor vendor = vendorRepository.findById(vendorId).orElse(null);
+                        return mapToResponseDto(order, user, vendor, false);
+                    })
+                    .collect(Collectors.toList());
+
+            OrdersResponseDto resp = OrdersResponseDto.builder()
+                    .orders(orderDtos)
+                    .count(orderDtos.size())
+                    .build();
+            result.put(status.name(), resp);
+        }
+        return result;
     }
 }

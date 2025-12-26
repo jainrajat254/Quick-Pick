@@ -11,9 +11,6 @@ public class RegisterUserDto {
     @NotBlank(message = "Full name is required")
     private String fullName;
 
-    @NotBlank(message = "Gender is required")
-    private String gender;
-
     @NotBlank(message = "Phone number is required")
     @Size(min = 10, max = 10, message = "Phone number must be 10 digits")
     private String phone;
@@ -29,8 +26,5 @@ public class RegisterUserDto {
     @NotBlank(message = "College name is required")
     private String collegeName;
 
-
-    @NotBlank(message = "Student ID is required")
-    private String studentId;
 
 }

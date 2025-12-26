@@ -4,8 +4,8 @@ object Constants {
     const val DATASTORE_FILE_NAME = "quick_pick.preferences_pb"
 //    const val BASE_URL = "https://0771701c2b50.ngrok-free.app"
 //    const val BASE_URL = "https://jq4ftr-ip-139-5-1-214.tunnelmole.net"
-//    const val BASE_URL = "https://jessika-interganglionic-goggly.ngrok-free.dev"
-    const val BASE_URL = "https://quick-pick-backend-nc96.onrender.com"
+    const val BASE_URL = "https://jessika-interganglionic-goggly.ngrok-free.dev"
+//    const val BASE_URL = "https://quick-pick-backend-nc96.onrender.com"
 object Endpoints {
         // Auth
         const val USER_LOGIN = "/api/auth/login/user"
@@ -22,6 +22,7 @@ object Endpoints {
         const val SEND_PASSWORD_OTP = "/api/auth/send-password-otp"
         const val SEND_EMAIL_OTP = "/api/auth/send-email-otp"
         const val VERIFY_EMAIL_OTP = "/api/auth/verify-email-otp"
+        const val IS_SESSION_VALID = "/api/auth/is-session-valid"
 
         // Image Upload
         const val UPLOAD_IMAGE = "/api/upload"
@@ -48,6 +49,7 @@ object Endpoints {
 
         const val GET_STUDENT_PROFILE = "/api/profile/user"
         const val GET_VENDOR_PROFILE = "/api/profile/vendor"
+        const val VENDOR_VERIFICATION_STATUS = "/api/profile/vendor/verification-status"
 
         const val GET_DEFAULT_VENDOR_CATEGORIES = "/api/vendor-categories/default"
         const val RESET_VENDOR_CATEGORIES_TO_DEFAULT = "/api/vendor-categories/reset"

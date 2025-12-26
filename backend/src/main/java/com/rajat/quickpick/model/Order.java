@@ -42,6 +42,8 @@ public class Order {
     private Double amountPaid;            // Amount actually paid
     private LocalDateTime paymentDate;    // When payment was made
 
+    private String otp;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

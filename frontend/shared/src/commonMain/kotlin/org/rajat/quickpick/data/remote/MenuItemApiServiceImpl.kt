@@ -95,16 +95,24 @@ class MenuItemApiServiceImpl(private val httpClient: HttpClient) : MenuItemApiSe
     }
 
     override suspend fun getVendorMenu(vendorId: String): GetVendorMenuResponse {
-        return httpClient.safeGet(
-            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.VENDOR_MENU}$vendorId"
-        )
+        val endpoint = "${Constants.BASE_URL}${Constants.Endpoints.VENDOR_MENU}$vendorId"
+        val resp: GetVendorMenuResponse = httpClient.safeGet(endpoint = endpoint)
+        try {
+            println("[MenuItemApiService] GET vendor menu -> endpoint=$endpoint, count=${resp.size}")
+        } catch (_: Exception) {}
+        return resp
     }
 
     override suspend fun getVendorMenuByCategory(vendorId: String, category: String): GetVendorMenuByCategoryResponse {
         val endpoint = "${Constants.BASE_URL}${Constants.Endpoints.VENDOR_MENU}$vendorId/category/$category"
-        return httpClient.safeGet(
+        val resp: GetVendorMenuByCategoryResponse = httpClient.safeGet(
             endpoint = endpoint
         )
+        try {
+            val cnt = resp.menuItems?.size ?: 0
+            println("[MenuItemApiService] GET vendor menu by category -> endpoint=$endpoint, category=$category, count=$cnt")
+        } catch (_: Exception) {}
+        return resp
     }
 
     override suspend fun getMenuItemById(menuItemId: String): CreateMenuItemResponse {

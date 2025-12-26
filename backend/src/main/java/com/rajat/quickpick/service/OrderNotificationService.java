@@ -11,10 +11,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import com.rajat.quickpick.dto.order.OrderNotificationDto;
 
-//to vendor for order
-//to user for status
-//to vendor is cancelled
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -116,7 +112,6 @@ public class OrderNotificationService {
                 log.info("order notif user is not connected via websocket");
             }
 
-            // Always send FCM for important status updates
             log.info("order notif sending fcm notification for status update");
             notificationService.sendOrderNotification(order, templateKey, user.getId(), "USER");
         } else {

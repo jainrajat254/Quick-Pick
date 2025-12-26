@@ -40,14 +40,13 @@ public class Vendor {
 
     private String gstNumber;
     private String licenseNumber;
-    private String foodLicenseNumber;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     private Role role = Role.VENDOR;
 
-    private VendorVerificationStatus verificationStatus = VendorVerificationStatus.VERIFIED; //set to pending
+    private VendorVerificationStatus verificationStatus = VendorVerificationStatus.PENDING;
     private LocalDateTime verifiedAt;
     private LocalDateTime rejectedAt;
     private String rejectionReason;

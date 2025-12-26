@@ -81,18 +81,16 @@ fun MenuItemDetailsForm(
                 onValueChange = onDescriptionChange,
                 icon = Icons.Default.Description,
                 singleLine = false,
-                maxLines = 3
+                maxLines = 3,
+                maxLength = 30
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+
                 OutlinedTextField(
                     value = price,
                     onValueChange = onPriceChange,
                     label = { Text("Price*") },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                     leadingIcon = {
                         Text(
                             "₹",
@@ -102,16 +100,8 @@ fun MenuItemDetailsForm(
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
-                FormInfoField(
-                    label = "Quantity",
-                    value = quantity,
-                    onValueChange = onQuantityChange,
-                    icon = Icons.Default.Inventory2,
-                    keyboardType = KeyboardType.Number,
-                    placeholder = "e.g. 10",
-                    modifier = Modifier.weight(1f)
-                )
-            }
+
+
 
             CustomDropdown(
                 value = category,
@@ -121,9 +111,17 @@ fun MenuItemDetailsForm(
                 options = categoryOptions ?: emptyList(),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
+                    .padding(top = 16.dp, bottom = 16.dp)
             )
-
+            FormInfoField(
+                label = "Quantity",
+                value = quantity,
+                onValueChange = onQuantityChange,
+                icon = Icons.Default.Inventory2,
+                keyboardType = KeyboardType.Number,
+                placeholder = "e.g. 10",
+                modifier = Modifier.fillMaxWidth()
+            )
             ToggleRow(
                 text = "Item is Vegetarian",
                 checked = isVeg,

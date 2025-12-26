@@ -23,6 +23,7 @@ import org.rajat.quickpick.presentation.feature.menuitem.components.MenuItemEmpt
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.ErrorUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +53,8 @@ fun MenuItemScreen(
     LaunchedEffect(menuItemsState) {
         when (menuItemsState) {
             is UiState.Error -> {
-                val message = (menuItemsState as UiState.Error).message ?: "Failed to load menu items"
+                val raw = (menuItemsState as UiState.Error).message
+                val message = ErrorUtils.sanitizeError(raw)
                 showToast(message)
             }
             else -> Unit
@@ -129,8 +131,7 @@ fun MenuItemScreen(
 
             is UiState.Error -> {
                 ErrorState(
-                    message = (menuItemsState as UiState.Error).message
-                        ?: "Failed to load menu items",
+                    message = ErrorUtils.sanitizeError((menuItemsState as UiState.Error).message),
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
@@ -163,7 +164,8 @@ fun MenuItemScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(paddingValues),
+                            .padding(paddingValues)
+                            .navigationBarsPadding(),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {

@@ -31,6 +31,8 @@ class LocalDataStoreImpl(
 
         private val HAS_ONBOARDED_KEY = booleanPreferencesKey("has_onboarded")
 
+        private val HAS_REQUESTED_NOTIFICATION_PERMISSION_KEY = booleanPreferencesKey("has_requested_notification_permission")
+
         private val PENDING_VERIFICATION_EMAIL_KEY = stringPreferencesKey("pending_verification_email")
         private val PENDING_VERIFICATION_USER_TYPE_KEY = stringPreferencesKey("pending_verification_user_type")
 
@@ -131,6 +133,15 @@ class LocalDataStoreImpl(
         dataStore.data.map { prefs ->
             prefs[HAS_ONBOARDED_KEY] ?: false
         }
+
+    override suspend fun setHasRequestedNotificationPermission(bool: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[HAS_REQUESTED_NOTIFICATION_PERMISSION_KEY] = bool
+        }
+    }
+
+    override suspend fun getHasRequestedNotificationPermission(): Boolean =
+        dataStore.data.first()[HAS_REQUESTED_NOTIFICATION_PERMISSION_KEY] ?: false
 
     override suspend fun savePendingVerification(email: String, userType: String) {
         dataStore.edit { prefs ->

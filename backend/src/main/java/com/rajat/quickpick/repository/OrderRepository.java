@@ -46,4 +46,8 @@ public interface OrderRepository extends MongoRepository<Order, String> {
     List<Order> findByVendorIdAndDeliveredToVendor(String vendorId, boolean deliveredToVendor);
 
     List<Order> findByVendorIdAndDeliveredToVendorOrderByCreatedAtAsc(String vendorId, boolean deliveredToVendor);
+
+    Order findByTransactionId(String transactionId);
+
+    Order findByVendorIdAndOtpAndDeliveredToVendor(String vendorId, String otp, boolean deliveredToVendor);
 }

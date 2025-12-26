@@ -29,7 +29,8 @@ fun HelpAndFaqsScreen(
             .padding(16.dp)
     ) {
         LazyColumn(
-            modifier = Modifier.weight(1f).padding(top=16.dp),
+            modifier = Modifier.weight(1f).padding(top=16.dp)
+                .navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(dummyFaqList, key = { it.id }) { faqItem ->

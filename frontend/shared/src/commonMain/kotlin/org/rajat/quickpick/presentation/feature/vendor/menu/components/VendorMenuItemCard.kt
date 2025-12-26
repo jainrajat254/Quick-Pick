@@ -73,14 +73,14 @@ fun VendorMenuItemCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = if (menuItem.available == true) "Available" else "Unavailable",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (menuItem.available == true)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.error
-                    )
+//                    Text(
+//                        text = if (menuItem.available == true) "Available" else "Unavailable",
+//                        style = MaterialTheme.typography.bodySmall,
+//                        color = if (menuItem.available == true)
+//                            MaterialTheme.colorScheme.primary
+//                        else
+//                            MaterialTheme.colorScheme.error
+//                    )
                     Switch(
                         checked = menuItem.available ?: false,
                         onCheckedChange = { onToggleAvailability() }

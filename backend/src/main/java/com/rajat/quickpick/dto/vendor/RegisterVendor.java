@@ -45,8 +45,5 @@ public class RegisterVendor {
     @NotBlank(message = "License number is required")
     private String licenseNumber;
 
-    @NotBlank(message = "Food license number is required")
-    private String foodLicenseNumber;
-
 
 }

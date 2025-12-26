@@ -11,7 +11,6 @@ data class SuspendVendorResponse(
     val email: String? = null,
     val emailVerified: Boolean? = null,
     val foodCategories: List<String?>? = null,
-    val foodLicenseNumber: String? = null,
     val gstNumber: String? = null,
     val id: String? = null,
     val licenseNumber: String? = null,

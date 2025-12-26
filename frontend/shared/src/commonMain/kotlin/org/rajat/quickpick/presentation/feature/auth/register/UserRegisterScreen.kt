@@ -4,16 +4,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -57,6 +56,7 @@ import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.ErrorUtils
 import quickpick.shared.generated.resources.Res
 import quickpick.shared.generated.resources.registerbackground
 import kotlin.time.ExperimentalTime
@@ -73,21 +73,15 @@ fun UserRegisterScreen(
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
-    var studentId by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var selectedCollege by remember { mutableStateOf("") }
-    var selectedGender by remember { mutableStateOf("") }
-    var selectedBranch by remember { mutableStateOf("") }
 
     val isFormValid = Validators.isUserFormValid(
         fullName = fullName,
         email = email,
         phone = phone,
-        studentId = studentId,
         password = password,
-        collegeName = selectedCollege,
-        gender = selectedGender,
-        branch = selectedBranch
+        collegeName = selectedCollege
     )
 
 
@@ -114,10 +108,11 @@ fun UserRegisterScreen(
                 }
             }
             is UiState.Error -> {
-                val message = (userRegisterState as UiState.Error).message ?: "Unknown error"
+                val raw = (userRegisterState as UiState.Error).message
+                val message = ErrorUtils.sanitizeError(raw)
                 Logger.withTag("REGISTER").d { "USER_REGISTER error: $message" }
                 showToast(message)
-                logger.e { message }
+                logger.e { raw ?: "Unknown error" }
                 authViewModel.resetAuthStates()
             }
             else -> Unit
@@ -157,7 +152,8 @@ fun UserRegisterScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .navigationBarsPadding(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -195,6 +191,15 @@ fun UserRegisterScreen(
                         leadingIcon = Icons.Filled.Person
                     )
                 }
+                item {
+                    CustomDropdown(
+                        value = selectedCollege,
+                        onValueChange = { selectedCollege = it },
+                        label = "Select College",
+                        leadingIcon = Icons.Filled.School,
+                        options = DummyData.colleges.map { it.name }
+                    )
+                }
 
                 item {
                     CustomTextField(
@@ -217,14 +222,6 @@ fun UserRegisterScreen(
                     )
                 }
 
-                item {
-                    CustomTextField(
-                        value = studentId,
-                        onValueChange = { studentId = it },
-                        label = "Student ID",
-                        leadingIcon = Icons.Filled.Badge
-                    )
-                }
 
                 item {
                     CustomTextField(
@@ -238,39 +235,7 @@ fun UserRegisterScreen(
                     )
                 }
 
-                item {
-                    CustomDropdown(
-                        value = selectedCollege,
-                        onValueChange = { selectedCollege = it },
-                        label = "Select College",
-                        leadingIcon = Icons.Filled.School,
-                        options = DummyData.colleges.map { it.name }
-                    )
-                }
 
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        CustomDropdown(
-                            value = selectedGender,
-                            onValueChange = { selectedGender = it },
-                            label = "Gender",
-                            leadingIcon = Icons.Filled.Person,
-                            options = DummyData.genders,
-                            modifier = Modifier.weight(1f)
-                        )
-                        CustomDropdown(
-                            value = selectedBranch,
-                            onValueChange = { selectedBranch = it },
-                            label = "Branch",
-                            leadingIcon = Icons.Filled.School,
-                            options = DummyData.branches.map { it.name },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
 
                 item {
                     RegisterButton(
@@ -281,10 +246,7 @@ fun UserRegisterScreen(
                                     email = email.trim().lowercase(),
                                     password = password.trim(),
                                     phone = phone.trim(),
-                                    studentId = studentId.trim(),
-                                    collegeName = selectedCollege,
-                                    gender = selectedGender,
-                                    department = selectedBranch
+                                    collegeName = selectedCollege
                                 )
                                 authViewModel.registerUser(registerUserRequest)
                             } else {

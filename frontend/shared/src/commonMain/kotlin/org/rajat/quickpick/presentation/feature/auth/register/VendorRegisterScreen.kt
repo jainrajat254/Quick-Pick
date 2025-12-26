@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -57,6 +58,7 @@ import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.Validators
+import org.rajat.quickpick.utils.ErrorUtils
 import org.rajat.quickpick.utils.toast.showToast
 import quickpick.shared.generated.resources.Res
 import quickpick.shared.generated.resources.registerbackground
@@ -79,7 +81,6 @@ fun VendorRegisterScreen(
     var address by remember { mutableStateOf("") }
     var gstNumber by remember { mutableStateOf("") }
     var licenseNumber by remember { mutableStateOf("") }
-    var foodLicenseNumber by remember { mutableStateOf("") }
     var vendorDescription by remember { mutableStateOf("") }
     var foodCategories by remember { mutableStateOf<List<String>>(emptyList()) }
     var selectedCollege by remember { mutableStateOf("") }
@@ -93,7 +94,6 @@ fun VendorRegisterScreen(
         address,
         gstNumber,
         licenseNumber,
-        foodLicenseNumber,
         selectedCollege
     )
 
@@ -119,9 +119,10 @@ fun VendorRegisterScreen(
             }
 
             is UiState.Error -> {
-                val message = (vendorRegisterState as UiState.Error).message ?: "Unknown error"
+                val raw = (vendorRegisterState as UiState.Error).message
+                val message = ErrorUtils.sanitizeError(raw)
                 showToast(message)
-                logger.e { message }
+                logger.e { raw ?: "Unknown error" }
                 authViewModel.resetAuthStates()
             }
 
@@ -162,7 +163,8 @@ fun VendorRegisterScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .navigationBarsPadding(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -271,15 +273,6 @@ fun VendorRegisterScreen(
                 }
 
                 item {
-                    CustomTextField(
-                        value = foodLicenseNumber,
-                        onValueChange = { foodLicenseNumber = it },
-                        label = "Food License Number",
-                        leadingIcon = Icons.Filled.Badge
-                    )
-                }
-
-                item {
                     CustomDropdown(
                         value = selectedCollege,
                         onValueChange = { selectedCollege = it },
@@ -310,7 +303,6 @@ fun VendorRegisterScreen(
                                 address = address.trim(),
                                 gstNumber = gstNumber.trim(),
                                 licenseNumber = licenseNumber.trim(),
-                                foodLicenseNumber = foodLicenseNumber.trim(),
                                 collegeName = selectedCollege,
                                 foodCategories = foodCategories,
                                 vendorDescription = vendorDescription

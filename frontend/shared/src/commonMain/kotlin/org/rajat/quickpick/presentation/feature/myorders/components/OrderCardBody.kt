@@ -20,11 +20,11 @@ fun OrderCardBody(createdAt: String, status: OrderStatus) {
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = formatOrderDate(createdAt),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+//        Text(
+//            text = formatOrderDate(createdAt),
+//            style = MaterialTheme.typography.bodySmall,
+//            color = MaterialTheme.colorScheme.onSurfaceVariant
+//        )
         StatusChip(status = status)
     }
 }

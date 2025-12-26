@@ -3,5 +3,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UpdateOrderStateRequest(
-    val orderStatus: String?=null
+    val orderStatus: String?=null,
+    val otp: String?=null
 )

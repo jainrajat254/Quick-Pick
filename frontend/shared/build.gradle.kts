@@ -85,6 +85,9 @@ kotlin {
             //Local Storage
             api(libs.datastore.preferences)
             api(libs.datastore)
+
+            implementation("dev.gitlive:firebase-app:2.4.0")
+            implementation("dev.gitlive:firebase-crashlytics:2.4.0")
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.ios)

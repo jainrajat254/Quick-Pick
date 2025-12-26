@@ -21,6 +21,10 @@ import org.rajat.quickpick.presentation.viewmodel.CartViewModel
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.ErrorUtils
+import co.touchlab.kermit.Logger
+
+private val logger = Logger.withTag("CheckoutScreen")
 
 @Composable
 fun CheckoutScreen(
@@ -30,16 +34,15 @@ fun CheckoutScreen(
     orderViewModel: OrderViewModel = koinInject()
 ) {
     var specialInstructions by remember { mutableStateOf("") }
+    var selectedPaymentMethod by remember { mutableStateOf("PAY_ON_DELIVERY") }
     val cartState by cartViewModel.cartState.collectAsState()
     val createOrderState by orderViewModel.createOrderState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
-    // Fetch cart on first composition
     LaunchedEffect(Unit) {
         cartViewModel.getCart()
     }
 
-    // Handle order creation state
     LaunchedEffect(createOrderState) {
         when (createOrderState) {
             is UiState.Success -> {
@@ -57,7 +60,9 @@ fun CheckoutScreen(
                 }
             }
             is UiState.Error -> {
-                showToast((createOrderState as UiState.Error).message)
+                val raw = (createOrderState as UiState.Error).message
+                logger.e { "Create order error: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
             }
             else -> {}
         }
@@ -68,6 +73,7 @@ fun CheckoutScreen(
             .fillMaxSize()
             .padding(paddingValues)
             .verticalScroll(rememberScrollState())
+            .navigationBarsPadding()
             .padding(16.dp)
     ) {
         when (val state = cartState) {
@@ -101,7 +107,8 @@ fun CheckoutScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                PaymentMethod()
+                // Pass selected payment method state down to composable
+                PaymentMethod(selectedMethod = selectedPaymentMethod, onMethodSelected = { selectedPaymentMethod = it })
 
                 SpecialInstructions(
                     specialInstructions = specialInstructions,

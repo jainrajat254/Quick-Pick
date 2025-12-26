@@ -43,38 +43,40 @@ fun StatusChip(status: OrderStatus) {
 
     val icon = when (status) {
         OrderStatus.COMPLETED -> Icons.Default.CheckCircle
-        OrderStatus.CANCELLED, OrderStatus.REJECTED -> Icons.Default.Warning // Use Error icon
+        OrderStatus.CANCELLED, OrderStatus.REJECTED -> Icons.Default.Warning
         OrderStatus.READY_FOR_PICKUP -> Icons.Default.ThumbUp
         else -> Icons.Default.Info
     }
 
     val text = when (status) {
-        OrderStatus.COMPLETED -> "Order delivered"
+        OrderStatus.COMPLETED -> "Order Delivered"
         OrderStatus.CANCELLED, OrderStatus.REJECTED -> "Order Cancelled"
         OrderStatus.PENDING -> "Pending Confirmation"
         OrderStatus.ACCEPTED -> "Order Accepted"
         OrderStatus.PREPARING -> "Food is Preparing"
         OrderStatus.READY_FOR_PICKUP -> "Ready for Pickup"
     }
+
     Surface(
-        shape = RoundedCornerShape(50),
+        shape = RoundedCornerShape(12.dp),
         color = backgroundColor,
+        shadowElevation = 1.dp,
         modifier = Modifier
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = "Status",
                 tint = contentColor,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(20.dp)
             )
             Text(
                 text = text,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.titleSmall,
                 color = contentColor,
                 fontWeight = FontWeight.Bold
             )

@@ -29,6 +29,11 @@ public class OrderResponseDto {
     private LocalDateTime paymentDate;
     private boolean isPaymentAvailable;
 
+    private String otp;
+
+    private boolean deliveredToVendor;
+    private LocalDateTime deliveredToVendorAt;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

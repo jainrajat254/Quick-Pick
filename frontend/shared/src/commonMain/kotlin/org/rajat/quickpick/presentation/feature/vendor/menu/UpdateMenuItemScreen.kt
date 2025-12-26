@@ -24,6 +24,7 @@ import org.rajat.quickpick.utils.ImagePickerHelper
 import org.rajat.quickpick.utils.ImageUploadState
 import org.rajat.quickpick.presentation.viewmodel.ProfileViewModel
 import co.touchlab.kermit.Logger
+import org.rajat.quickpick.utils.ErrorUtils
 
 private val logger = Logger.withTag("CLOUDINARY_IMAGE_DEBUG")
 
@@ -85,7 +86,9 @@ fun UpdateMenuItemScreen(
                 isPageLoading = false
             }
             is UiState.Error -> {
-                showToast((singleState as UiState.Error).message ?: "Failed to load item")
+                val raw = (singleState as UiState.Error).message
+                logger.e { "UpdateMenuItemScreen: failed to load item: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
                 isPageLoading = false
             }
             is UiState.Loading -> {
@@ -105,7 +108,9 @@ fun UpdateMenuItemScreen(
                 navController.popBackStack()
             }
             is UiState.Error -> {
-                showToast((updateState as UiState.Error).message ?: "Failed to update item")
+                val raw = (updateState as UiState.Error).message
+                logger.e { "UpdateMenuItemScreen: failed to update item: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
                 isSaving = false
                 menuItemViewModel.resetUpdateMenuItemState()
             }
@@ -123,7 +128,9 @@ fun UpdateMenuItemScreen(
                 navController.popBackStack()
             }
             is UiState.Error -> {
-                showToast((deleteState as UiState.Error).message ?: "Failed to delete item")
+                val raw = (deleteState as UiState.Error).message
+                logger.e { "UpdateMenuItemScreen: failed to delete item: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
                 isDeleting = false
                 menuItemViewModel.resetDeleteMenuItemState()
             }
@@ -143,7 +150,7 @@ fun UpdateMenuItemScreen(
             is ImageUploadState.Error -> {
                 val errorMessage = (imageUploadState as ImageUploadState.Error).message
                 logger.e { "UpdateMenuItemScreen: Image upload failed with error=$errorMessage" }
-                showToast("Image upload failed: $errorMessage")
+                showToast(ErrorUtils.sanitizeError(errorMessage))
             }
             is ImageUploadState.Uploading -> {
                 logger.d { "UpdateMenuItemScreen: Image is uploading..." }
@@ -216,6 +223,7 @@ fun UpdateMenuItemScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
+                    .navigationBarsPadding()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

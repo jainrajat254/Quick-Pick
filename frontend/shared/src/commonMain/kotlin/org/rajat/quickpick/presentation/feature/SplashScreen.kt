@@ -11,18 +11,18 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.rajat.quickpick.data.local.LocalDataStore
 import org.rajat.quickpick.presentation.feature.auth.onboarding.WelcomeScreen
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.navigation.AppScreenVendor
-import org.rajat.quickpick.utils.tokens.RefreshTokenManager
+import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
+import org.rajat.quickpick.di.TokenProvider
 
 @Composable
 fun SplashScreen(
     navController: NavController,
     datastore: LocalDataStore,
-    refreshTokenManager: RefreshTokenManager
+    authViewModel: AuthViewModel
 ) {
     val logger = Logger.withTag("SPLASH LOGGER")
     val hasOnboarded by datastore.hasOnboarded.collectAsState(initial = false)
@@ -48,64 +48,63 @@ fun SplashScreen(
             return@LaunchedEffect
         }
 
-        val token = datastore.getToken()
-        logger.d { "SplashScreen Token: $token" }
+        val hasRequestedNotificationPermission = datastore.getHasRequestedNotificationPermission()
 
-        val logoutLogger = Logger.withTag("LOGOUT_DEBUG")
-        logoutLogger.d { "SPLASH - Checking auto-login" }
-        logoutLogger.d { "SPLASH - Token: $token" }
+        if (!hasRequestedNotificationPermission) {
+            navController.navigate(AppScreenUser.NotificationPermission) {
+                popUpTo(0) { inclusive = true }
+            }
+            return@LaunchedEffect
+        }
 
-        if (token.isNullOrEmpty()) {
-            logger.i { "No token found. Navigating to LaunchWelcome." }
-            logoutLogger.d { "SPLASH - No token found, navigating to LaunchWelcome" }
+        val accessToken = datastore.getToken()
+        val refreshToken = datastore.getRefreshToken()
+
+        if (accessToken.isNullOrBlank() || refreshToken.isNullOrBlank()) {
+            datastore.clearAll()
             navController.navigate(AppScreenUser.LaunchWelcome) {
                 popUpTo(0) { inclusive = true }
             }
-        } else {
-            val userRole = datastore.getUserRole()
-            val userId = datastore.getId()
-            val refreshToken = datastore.getRefreshToken()
+            return@LaunchedEffect
+        }
 
-            logoutLogger.d { "SPLASH - UserRole: $userRole" }
-            logoutLogger.d { "SPLASH - UserId: $userId" }
-            logoutLogger.d { "SPLASH - RefreshToken: $refreshToken" }
+        val isValid = try {
+            authViewModel.isSessionValid()
+        } catch (e: Exception) {
+            logger.e(e) { "Error checking session validity" }
+            false
+        }
 
-            val destination = when (userRole) {
-                "VENDOR" -> {
-                    logoutLogger.d { "SPLASH - Auto-logging in as VENDOR" }
-                    AppScreenVendor.VendorDashboard
-                }
-                "USER" -> {
-                    logoutLogger.d { "SPLASH - Auto-logging in as USER" }
-                    AppScreenUser.HomeScreen
-                }
-                else -> {
-                    logoutLogger.d { "SPLASH - Invalid role, clearing datastore" }
-                    datastore.clearAll()
-                    navController.navigate(AppScreenUser.LaunchWelcome) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                    return@LaunchedEffect
-                }
-            }
-
-            logoutLogger.d { "SPLASH - Navigating to: $destination" }
-            navController.navigate(destination) {
+        if (!isValid) {
+            datastore.clearAll()
+            TokenProvider.token = null
+            navController.navigate(AppScreenUser.LaunchWelcome) {
                 popUpTo(0) { inclusive = true }
             }
+            return@LaunchedEffect
+        }
 
-            launch {
-                try {
-                    val refreshed = refreshTokenManager.ensureValidToken()
-                    if (refreshed) {
-                        logger.i { "Background token refresh successful." }
-                    } else {
-                        logger.w { "Background token refresh failed." }
-                    }
-                } catch (e: Exception) {
-                    logger.e(e) { "Error during background token refresh." }
-                }
+        val userRole = datastore.getUserRole()
+
+        val destination = when (userRole) {
+            "VENDOR" -> {
+                AppScreenVendor.VendorDashboard
             }
+            "USER" -> {
+                AppScreenUser.HomeScreen
+            }
+            else -> {
+                datastore.clearAll()
+                TokenProvider.token = null
+                navController.navigate(AppScreenUser.LaunchWelcome) {
+                    popUpTo(0) { inclusive = true }
+                }
+                return@LaunchedEffect
+            }
+        }
+
+        navController.navigate(destination) {
+            popUpTo(0) { inclusive = true }
         }
     }
 

@@ -7,6 +7,7 @@ import org.rajat.quickpick.domain.modal.profile.UpdateUserProfileRequest
 import org.rajat.quickpick.domain.modal.profile.UpdateUserProfileResponse
 import org.rajat.quickpick.domain.modal.profile.UpdateVendorProfileRequest
 import org.rajat.quickpick.domain.modal.profile.UpdateVendorProfileResponse
+import org.rajat.quickpick.domain.modal.profile.VendorVerificationStatusResponse
 import org.rajat.quickpick.domain.service.ProfileApiService
 import org.rajat.quickpick.utils.Constants
 import org.rajat.quickpick.utils.network.safeGet
@@ -23,6 +24,12 @@ class ProfileApiServiceImpl(private val httpClient: HttpClient) : ProfileApiServ
     override suspend fun getVendorProfile(): GetVendorProfileResponse {
         return httpClient.safeGet(
             endpoint = "${Constants.BASE_URL}${Constants.Endpoints.GET_VENDOR_PROFILE}",
+        )
+    }
+
+    override suspend fun getVendorVerificationStatus(): VendorVerificationStatusResponse {
+        return httpClient.safeGet(
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.VENDOR_VERIFICATION_STATUS}",
         )
     }
 

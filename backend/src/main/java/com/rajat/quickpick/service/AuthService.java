@@ -79,31 +79,23 @@ public class AuthService {
             throw new BadRequestException("Phone number already registered and verified");
         }
 
-        if (userRepository.existsByStudentId(registrationDto.getStudentId())) {
-            throw new BadRequestException("Student ID already registered and verified");
-        }
-
         Optional<PendingUser> existingPendingUser = pendingUserRepository.findByEmail(registrationDto.getEmail());
 
         PendingUser pendingUser;
         if (existingPendingUser.isPresent()) {
             pendingUser = existingPendingUser.get();
             pendingUser.setFullName(registrationDto.getFullName());
-            pendingUser.setGender(registrationDto.getGender());
             pendingUser.setPhone(registrationDto.getPhone());
             pendingUser.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
             pendingUser.setCollegeName(registrationDto.getCollegeName());
-            pendingUser.setStudentId(registrationDto.getStudentId());
             pendingUser.setUpdatedAt(LocalDateTime.now());
         } else {
             pendingUser = new PendingUser();
             pendingUser.setFullName(registrationDto.getFullName());
-            pendingUser.setGender(registrationDto.getGender());
             pendingUser.setPhone(registrationDto.getPhone());
             pendingUser.setEmail(registrationDto.getEmail());
             pendingUser.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
             pendingUser.setCollegeName(registrationDto.getCollegeName());
-            pendingUser.setStudentId(registrationDto.getStudentId());
             pendingUser.setRole(Role.STUDENT);
             pendingUser.setCreatedAt(LocalDateTime.now());
             pendingUser.setUpdatedAt(LocalDateTime.now());
@@ -130,6 +122,7 @@ public class AuthService {
     }
 
     public AuthResponseDto registerVendor(RegisterVendor registrationDto) {
+        log.info("registerVendor called for email={}", registrationDto.getEmail());
         if (vendorRepository.existsByEmail(registrationDto.getEmail())) {
             throw new BadRequestException("Email already registered and verified");
         }
@@ -146,6 +139,7 @@ public class AuthService {
 
         PendingVendor pendingVendor;
         if (existingPendingVendor.isPresent()) {
+            log.info("existing pending vendor found for email={}", registrationDto.getEmail());
             pendingVendor = existingPendingVendor.get();
             pendingVendor.setVendorName(registrationDto.getVendorName());
             pendingVendor.setStoreName(registrationDto.getStoreName());
@@ -161,9 +155,9 @@ public class AuthService {
             pendingVendor.setFoodCategories(categories);
             pendingVendor.setGstNumber(registrationDto.getGstNumber());
             pendingVendor.setLicenseNumber(registrationDto.getLicenseNumber());
-            pendingVendor.setFoodLicenseNumber(registrationDto.getFoodLicenseNumber());
             pendingVendor.setUpdatedAt(LocalDateTime.now());
         } else {
+            log.info("creating new pending vendor for email={}", registrationDto.getEmail());
             pendingVendor = new PendingVendor();
             pendingVendor.setVendorName(registrationDto.getVendorName());
             pendingVendor.setStoreName(registrationDto.getStoreName());
@@ -180,7 +174,6 @@ public class AuthService {
             pendingVendor.setFoodCategories(categories);
             pendingVendor.setGstNumber(registrationDto.getGstNumber());
             pendingVendor.setLicenseNumber(registrationDto.getLicenseNumber());
-            pendingVendor.setFoodLicenseNumber(registrationDto.getFoodLicenseNumber());
             pendingVendor.setRole(Role.VENDOR);
             pendingVendor.setCreatedAt(LocalDateTime.now());
             pendingVendor.setUpdatedAt(LocalDateTime.now());
@@ -193,6 +186,37 @@ public class AuthService {
         pendingVendor.setOtpAttempts(0);
 
         PendingVendor savedPendingVendor = pendingVendorRepository.save(pendingVendor);
+        log.info("pending vendor saved with id={}", savedPendingVendor.getId());
+
+        if (!vendorRepository.existsByEmail(savedPendingVendor.getEmail())) {
+            Vendor vendor = new Vendor();
+            vendor.setVendorName(savedPendingVendor.getVendorName());
+            vendor.setStoreName(savedPendingVendor.getStoreName());
+            vendor.setEmail(savedPendingVendor.getEmail());
+            vendor.setPhone(savedPendingVendor.getPhone());
+            vendor.setPassword(savedPendingVendor.getPassword());
+            vendor.setAddress(savedPendingVendor.getAddress());
+            vendor.setCollegeName(savedPendingVendor.getCollegeName());
+            vendor.setVendorDescription(savedPendingVendor.getVendorDescription());
+            vendor.setFoodCategories(savedPendingVendor.getFoodCategories());
+            vendor.setGstNumber(savedPendingVendor.getGstNumber());
+            vendor.setLicenseNumber(savedPendingVendor.getLicenseNumber());
+            vendor.setRole(Role.VENDOR);
+            vendor.setEmailVerified(false);
+            vendor.setPhoneVerified(false);
+            vendor.setVerificationStatus(com.rajat.quickpick.enums.VendorVerificationStatus.PENDING);
+            vendor.setCreatedAt(LocalDateTime.now());
+            vendor.setUpdatedAt(LocalDateTime.now());
+            Vendor savedVendor = vendorRepository.save(vendor);
+            log.info("vendor record created with id={} and PENDING status", savedVendor.getId());
+
+            emailService.sendVendorRegistrationNotificationToAdmin(
+                    savedVendor.getVendorName(),
+                    savedVendor.getEmail(),
+                    savedVendor.getStoreName(),
+                    savedVendor.getCollegeName()
+            );
+        }
 
         emailService.sendEmailVerificationOtp(savedPendingVendor.getEmail(), otp, Role.VENDOR, EMAIL_OTP_EXPIRATION_MINUTES);
 
@@ -403,12 +427,10 @@ public class AuthService {
 
             User user = new User();
             user.setFullName(pendingUser.getFullName());
-            user.setGender(pendingUser.getGender());
             user.setPhone(pendingUser.getPhone());
             user.setEmail(pendingUser.getEmail());
             user.setPassword(pendingUser.getPassword());
             user.setCollegeName(pendingUser.getCollegeName());
-            user.setStudentId(pendingUser.getStudentId());
             user.setRole(Role.STUDENT);
             user.setEmailVerified(true);
             user.setPhoneVerified(false);
@@ -437,34 +459,48 @@ public class AuthService {
                 throw new BadRequestException("Incorrect code");
             }
 
-            Vendor vendor = new Vendor();
-            vendor.setVendorName(pendingVendor.getVendorName());
-            vendor.setStoreName(pendingVendor.getStoreName());
-            vendor.setEmail(pendingVendor.getEmail());
-            vendor.setPhone(pendingVendor.getPhone());
-            vendor.setPassword(pendingVendor.getPassword());
-            vendor.setAddress(pendingVendor.getAddress());
-            vendor.setCollegeName(pendingVendor.getCollegeName());
-            vendor.setVendorDescription(pendingVendor.getVendorDescription());
-            vendor.setFoodCategories(pendingVendor.getFoodCategories());
-            vendor.setGstNumber(pendingVendor.getGstNumber());
-            vendor.setLicenseNumber(pendingVendor.getLicenseNumber());
-            vendor.setFoodLicenseNumber(pendingVendor.getFoodLicenseNumber());
-            vendor.setRole(Role.VENDOR);
-            vendor.setEmailVerified(true);
-            vendor.setPhoneVerified(false);
-            vendor.setCreatedAt(pendingVendor.getCreatedAt());
-            vendor.setUpdatedAt(LocalDateTime.now());
+            var existingVendorOpt = vendorRepository.findByEmail(email);
+            Vendor notifVendor = null;
+            if (existingVendorOpt.isPresent()) {
+                Vendor existingVendor = existingVendorOpt.get();
+                existingVendor.setEmailVerified(true);
+                existingVendor.setUpdatedAt(LocalDateTime.now());
+                vendorRepository.save(existingVendor);
+                notifVendor = existingVendor;
+                log.info("existing vendor updated emailVerified=true for email={}", email);
+            } else {
+                Vendor vendor = new Vendor();
+                vendor.setVendorName(pendingVendor.getVendorName());
+                vendor.setStoreName(pendingVendor.getStoreName());
+                vendor.setEmail(pendingVendor.getEmail());
+                vendor.setPhone(pendingVendor.getPhone());
+                vendor.setPassword(pendingVendor.getPassword());
+                vendor.setAddress(pendingVendor.getAddress());
+                vendor.setCollegeName(pendingVendor.getCollegeName());
+                vendor.setVendorDescription(pendingVendor.getVendorDescription());
+                vendor.setFoodCategories(pendingVendor.getFoodCategories());
+                vendor.setGstNumber(pendingVendor.getGstNumber());
+                vendor.setLicenseNumber(pendingVendor.getLicenseNumber());
+                vendor.setRole(Role.VENDOR);
+                vendor.setEmailVerified(true);
+                vendor.setPhoneVerified(false);
+                vendor.setCreatedAt(pendingVendor.getCreatedAt());
+                vendor.setUpdatedAt(LocalDateTime.now());
 
-            vendorRepository.save(vendor);
+                Vendor savedVendor = vendorRepository.save(vendor);
+                notifVendor = savedVendor;
+                log.info("vendor created on verify for email={}", email);
+            }
             pendingVendorRepository.deleteByEmail(email);
 
-            emailService.sendVendorRegistrationNotificationToAdmin(
-                    vendor.getVendorName(),
-                    vendor.getEmail(),
-                    vendor.getStoreName(),
-                    vendor.getCollegeName()
-            );
+            if (notifVendor != null) {
+                emailService.sendVendorRegistrationNotificationToAdmin(
+                        notifVendor.getVendorName(),
+                        notifVendor.getEmail(),
+                        notifVendor.getStoreName(),
+                        notifVendor.getCollegeName()
+                );
+            }
         }
     }
 
@@ -633,5 +669,80 @@ public class AuthService {
             return;
         }
         throw new ResourceNotFoundException("User not found");
+    }
+
+    public void sendEmailOtp(String email, Role userType) {
+        final int MAX_SENDS = 3;
+        final long WINDOW_SECONDS = 60;
+        final int MAX_WRONG_ATTEMPTS = 5;
+
+        if (userType == Role.STUDENT) {
+            PendingUser pendingUser = pendingUserRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+            Integer sends = pendingUser.getOtpSendCount() == null ? 0 : pendingUser.getOtpSendCount();
+            LocalDateTime lastSent = pendingUser.getOtpLastSentAt();
+
+            if (lastSent != null && lastSent.plusSeconds(WINDOW_SECONDS).isAfter(LocalDateTime.now())) {
+                if (sends >= MAX_SENDS) {
+                    throw new BadRequestException("OTP resend limit reached. Please try again later.");
+                }
+            } else {
+                sends = 0;
+            }
+
+            Integer attempts = pendingUser.getOtpAttempts() == null ? 0 : pendingUser.getOtpAttempts();
+            if (attempts >= MAX_WRONG_ATTEMPTS) {
+                throw new BadRequestException("Too many incorrect OTP attempts. Please restart registration process.");
+            }
+
+            String otp = generateNumericOtp(6);
+            pendingUser.setOtp(passwordEncoder.encode(otp));
+            pendingUser.setOtpCreatedAt(LocalDateTime.now());
+            pendingUser.setOtpExpiresAt(LocalDateTime.now().plusMinutes(EMAIL_OTP_EXPIRATION_MINUTES));
+            pendingUser.setOtpAttempts(0);
+            pendingUser.setUpdatedAt(LocalDateTime.now());
+
+            pendingUser.setOtpSendCount(sends + 1);
+            pendingUser.setOtpLastSentAt(LocalDateTime.now());
+
+            pendingUserRepository.save(pendingUser);
+            emailService.sendEmailVerificationOtp(email, otp, Role.STUDENT, EMAIL_OTP_EXPIRATION_MINUTES);
+
+        } else if (userType == Role.VENDOR) {
+            PendingVendor pendingVendor = pendingVendorRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+            Integer sends = pendingVendor.getOtpSendCount() == null ? 0 : pendingVendor.getOtpSendCount();
+            LocalDateTime lastSent = pendingVendor.getOtpLastSentAt();
+
+            if (lastSent != null && lastSent.plusSeconds(WINDOW_SECONDS).isAfter(LocalDateTime.now())) {
+                if (sends >= MAX_SENDS) {
+                    throw new BadRequestException("OTP resend limit reached. Please try again later.");
+                }
+            } else {
+                sends = 0;
+            }
+
+            Integer attempts = pendingVendor.getOtpAttempts() == null ? 0 : pendingVendor.getOtpAttempts();
+            if (attempts >= MAX_WRONG_ATTEMPTS) {
+                throw new BadRequestException("Too many incorrect OTP attempts. Please restart registration process.");
+            }
+
+            String otp = generateNumericOtp(6);
+            pendingVendor.setOtp(passwordEncoder.encode(otp));
+            pendingVendor.setOtpCreatedAt(LocalDateTime.now());
+            pendingVendor.setOtpExpiresAt(LocalDateTime.now().plusMinutes(EMAIL_OTP_EXPIRATION_MINUTES));
+            pendingVendor.setOtpAttempts(0);
+            pendingVendor.setUpdatedAt(LocalDateTime.now());
+
+            pendingVendor.setOtpSendCount(sends + 1);
+            pendingVendor.setOtpLastSentAt(LocalDateTime.now());
+
+            pendingVendorRepository.save(pendingVendor);
+            emailService.sendEmailVerificationOtp(email, otp, Role.VENDOR, EMAIL_OTP_EXPIRATION_MINUTES);
+        } else {
+            throw new BadRequestException("Unsupported user type");
+        }
     }
 }

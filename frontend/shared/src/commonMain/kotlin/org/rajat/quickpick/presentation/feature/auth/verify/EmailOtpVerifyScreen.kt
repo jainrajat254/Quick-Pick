@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -41,11 +43,11 @@ import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.components.CustomTextField
 import org.rajat.quickpick.presentation.feature.auth.components.RegisterButton
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
+import org.rajat.quickpick.presentation.navigation.AppScreenVendor
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
+import org.rajat.quickpick.utils.ErrorUtils
 import org.rajat.quickpick.utils.session.AuthSessionSaver
 
 @Composable
@@ -58,8 +60,9 @@ fun EmailOtpVerifyScreen(
 ) {
     var otp by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var secondsLeft by remember { mutableIntStateOf(60) }
+    var secondsLeft by remember { mutableIntStateOf(20) }
     var cooldownActive by remember { mutableStateOf(true) }
+    var blocked by remember { mutableStateOf(false) }
 
     val sendState by authViewModel.sendEmailOtpState.collectAsState()
     val verifyState by authViewModel.verifyEmailOtpState.collectAsState()
@@ -68,8 +71,8 @@ fun EmailOtpVerifyScreen(
 
     LaunchedEffect(Unit) {
         cooldownActive = true
-        secondsLeft = 60
-        while (secondsLeft > 0 && cooldownActive) {
+        secondsLeft = 20
+        while (secondsLeft > 0 && cooldownActive && !blocked) {
             kotlinx.coroutines.delay(1000)
             secondsLeft -= 1
         }
@@ -81,13 +84,17 @@ fun EmailOtpVerifyScreen(
             is UiState.Success -> {
                 showToast("Verification code sent")
                 cooldownActive = true
-                secondsLeft = 60
+                secondsLeft = 20
                 errorMessage = null
+                blocked = false
             }
             is UiState.Error -> {
-                val msg = (sendState as UiState.Error).message
-                errorMessage = msg
-                showToast(msg ?: "Failed to send code")
+                val raw = (sendState as UiState.Error).message
+                // detect blocked/attempts markers appended by extractErrorMessage
+                blocked = raw?.contains("(blocked)") == true
+                errorMessage = raw
+                val sanitized = ErrorUtils.sanitizeError(raw)
+                showToast(sanitized)
             }
             else -> Unit
         }
@@ -122,9 +129,11 @@ fun EmailOtpVerifyScreen(
                 }
             }
             is UiState.Error -> {
-                val msg = (verifyState as UiState.Error).message
-                errorMessage = msg
-                showToast(msg ?: "Verification failed")
+                val raw = (verifyState as UiState.Error).message
+                blocked = raw?.contains("(blocked)") == true
+                errorMessage = raw
+                val sanitized = ErrorUtils.sanitizeError(raw)
+                showToast(sanitized)
             }
             else -> Unit
         }
@@ -142,7 +151,8 @@ fun EmailOtpVerifyScreen(
                 }
             }
             is UiState.Error -> {
-                val msg = (userLoginState as UiState.Error).message
+                val raw = (userLoginState as UiState.Error).message
+                val msg = ErrorUtils.sanitizeError(raw)
                 if (!msg.isNullOrBlank()) showToast(msg)
                 navController.navigate(AppScreenUser.UserLogin) {
                     popUpTo(0) { inclusive = true }
@@ -159,13 +169,14 @@ fun EmailOtpVerifyScreen(
                 val response = (vendorLoginState as UiState.Success<LoginVendorResponse>).data
                 AuthSessionSaver.saveVendorSession(dataStore, response)
                 showToast("Welcome!")
-                navController.navigate(org.rajat.quickpick.presentation.navigation.AppScreenVendor.VendorDashboard) {
+                navController.navigate(AppScreenVendor.VendorVerificationPending) {
                     popUpTo(0) { inclusive = true }
                     launchSingleTop = true
                 }
             }
             is UiState.Error -> {
-                val msg = (vendorLoginState as UiState.Error).message
+                val raw = (vendorLoginState as UiState.Error).message
+                val msg = ErrorUtils.sanitizeError(raw)
                 if (!msg.isNullOrBlank()) showToast(msg)
                 navController.navigate(AppScreenUser.VendorLogin) {
                     popUpTo(0) { inclusive = true }
@@ -221,7 +232,8 @@ fun EmailOtpVerifyScreen(
                     leadingIcon = Icons.Filled.Lock,
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done,
-                    maxLength = 6
+                    maxLength = 6,
+                    enabled = !blocked
                 )
 
                 if (!errorMessage.isNullOrBlank()) {
@@ -230,7 +242,7 @@ fun EmailOtpVerifyScreen(
 
                 RegisterButton(
                     onClick = {
-                        if (otp.length == 6) {
+                        if (otp.length == 6 && !blocked) {
                             authViewModel.verifyEmailOtp(
                                 EmailOtpVerifyRequest(
                                     email = email,
@@ -238,6 +250,8 @@ fun EmailOtpVerifyScreen(
                                     otp = otp
                                 )
                             )
+                        } else if (blocked) {
+                            showToast("Too many failed attempts. Please restart the registration process.")
                         } else {
                             showToast("Please enter the 6-digit code")
                         }
@@ -245,7 +259,7 @@ fun EmailOtpVerifyScreen(
                     text = "Verify",
                     loadingText = "Verifying...",
                     isLoading = verifyState is UiState.Loading,
-                    enabled = otp.length == 6
+                    enabled = otp.length == 6 && !blocked
                 )
 
                 Row(
@@ -254,11 +268,11 @@ fun EmailOtpVerifyScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (cooldownActive) "Resend in ${secondsLeft}s" else "Didn't receive the code?",
+                        text = if (cooldownActive) "Resend in ${secondsLeft}s" else "Code not received?",
                         style = MaterialTheme.typography.bodySmall
                     )
                     Button(
-                        enabled = !cooldownActive && sendState !is UiState.Loading,
+                        enabled = !cooldownActive && sendState !is UiState.Loading && !blocked,
                         onClick = {
                             authViewModel.sendEmailOtp(
                                 EmailOtpRequest(email = email, userType = userType)

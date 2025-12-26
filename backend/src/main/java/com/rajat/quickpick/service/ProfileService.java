@@ -27,6 +27,8 @@ public class ProfileService {
 
     @Autowired
     private VendorRepository vendorRepository;
+    @Autowired
+    private com.rajat.quickpick.repository.PendingVendorRepository pendingVendorRepository;
 
     public UserResponseDto getUserProfile(String email) {
         User user = userRepository.findByEmail(email)
@@ -64,6 +66,11 @@ public class ProfileService {
         response.setRole(vendor.getRole());
         response.setPhoneVerified(vendor.isPhoneVerified());
         response.setEmailVerified(vendor.isEmailVerified());
+
+        response.setVerificationStatus(vendor.getVerificationStatus());
+        response.setVerifiedAt(vendor.getVerifiedAt());
+        response.setRejectedAt(vendor.getRejectedAt());
+        response.setRejectionReason(vendor.getRejectionReason());
 
         return response;
     }
@@ -119,5 +126,13 @@ public class ProfileService {
         Vendor updatedVendor = vendorRepository.save(vendor);
 
         return getVendorProfile(updatedVendor.getEmail());
+    }
+
+    public boolean vendorExistsByEmail(String email) {
+        return vendorRepository.existsByEmail(email);
+    }
+
+    public boolean pendingVendorExistsByEmail(String email) {
+        return pendingVendorRepository.findByEmail(email).isPresent();
     }
 }

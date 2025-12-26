@@ -1,5 +1,6 @@
 package org.rajat.quickpick.presentation.feature.auth.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.rajat.quickpick.presentation.components.CustomLoader
@@ -43,20 +45,20 @@ fun RegisterButton(
             disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 4.dp,
-            pressedElevation = 8.dp,
-            disabledElevation = 0.dp
-        )
+//        elevation = ButtonDefaults.buttonElevation(
+//            defaultElevation = 4.dp,
+//            disabledElevation = 0.dp
+//        )
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().background(color = Color.Transparent),
+
         ) {
             if (isLoading) {
-                CustomLoader()
-                Spacer(modifier = Modifier.width(8.dp))
+//                CustomLoader()
+//                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = loadingText,
                     style = MaterialTheme.typography.titleMedium,

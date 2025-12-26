@@ -1,7 +1,10 @@
+@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+
 package org.rajat.quickpick.domain.modal.menuitems
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 
 @Serializable
@@ -16,7 +19,8 @@ data class CreateMenuItemResponse(
     val price: Double? = null,
     val quantity: Int? = null,
     val updatedAt: String? = null,
-    @SerialName("veg")
+    @SerialName("isVeg")
+    @JsonNames("veg")
     val isVeg: Boolean? = null,
     val vendorId: String? = null
 )

@@ -34,7 +34,6 @@ object DummyData {
         Branch("8", "Arts & Humanities")
     )
 
-    val genders = listOf("Male", "Female", "Prefer not to say")
 
 
     val vendors = listOf(
@@ -679,7 +678,6 @@ val profile = GetStudentProfileResponse(
     fullName = "Pulkit Verma",
     email = "pulkitverma2008@gmail.com",
     profileImageUrl = "",
-    department = "CSE",
     id = "",
     phone = "7252908379",
     phoneVerified = false,

@@ -8,7 +8,6 @@ data class RegisterVendorRequest(
     val collegeName: String? = null,
     val email: String? = null,
     val foodCategories: List<String?>? = null,
-    val foodLicenseNumber: String? = null,
     val gstNumber: String? = null,
     val licenseNumber: String? = null,
     val password: String? = null,

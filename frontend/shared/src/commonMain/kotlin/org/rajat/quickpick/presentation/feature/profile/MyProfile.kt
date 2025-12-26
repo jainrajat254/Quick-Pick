@@ -13,6 +13,7 @@ import org.koin.compose.koinInject
 import org.rajat.quickpick.domain.modal.profile.GetStudentProfileResponse
 import org.rajat.quickpick.presentation.feature.profile.components.MyProfileFields
 import org.rajat.quickpick.presentation.viewmodel.ProfileViewModel
+import org.rajat.quickpick.utils.ErrorUtils
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
 
@@ -27,7 +28,6 @@ fun MyProfileScreen(
 
     var fullName by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
-    var department by remember { mutableStateOf("") }
     var isEditMode by remember { mutableStateOf(false) }
     var currentProfile by remember { mutableStateOf<GetStudentProfileResponse?>(null) }
 
@@ -42,10 +42,11 @@ fun MyProfileScreen(
                 currentProfile = profile
                 fullName = profile.fullName ?: ""
                 phone = profile.phone ?: ""
-                department = profile.department ?: ""
             }
             is UiState.Error -> {
-                showToast("Failed to load profile: ${(studentProfileState as UiState.Error).message}")
+                val raw = (studentProfileState as UiState.Error).message
+                val message = ErrorUtils.sanitizeError(raw)
+                showToast(message)
             }
             else -> {}
         }
@@ -60,7 +61,9 @@ fun MyProfileScreen(
                 profileViewModel.resetProfileStates()
             }
             is UiState.Error -> {
-                showToast("Failed to update profile: ${(updateProfileState as UiState.Error).message}")
+                val raw = (updateProfileState as UiState.Error).message
+                val message = ErrorUtils.sanitizeError(raw)
+                showToast(message)
                 profileViewModel.resetProfileStates()
             }
             else -> {}
@@ -78,6 +81,7 @@ fun MyProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -105,8 +109,6 @@ fun MyProfileScreen(
                         onFullNameChange = { fullName = it },
                         phone = phone,
                         onPhoneChange = { phone = it },
-                        department = department,
-                        onDepartmentChange = { department = it },
                         profile = currentProfile!!,
                         isLoading = isLoading,
                         isEditMode = isEditMode,
@@ -116,7 +118,6 @@ fun MyProfileScreen(
                                 // Reset to original values when canceling edit
                                 fullName = currentProfile?.fullName ?: ""
                                 phone = currentProfile?.phone ?: ""
-                                department = currentProfile?.department ?: ""
                             }
                         },
                         onSaveProfile = { request ->

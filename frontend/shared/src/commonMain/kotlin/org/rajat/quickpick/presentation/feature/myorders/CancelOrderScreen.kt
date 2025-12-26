@@ -19,6 +19,10 @@ import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.ErrorUtils
+import co.touchlab.kermit.Logger
+
+private val logger = Logger.withTag("CancelOrderScreen")
 
 @Composable
 fun CancelOrderScreen(
@@ -53,7 +57,9 @@ fun CancelOrderScreen(
                 }
             }
             is UiState.Error -> {
-                showToast((cancelOrderState as UiState.Error).message)
+                val raw = (cancelOrderState as UiState.Error).message
+                logger.e { "Cancel order error: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
             }
             else -> {}
         }
@@ -95,6 +101,7 @@ fun CancelOrderScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

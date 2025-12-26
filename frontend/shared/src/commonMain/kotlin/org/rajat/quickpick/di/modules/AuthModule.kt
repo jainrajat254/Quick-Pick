@@ -14,5 +14,5 @@ val authModule = module {
 
     single<AuthApiService> { AuthApiServiceImpl(get()) }
     singleOf(::AuthRepositoryImpl) bind AuthRepository::class
-    viewModel { AuthViewModel(get()) }
+    viewModel { AuthViewModel(get(), get()) }
 }

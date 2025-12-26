@@ -9,6 +9,7 @@ import com.rajat.quickpick.dto.vendor.RegisterVendor;
 import com.rajat.quickpick.enums.Role;
 import com.rajat.quickpick.security.JwtUtil;
 import com.rajat.quickpick.service.AuthService;
+import com.rajat.quickpick.service.CustomUserDetailsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -29,6 +31,8 @@ public class AuthController {
     private AuthService authService;
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
 
     @PostMapping("/register/user")
     public ResponseEntity<AuthResponseDto> registerUser(@Valid @RequestBody RegisterUserDto registrationDto) {
@@ -179,5 +183,42 @@ public class AuthController {
     public ResponseEntity<Map<String,String>> resetPasswordWithOtp(@Valid @RequestBody ResetPasswordOtpDto dto) {
         authService.resetPasswordWithOtp(dto);
         return ResponseEntity.ok(Map.of("message","Password reset successful"));
+    }
+
+    @PostMapping("/send-email-otp")
+    public ResponseEntity<Map<String, String>> sendEmailOtp(@Valid @RequestBody com.rajat.quickpick.dto.auth.SendEmailOtpRequestDto dto) {
+        authService.sendEmailOtp(dto.getEmail(), dto.getUserType());
+        return ResponseEntity.ok(Map.of("message", "OTP sent if the account exists and allowed"));
+    }
+
+    @GetMapping("/is-session-valid")
+    public ResponseEntity<IsSessionValidResponse> isSessionValid(jakarta.servlet.http.HttpServletRequest request) {
+        String token = jwtUtil.resolveToken(request);
+        if (token == null || token.isEmpty()) {
+            IsSessionValidResponse res = new IsSessionValidResponse(false, 401);
+            return ResponseEntity.ok(res);
+        }
+
+        try {
+            String username = jwtUtil.extractUsername(token);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            if (!jwtUtil.isAccessToken(token) || !jwtUtil.validateToken(token, userDetails)) {
+                IsSessionValidResponse res = new IsSessionValidResponse(false, 401);
+                return ResponseEntity.ok(res);
+            }
+
+            if (!userDetails.isAccountNonLocked() || !userDetails.isEnabled()) {
+                IsSessionValidResponse res = new IsSessionValidResponse(false, 401);
+                return ResponseEntity.ok(res);
+            }
+
+            IsSessionValidResponse res = new IsSessionValidResponse(true, 200);
+            return ResponseEntity.ok(res);
+
+        } catch (Exception e) {
+            IsSessionValidResponse res = new IsSessionValidResponse(false, 401);
+            return ResponseEntity.ok(res);
+        }
     }
 }

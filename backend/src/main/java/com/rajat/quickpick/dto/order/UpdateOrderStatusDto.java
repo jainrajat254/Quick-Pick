@@ -9,4 +9,6 @@ public class UpdateOrderStatusDto {
 
     @NotNull(message = "Order status is required")
     private OrderStatus orderStatus;
+
+    private String otp;
 }
