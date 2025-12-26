@@ -12,6 +12,7 @@ import org.rajat.quickpick.domain.modal.profile.UpdateUserProfileRequest
 import org.rajat.quickpick.domain.modal.profile.UpdateUserProfileResponse
 import org.rajat.quickpick.domain.modal.profile.UpdateVendorProfileRequest
 import org.rajat.quickpick.domain.modal.profile.UpdateVendorProfileResponse
+import org.rajat.quickpick.domain.modal.profile.VendorVerificationStatusResponse
 import org.rajat.quickpick.domain.repository.ImageUploadRepository
 import org.rajat.quickpick.domain.repository.ProfileRepository
 import org.rajat.quickpick.utils.ImageUploadState
@@ -31,6 +32,10 @@ class ProfileViewModel(
     private val _vendorProfileState =
         MutableStateFlow<UiState<GetVendorProfileResponse>>(UiState.Empty)
     val vendorProfileState: StateFlow<UiState<GetVendorProfileResponse>> = _vendorProfileState
+
+    private val _vendorVerificationStatusState =
+        MutableStateFlow<UiState<VendorVerificationStatusResponse>>(UiState.Empty)
+    val vendorVerificationStatusState: StateFlow<UiState<VendorVerificationStatusResponse>> = _vendorVerificationStatusState
 
     private val _updateStudentProfileState =
         MutableStateFlow<UiState<UpdateUserProfileResponse>>(UiState.Empty)
@@ -103,6 +108,12 @@ class ProfileViewModel(
         }
     }
 
+    fun checkVendorVerificationStatus() {
+        executeWithUiState(_vendorVerificationStatusState) {
+            profileRepository.getVendorVerificationStatus()
+        }
+    }
+
     fun updateStudentProfile(request: UpdateUserProfileRequest) {
         executeWithUiState(_updateStudentProfileState) {
             profileRepository.updateStudentProfile(request)
@@ -118,6 +129,7 @@ class ProfileViewModel(
     fun resetProfileStates() {
         _studentProfileState.value = UiState.Empty
         _vendorProfileState.value = UiState.Empty
+        _vendorVerificationStatusState.value = UiState.Empty
         _updateStudentProfileState.value = UiState.Empty
         _updateVendorProfileState.value = UiState.Empty
     }

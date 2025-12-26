@@ -13,14 +13,9 @@ public interface PendingUserRepository extends MongoRepository<PendingUser, Stri
 
     Optional<PendingUser> findByPhone(String phone);
 
-    Optional<PendingUser> findByStudentId(String studentId);
-
     boolean existsByEmail(String email);
 
     boolean existsByPhone(String phone);
 
-    boolean existsByStudentId(String studentId);
-
     void deleteByEmail(String email);
 }
-

@@ -1,5 +1,6 @@
 package org.rajat.quickpick.presentation.feature.vendor.dashboard
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -72,13 +73,23 @@ fun VendorDashboardScreen(
                             title = "Total Orders",
                             value = stats.totalOrders.toString(),
                             icon = Icons.Default.ShoppingBag,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    orderViewModel.setInitialVendorOrdersTab(0)
+                                    navController.navigate(AppScreenVendor.VendorOrders)
+                                }
                         )
                         StatsCard(
                             title = "Pending",
                             value = stats.pendingOrders.toString(),
                             icon = Icons.Default.Pending,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    orderViewModel.setInitialVendorOrdersTab(0)
+                                    navController.navigate(AppScreenVendor.VendorOrders)
+                                }
                         )
                     }
                 }
@@ -91,13 +102,23 @@ fun VendorDashboardScreen(
                             title = "Total Orders",
                             value = "0",
                             icon = Icons.Default.ShoppingBag,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    orderViewModel.setInitialVendorOrdersTab(0)
+                                    navController.navigate(AppScreenVendor.VendorOrders)
+                                }
                         )
                         StatsCard(
                             title = "Pending",
                             value = "0",
                             icon = Icons.Default.Pending,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    orderViewModel.setInitialVendorOrdersTab(0)
+                                    navController.navigate(AppScreenVendor.VendorOrders)
+                                }
                         )
                     }
                 }
@@ -116,13 +137,23 @@ fun VendorDashboardScreen(
                             title = "Completed",
                             value = stats.completedOrders.toString(),
                             icon = Icons.Default.CheckCircle,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    orderViewModel.setInitialVendorOrdersTab(2)
+                                    navController.navigate(AppScreenVendor.VendorOrders)
+                                }
                         )
                         StatsCard(
                             title = "Cancelled",
                             value = stats.cancelledOrders.toString(),
                             icon = Icons.Default.Cancel,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    orderViewModel.setInitialVendorOrdersTab(2)
+                                    navController.navigate(AppScreenVendor.VendorOrders)
+                                }
                         )
                     }
                 }
@@ -135,13 +166,23 @@ fun VendorDashboardScreen(
                             title = "Completed",
                             value = "0",
                             icon = Icons.Default.CheckCircle,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    orderViewModel.setInitialVendorOrdersTab(2)
+                                    navController.navigate(AppScreenVendor.VendorOrders)
+                                }
                         )
                         StatsCard(
                             title = "Cancelled",
                             value = "0",
                             icon = Icons.Default.Cancel,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    orderViewModel.setInitialVendorOrdersTab(2)
+                                    navController.navigate(AppScreenVendor.VendorOrders)
+                                }
                         )
                     }
                 }

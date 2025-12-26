@@ -18,6 +18,10 @@ import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
 import org.rajat.quickpick.utils.ImagePickerHelper
 import org.rajat.quickpick.utils.ImageUploadState
+import org.rajat.quickpick.utils.ErrorUtils
+import co.touchlab.kermit.Logger
+
+private val logger = Logger.withTag("VendorProfileUpdateScreen")
 
 @Composable
 fun VendorProfileUpdateScreen(
@@ -58,7 +62,9 @@ fun VendorProfileUpdateScreen(
                 foodCategories = profile.foodCategories?.filterNotNull()?.joinToString(", ") ?: ""
             }
             is UiState.Error -> {
-                showToast("Failed to load profile: ${(vendorProfileState as UiState.Error).message}")
+                val raw = (vendorProfileState as UiState.Error).message
+                logger.e { "VendorProfileUpdateScreen - load profile error: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
             }
             else -> {}
         }
@@ -74,7 +80,9 @@ fun VendorProfileUpdateScreen(
                 profileViewModel.resetProfileStates()
             }
             is UiState.Error -> {
-                showToast("Failed to update profile: ${(updateProfileState as UiState.Error).message}")
+                val raw = (updateProfileState as UiState.Error).message
+                logger.e { "VendorProfileUpdateScreen - update profile error: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
                 profileViewModel.resetProfileStates()
             }
             else -> {}
@@ -84,7 +92,9 @@ fun VendorProfileUpdateScreen(
     // Handle image upload errors
     LaunchedEffect(imageUploadState) {
         if (imageUploadState is ImageUploadState.Error) {
-            showToast("Image upload failed: ${(imageUploadState as ImageUploadState.Error).message}")
+            val raw = (imageUploadState as ImageUploadState.Error).message
+            logger.e { "VendorProfileUpdateScreen - image upload error: $raw" }
+            showToast(ErrorUtils.sanitizeError(raw))
         }
     }
 
@@ -107,6 +117,7 @@ fun VendorProfileUpdateScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -169,7 +180,7 @@ fun VendorProfileUpdateScreen(
                                     )
                                 },
                                 onError = { error ->
-                                    showToast("Failed to pick image: $error")
+                                    showToast(ErrorUtils.sanitizeError(error))
                                 }
                             )
                         },

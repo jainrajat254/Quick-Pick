@@ -124,7 +124,7 @@ fun OrderDetailFields(
                     text = "🔐 Pickup OTP",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -154,7 +154,7 @@ fun OrderDetailFields(
                 Text(
                     text = "Share this OTP with the vendor at pickup",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center
                 )
             }
@@ -198,11 +198,7 @@ fun OrderDetailFields(
                 thickness = 1.dp
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                "Ordered on: ${formatOrderDate(order.createdAt ?: "")}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            )
+
         }
     }
 

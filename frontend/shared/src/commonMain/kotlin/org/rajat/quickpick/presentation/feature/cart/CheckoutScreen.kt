@@ -21,6 +21,10 @@ import org.rajat.quickpick.presentation.viewmodel.CartViewModel
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.ErrorUtils
+import co.touchlab.kermit.Logger
+
+private val logger = Logger.withTag("CheckoutScreen")
 
 @Composable
 fun CheckoutScreen(
@@ -56,7 +60,9 @@ fun CheckoutScreen(
                 }
             }
             is UiState.Error -> {
-                showToast((createOrderState as UiState.Error).message)
+                val raw = (createOrderState as UiState.Error).message
+                logger.e { "Create order error: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
             }
             else -> {}
         }
@@ -67,6 +73,7 @@ fun CheckoutScreen(
             .fillMaxSize()
             .padding(paddingValues)
             .verticalScroll(rememberScrollState())
+            .navigationBarsPadding()
             .padding(16.dp)
     ) {
         when (val state = cartState) {

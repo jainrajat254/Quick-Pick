@@ -1,16 +1,21 @@
 package org.rajat.quickpick.presentation.feature.auth.login
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -30,8 +35,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -57,8 +60,8 @@ import org.rajat.quickpick.utils.toast.showToast
 import org.rajat.quickpick.utils.session.AuthSessionSaver
 import quickpick.shared.generated.resources.Res
 import quickpick.shared.generated.resources.burger
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import org.rajat.quickpick.utils.ErrorUtils
 
 @OptIn(ExperimentalTime::class)
 @Preview
@@ -116,8 +119,9 @@ fun UserLoginScreen(
             }
 
             is UiState.Error -> {
-                fcmLogger.d { "USER_LOGIN - ERROR STATE: ${(userLoginState as UiState.Error).message}" }
-                val message = (userLoginState as UiState.Error).message ?: "Unknown error"
+                val raw = (userLoginState as UiState.Error).message
+                fcmLogger.d { "USER_LOGIN - ERROR STATE: $raw" }
+                val message = raw ?: "Unknown error"
                 if (message.contains("verify your email", ignoreCase = true)) {
                     val emailLower = email.trim().lowercase()
                     navController.navigate(AppScreenUser.EmailOtpVerify(email = emailLower, userType = "STUDENT")) {
@@ -125,8 +129,8 @@ fun UserLoginScreen(
                         launchSingleTop = true
                     }
                 } else {
-                    showToast(message)
-                    logger.e { message }
+                    logger.e { "Login error: $raw" }
+                    showToast(ErrorUtils.sanitizeError(raw))
                 }
             }
 
@@ -134,128 +138,129 @@ fun UserLoginScreen(
         }
     }
 
-    Scaffold {
+    Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-                            MaterialTheme.colorScheme.background
-                        )
-                    )
-                )
+                .safeDrawingPadding()
         ) {
-
             Image(
                 painter = painterResource(resource = Res.drawable.burger),
                 contentDescription = "Background Image",
-                contentScale = ContentScale.FillBounds,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            Card(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 420.dp)
-                    .shadow(
-                        elevation = 32.dp,
-                        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
-                    ),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
-            ) {
-                Column(
+
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                val screenHeight = maxHeight
+                val cardTopPadding = (screenHeight * 0.5f).coerceAtLeast(300.dp)
+
+                Card(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .padding(top = cardTopPadding),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
-
-                    Card(
+                    Column(
                         modifier = Modifier
-                            .width(240.dp)
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        )
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp, vertical = 24.dp)
+                            .imePadding(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "User Sign In",
-                                style = MaterialTheme.typography.headlineMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                ),
-                                textAlign = TextAlign.Center
+                        Card(
+                            modifier = Modifier
+                                .width(240.dp)
+                                .height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primary
                             )
-                        }
-                    }
-
-                    CustomTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = "Email",
-                        leadingIcon = Icons.Filled.Email,
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Next
-                    )
-
-                    CustomTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = "Password",
-                        leadingIcon = Icons.Filled.Lock,
-                        isPassword = true,
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done
-                    )
-
-                    TextButton(
-                        onClick = {
-                            navController.navigate(AppScreenUser.ForgotPassword(userType = "STUDENT"))
-                        },
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .padding(vertical = 0.dp)
-                    ) {
-                        Text("Forgot Password?", color = MaterialTheme.colorScheme.primary)
-                    }
-
-                    RegisterButton(
-                        onClick = {
-                            if (isFormValid) {
-                                val loginUserRequest =
-                                    LoginUserRequest(
-                                        email = email.trim().lowercase(),
-                                        password = password.trim()
-                                    )
-                                authViewModel.loginUser(request = loginUserRequest)
-                            } else {
-                                showToast("Invalid email or password")
-                            }
-                        },
-                        text = "Sign In",
-                        loadingText = "Signing In...",
-                        isLoading = false,
-                        enabled = isFormValid
-                    )
-                    InlineClickableText(
-                        normalText = "Don't have an account?",
-                        clickableText = "Sign up",
-                        onClick = {
-                            navController.navigate(AppScreenUser.UserRegister) {
-                                popUpTo(AppScreenUser.UserLogin) { inclusive = true }
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "User Sign In",
+                                    style = MaterialTheme.typography.headlineMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    ),
+                                    textAlign = TextAlign.Center
+                                )
                             }
                         }
-                    )
+
+                        CustomTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = "Email",
+                            leadingIcon = Icons.Filled.Email,
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        )
+
+                        CustomTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = "Password",
+                            leadingIcon = Icons.Filled.Lock,
+                            isPassword = true,
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        )
+
+                        TextButton(
+                            onClick = {
+                                navController.navigate(AppScreenUser.ForgotPassword(userType = "STUDENT"))
+                            },
+                            modifier = Modifier
+                                .align(Alignment.End)
+                                .padding(vertical = 0.dp)
+                        ) {
+                            Text("Forgot Password?", color = MaterialTheme.colorScheme.primary)
+                        }
+
+                        RegisterButton(
+                            onClick = {
+                                if (isFormValid) {
+                                    val loginUserRequest =
+                                        LoginUserRequest(
+                                            email = email.trim().lowercase(),
+                                            password = password.trim()
+                                        )
+                                    authViewModel.loginUser(request = loginUserRequest)
+                                } else {
+                                    showToast("Invalid email or password")
+                                }
+                            },
+                            text = "Sign In",
+                            loadingText = "Signing In...",
+                            isLoading = false,
+                            enabled = isFormValid
+                        )
+
+                        InlineClickableText(
+                            normalText = "Don't have an account?",
+                            clickableText = "Sign up",
+                            onClick = {
+                                navController.navigate(AppScreenUser.UserRegister) {
+                                    popUpTo(AppScreenUser.UserLogin) { inclusive = true }
+                                }
+                            }
+                        )
+                    }
                 }
             }
+
             if (userLoginState is UiState.Loading) {
                 CustomLoader()
             }

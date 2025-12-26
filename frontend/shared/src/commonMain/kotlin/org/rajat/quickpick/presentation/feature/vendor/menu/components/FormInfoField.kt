@@ -22,11 +22,15 @@ fun FormInfoField(
     placeholder: String? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
     singleLine: Boolean = true,
-    maxLines: Int = 1
+    maxLines: Int = 1,
+    maxLength: Int? = null
 ) {
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = {
+            val newVal = if (maxLength != null) it.take(maxLength) else it
+            onValueChange(newVal)
+        },
         label = { Text(label) },
         placeholder = { if (placeholder != null) Text(placeholder) },
         leadingIcon = { Icon(icon, contentDescription = label) },

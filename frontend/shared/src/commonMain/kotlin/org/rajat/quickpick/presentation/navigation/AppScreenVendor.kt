@@ -35,6 +35,9 @@ sealed class AppScreenVendor {
     @Serializable
     data class VendorReviewsScreen(val vendorId: String) : AppScreenVendor()
 
+    @Serializable
+    data object VendorVerificationPending : AppScreenVendor()
+
 }
 fun getAppScreenVendorFromRoute(route: String?): AppScreenVendor?? {
     if (route == null) return null
@@ -54,6 +57,7 @@ fun getAppScreenVendorFromRoute(route: String?): AppScreenVendor?? {
         "VendorReviewsScreen" to AppScreenVendor.VendorReviewsScreen(
             vendorId = ""
         ),
+        "VendorVerificationPending" to AppScreenVendor.VendorVerificationPending,
         )
 
     return screenMap.entries.firstOrNull { route.contains(it.key) }?.value

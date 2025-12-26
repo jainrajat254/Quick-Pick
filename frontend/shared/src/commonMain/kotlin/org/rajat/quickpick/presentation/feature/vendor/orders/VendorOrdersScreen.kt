@@ -1,8 +1,11 @@
 package org.rajat.quickpick.presentation.feature.vendor.orders
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -10,8 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 import androidx.navigation.NavController
+import org.rajat.quickpick.domain.modal.ordermanagement.UpdateOrderStateRequest
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import org.rajat.quickpick.presentation.components.CustomLoader
@@ -22,9 +30,7 @@ import org.rajat.quickpick.utils.BackHandler
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.KeyboardType
-import org.rajat.quickpick.domain.modal.ordermanagement.UpdateOrderStateRequest
+import org.rajat.quickpick.utils.ErrorUtils
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -37,6 +43,9 @@ fun VendorOrdersScreen(
     var backPressedTime by remember { mutableStateOf(0L) }
     val tabs = listOf("Pending", "Accepted", "Completed")
 
+    val initialRequestedTab by orderViewModel.initialVendorOrdersTab.collectAsState()
+    var hasAppliedInitialTab by remember { mutableStateOf(false) }
+
     val pendingOrdersState by orderViewModel.pendingOrdersState.collectAsState()
     val updateOrderStatusState by orderViewModel.updateOrderStatusState.collectAsState()
     val vendorOrdersByStatusState by orderViewModel.vendorOrdersByStatusState.collectAsState()
@@ -44,6 +53,15 @@ fun VendorOrdersScreen(
 
     var currentOtpDialogOrderId by remember { mutableStateOf<String?>(null) }
     var currentDialogOtpInput by remember { mutableStateOf("") }
+
+    LaunchedEffect(initialRequestedTab) {
+        if (!hasAppliedInitialTab && initialRequestedTab != null) {
+            val idx = initialRequestedTab!!.coerceIn(0, tabs.size - 1)
+            selectedTab = idx
+            hasAppliedInitialTab = true
+            orderViewModel.resetInitialVendorOrdersTab()
+        }
+    }
 
     BackHandler(enabled = true) {
         val currentTime = Clock.System.now().toEpochMilliseconds()
@@ -79,7 +97,9 @@ fun VendorOrdersScreen(
                 orderViewModel.resetUpdateOrderStatusState()
             }
             is UiState.Error -> {
-                showToast((updateOrderStatusState as UiState.Error).message ?: "Error completing order")
+                val raw = (updateOrderStatusState as UiState.Error).message
+                val message = ErrorUtils.sanitizeError(raw)
+                showToast(message)
                 orderViewModel.resetUpdateOrderStatusState()
             }
             else -> Unit
@@ -172,7 +192,9 @@ fun VendorOrdersScreen(
                         searchInProgress = false
                     }
                     is UiState.Error -> {
-                        showToast((pendingOrdersState as UiState.Error).message ?: "Error searching OTP")
+                        val raw = (pendingOrdersState as UiState.Error).message
+                        val message = ErrorUtils.sanitizeError(raw)
+                        showToast(message)
                         searchInProgress = false
                     }
                     else -> Unit
@@ -233,7 +255,8 @@ fun VendorOrdersScreen(
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize()
+                        .navigationBarsPadding(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -242,23 +265,59 @@ fun VendorOrdersScreen(
 
                         val density = LocalDensity.current
                         val thresholdPx = with(density) { 120.dp.toPx() }
-                        var dragAccum by remember { mutableStateOf(0f) }
+                        val offsetX = remember { Animatable(0f) }
+                        val coroutineScope = rememberCoroutineScope()
+                        var shouldShowDialog by remember { mutableStateOf(false) }
+
+                        LaunchedEffect(shouldShowDialog) {
+                            if (shouldShowDialog) {
+                                currentOtpDialogOrderId = order.id
+                                currentDialogOtpInput = ""
+                                shouldShowDialog = false
+                            }
+                        }
 
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .offset { IntOffset(offsetX.value.roundToInt(), 0) }
                                 .pointerInput(order.id) {
                                     detectHorizontalDragGestures(
                                         onHorizontalDrag = { change, dragAmount ->
-                                            dragAccum += dragAmount
-                                            if (dragAccum > thresholdPx) {
-                                                currentOtpDialogOrderId = order.id
-                                                currentDialogOtpInput = ""
-                                                dragAccum = 0f
+                                            change.consume()
+                                            coroutineScope.launch {
+                                                val newOffset = (offsetX.value + dragAmount).coerceIn(0f, thresholdPx * 1.5f)
+                                                offsetX.snapTo(newOffset)
                                             }
                                         },
-                                        onDragEnd = { dragAccum = 0f },
-                                        onDragCancel = { dragAccum = 0f }
+                                        onDragEnd = {
+                                            coroutineScope.launch {
+                                                val currentValue = offsetX.value
+                                                if (currentValue > thresholdPx) {
+                                                    // Snap back with animation
+                                                    offsetX.animateTo(
+                                                        targetValue = 0f,
+                                                        animationSpec = tween(durationMillis = 300)
+                                                    )
+                                                    // Show dialog after animation
+                                                    shouldShowDialog = true
+                                                } else {
+                                                    // Just snap back
+                                                    offsetX.animateTo(
+                                                        targetValue = 0f,
+                                                        animationSpec = tween(durationMillis = 300)
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onDragCancel = {
+                                            coroutineScope.launch {
+                                                offsetX.animateTo(
+                                                    targetValue = 0f,
+                                                    animationSpec = tween(durationMillis = 300)
+                                                )
+                                            }
+                                        }
                                     )
                                 }
                         ) {
@@ -299,7 +358,10 @@ fun VendorOrdersScreen(
                                                     order.id?.let { id ->
                                                         orderViewModel.updateOrderStatus(
                                                             id,
-                                                            UpdateOrderStateRequest(orderStatus = "COMPLETED", otp = currentDialogOtpInput)
+                                                            UpdateOrderStateRequest(
+                                                                orderStatus = "COMPLETED",
+                                                                otp = currentDialogOtpInput
+                                                            )
                                                         )
                                                     }
                                                 } else {

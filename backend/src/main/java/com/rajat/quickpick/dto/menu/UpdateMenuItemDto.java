@@ -1,5 +1,6 @@
 package com.rajat.quickpick.dto.menu;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
@@ -16,7 +17,8 @@ public class UpdateMenuItemDto {
     private Integer quantity;
 
     private String category;
-    private Boolean isVeg;
+    @JsonProperty("isVeg")
+    private Boolean veg;
     private String imageUrl;
     private Boolean isAvailable;
 }

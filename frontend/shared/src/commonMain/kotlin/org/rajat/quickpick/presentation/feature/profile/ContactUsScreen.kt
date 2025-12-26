@@ -22,7 +22,7 @@ fun ContactUsScreen(
     paddingValues: PaddingValues,
     navController: NavHostController
 ) {
-    val contactEmail = "jainraja170@gmail.com"
+    val contactEmail = "foundersquickpick@gmail.com"
     val contactPhone = "+91 90275 61613"
     val contactAddress = "Kiet Group Of Institutions,Ghaziabad"
 
@@ -31,6 +31,7 @@ fun ContactUsScreen(
             .fillMaxSize()
             .padding(paddingValues)
             .verticalScroll(rememberScrollState())
+            .navigationBarsPadding()
             .padding(16.dp),
         horizontalAlignment = Alignment.Start
     ) {
@@ -41,7 +42,7 @@ fun ContactUsScreen(
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        //Contact Methods
+
         ContactInfoItem(
             icon = Icons.Default.Email,
             label = "Email Us",
@@ -49,19 +50,7 @@ fun ContactUsScreen(
             onClick = { /* TODO: Open email client */ }
         )
         Spacer(modifier = Modifier.height(16.dp))
-        ContactInfoItem(
-            icon = Icons.Default.Phone,
-            label = "Call Us",
-            value = contactPhone,
-            onClick = { /* TODO: Open dialer */ }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        ContactInfoItem(
-            icon = Icons.Default.LocationOn,
-            label = "Our Address",
-            value = contactAddress,
-            onClick = { /* TODO: Open maps */ }
-        )
+
     }
 }
 

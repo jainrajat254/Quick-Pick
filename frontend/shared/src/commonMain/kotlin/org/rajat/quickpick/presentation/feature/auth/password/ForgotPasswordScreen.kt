@@ -23,6 +23,7 @@ import org.rajat.quickpick.presentation.components.CustomTextField
 import org.rajat.quickpick.presentation.feature.auth.components.RegisterButton
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
+import org.rajat.quickpick.utils.ErrorUtils
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
 
@@ -57,8 +58,9 @@ fun ForgotPasswordScreen(
                 cooldownActive = true
             }
             is UiState.Error -> {
-                val msg = (forgotState as UiState.Error).message
-                if (!msg.isNullOrBlank()) showToast(msg)
+                val raw = (forgotState as UiState.Error).message
+                val msg = ErrorUtils.sanitizeError(raw)
+                showToast(msg)
             }
             else -> Unit
         }
@@ -71,8 +73,9 @@ fun ForgotPasswordScreen(
                 cooldownActive = true
             }
             is UiState.Error -> {
-                val msg = (sendPasswordOtpState as UiState.Error).message
-                if (!msg.isNullOrBlank()) showToast(msg)
+                val raw = (sendPasswordOtpState as UiState.Error).message
+                val msg = ErrorUtils.sanitizeError(raw)
+                showToast(msg)
             }
             else -> Unit
         }

@@ -30,7 +30,6 @@ public class PendingVendor {
     private String vendorDescription;
     private String gstNumber;
     private String licenseNumber;
-    private String foodLicenseNumber;
 
     private Role role = Role.VENDOR;
 
@@ -39,7 +38,9 @@ public class PendingVendor {
     private LocalDateTime otpExpiresAt;
     private Integer otpAttempts;
 
+    private Integer otpSendCount;
+    private LocalDateTime otpLastSentAt;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
-

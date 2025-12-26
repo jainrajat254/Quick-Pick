@@ -92,4 +92,13 @@ class AuthRepositoryImpl(private val authApiService: AuthApiService) : AuthRepos
     override suspend fun resetPasswordOtp(request: ResetPasswordOtpRequest): Result<SimpleMessageResponse> {
         return runCatching { authApiService.resetPasswordOtp(request) }
     }
+
+    override suspend fun isSessionValid(): Boolean {
+        return try {
+            val response = authApiService.isSessionValid()
+            response.success && response.statusCode == 200
+        } catch (e: Exception) {
+            false
+        }
+    }
 }

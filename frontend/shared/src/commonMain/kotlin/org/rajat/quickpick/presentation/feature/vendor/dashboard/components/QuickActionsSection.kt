@@ -36,7 +36,7 @@ fun QuickActionsSection(
             subtitle = "Track and manage incoming orders",
             imageRes = Res.drawable.vieworderimage,
             backgroundColor = AppColors.SecondaryContainer,
-            onClick = { /* navigate */ }
+            onClick = onViewOrders
         )
 
         DashboardActionCard(
@@ -44,9 +44,8 @@ fun QuickActionsSection(
             subtitle = "Update items, prices & availability",
             imageRes = Res.drawable.managemenuimg,
             backgroundColor = AppColors.PrimaryContainer,
-            onClick = { /* navigate */ }
+            onClick = onManageMenu
         )
     }
 
 }
-

@@ -16,6 +16,7 @@ import org.rajat.quickpick.presentation.feature.vendor.menu.components.MenuItemD
 import org.rajat.quickpick.presentation.feature.vendor.menu.components.MenuItemImagePicker
 import org.rajat.quickpick.presentation.viewmodel.MenuItemViewModel
 import org.rajat.quickpick.utils.UiState
+import org.rajat.quickpick.utils.ErrorUtils
 import org.rajat.quickpick.utils.toast.showToast
 import org.rajat.quickpick.presentation.viewmodel.MenuCategoryViewModel
 import org.rajat.quickpick.utils.ImagePickerHelper
@@ -67,7 +68,8 @@ fun AddMenuItemScreen(
                 navController.popBackStack()
             }
             is UiState.Error -> {
-                showToast((createState as UiState.Error).message ?: "Failed to create menu item")
+                val raw = (createState as UiState.Error).message
+                showToast(ErrorUtils.sanitizeError(raw))
                 isLoading = false
                 menuItemViewModel.resetCreateMenuItemState()
             }
@@ -87,7 +89,7 @@ fun AddMenuItemScreen(
             is ImageUploadState.Error -> {
                 val errorMessage = (imageUploadState as ImageUploadState.Error).message
                 logger.e { "AddMenuItemScreen: Image upload failed with error=$errorMessage" }
-                showToast(errorMessage)
+                showToast(ErrorUtils.sanitizeError(errorMessage))
             }
             is ImageUploadState.Uploading -> {
                 logger.d { "AddMenuItemScreen: Image is uploading..." }
@@ -148,6 +150,7 @@ fun AddMenuItemScreen(
             .fillMaxSize()
             .padding(paddingValues)
             .verticalScroll(rememberScrollState())
+            .navigationBarsPadding()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -168,7 +171,7 @@ fun AddMenuItemScreen(
                     },
                     onError = { error ->
                         logger.e { "AddMenuItemScreen: Image picker error=$error" }
-                        showToast(error)
+                        showToast(ErrorUtils.sanitizeError(error))
                     }
                 )
             }

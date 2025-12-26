@@ -188,7 +188,6 @@ public class AdminManagementService {
         dto.setEmail(user.getEmail());
         dto.setPhone(user.getPhone());
         dto.setCollegeName(user.getCollegeName());
-        dto.setStudentId(user.getStudentId());
         dto.setRole(user.getRole());
         dto.setEmailVerified(user.isEmailVerified());
         dto.setPhoneVerified(user.isPhoneVerified());
@@ -226,7 +225,6 @@ public class AdminManagementService {
         dto.setFoodCategories(vendor.getFoodCategories());
         dto.setGstNumber(vendor.getGstNumber());
         dto.setLicenseNumber(vendor.getLicenseNumber());
-        dto.setFoodLicenseNumber(vendor.getFoodLicenseNumber());
         dto.setRole(vendor.getRole());
         dto.setEmailVerified(vendor.isEmailVerified());
         dto.setPhoneVerified(vendor.isPhoneVerified());

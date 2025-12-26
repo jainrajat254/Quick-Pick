@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.painterResource
@@ -83,6 +84,7 @@ fun VendorBasePage(
     )
 
     Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
                 title = {
@@ -109,6 +111,8 @@ fun VendorBasePage(
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 28.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 },
@@ -140,8 +144,9 @@ private fun VendorBottomNavigationBar(
     onItemClick: (String) -> Unit
 ) {
     NavigationBar(
+        windowInsets = NavigationBarDefaults.windowInsets,
         containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 8.dp
+        tonalElevation = 0.dp
     ) {
         items.forEach { item ->
             val isSelected = currentRoute.contains(item.route)
@@ -154,34 +159,22 @@ private fun VendorBottomNavigationBar(
                                     containerColor = MaterialTheme.colorScheme.error,
                                     contentColor = MaterialTheme.colorScheme.onError
                                 ) {
-                                    Text(
-                                        text = if (item.badgeCount > 99) "99+" else item.badgeCount.toString(),
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
+                                    Text(text = if (item.badgeCount > 99) "99+" else item.badgeCount.toString())
                                 }
                             }
                         }
                     ) {
                         Icon(
-                            imageVector = if (isSelected) {
-                                item.selectedIcon
-                            } else {
-                                item.unselectedIcon
-                            },
+                            imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
                             contentDescription = item.label
                         )
                     }
                 },
                 label = {
-                    Text(
-                        text = item.label,
-                        style = MaterialTheme.typography.labelMedium
-                    )
+                    Text(text = item.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 },
                 selected = isSelected,
-                onClick = {
-                    onItemClick(item.route)
-                },
+                onClick = { onItemClick(item.route) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = MaterialTheme.colorScheme.primary,
                     selectedTextColor = MaterialTheme.colorScheme.primary,

@@ -28,7 +28,7 @@ fun ActionButtons(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Button(
-            onClick = { if (orderId != null) navController.navigate(AppScreenUser.OrderDetail)},
+            onClick = { if (orderId != null) navController.navigate(AppScreenUser.OrderDetail(orderId = orderId)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),

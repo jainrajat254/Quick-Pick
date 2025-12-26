@@ -35,7 +35,7 @@ kotlinStdlib = "2.2.21"
 runner = "1.7.0"
 core = "1.7.0"
 workRuntimeKtxVersion = "2.11.0"
-
+firebaseCrashlytics = "2.4.0"
 
 [libraries]
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }

@@ -204,8 +204,8 @@ public class MenuItemService {
         if (updateDto.getCategory() != null) {
             menuItem.setCategory(updateDto.getCategory().trim());
         }
-        if (updateDto.getIsVeg() != null) {
-            menuItem.setVeg(updateDto.getIsVeg());
+        if (updateDto.getVeg() != null) {
+            menuItem.setVeg(updateDto.getVeg());
         }
         if (updateDto.getImageUrl() != null) {
             menuItem.setImageUrl(updateDto.getImageUrl());

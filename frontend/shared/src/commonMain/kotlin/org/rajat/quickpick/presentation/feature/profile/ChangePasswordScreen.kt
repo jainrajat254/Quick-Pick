@@ -23,6 +23,7 @@ import org.rajat.quickpick.domain.modal.auth.ChangePasswordResponse
 import org.rajat.quickpick.presentation.viewmodel.AuthViewModel
 import org.rajat.quickpick.presentation.feature.profile.components.PasswordTextField
 import org.rajat.quickpick.presentation.theme.AppColors
+import org.rajat.quickpick.utils.ErrorUtils
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
 
@@ -67,10 +68,11 @@ fun ChangePasswordScreen(
                 navController.navigateUp()
             }
             is UiState.Error -> {
-                val err = (changePasswordState as UiState.Error).message ?: "Failed to change password"
-                uiError = err
+                val raw = (changePasswordState as UiState.Error).message
+                val errMsg = ErrorUtils.sanitizeError(raw)
+                uiError = errMsg
                 uiSuccess = null
-                showToast(err)
+                showToast(errMsg)
             }
             else -> Unit
         }
@@ -91,6 +93,7 @@ fun ChangePasswordScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -180,7 +183,7 @@ fun ChangePasswordScreen(
                     val token = TokenProvider.token
                     if (token.isNullOrBlank()) {
                         uiError = "Session expired. Please login again."
-                        showToast(uiError!!)
+                        showToast(ErrorUtils.sanitizeError(uiError))
                         return@Button
                     }
                     authViewModel.changePassword(

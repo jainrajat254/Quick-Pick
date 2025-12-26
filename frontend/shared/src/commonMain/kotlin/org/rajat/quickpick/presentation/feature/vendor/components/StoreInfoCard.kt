@@ -22,15 +22,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import org.rajat.quickpick.domain.modal.search.GetVendorByIDResponse
 import org.rajat.quickpick.domain.modal.review.GetVendorRatingStatsResponse
 import org.rajat.quickpick.utils.UiState
+
+private val storeInfoLogger = Logger.withTag("StoreInfoCard")
 
 @Composable
 fun StoreInfoCard(
@@ -39,6 +43,18 @@ fun StoreInfoCard(
     onRatingClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    LaunchedEffect(ratingState) {
+        when (ratingState) {
+            is UiState.Success -> {
+                val r = ratingState.data
+                storeInfoLogger.d { "StoreInfoCard rating loaded for vendor=${vendor.id} avg=${r.averageRating} total=${r.totalReviews} distribution=${r.ratingDistribution}" }
+            }
+            is UiState.Loading -> storeInfoLogger.d { "StoreInfoCard rating loading for vendor=${vendor.id}" }
+            is UiState.Error -> storeInfoLogger.e(Exception((ratingState as UiState.Error).message)) { "StoreInfoCard rating error for vendor=${vendor.id}: ${(ratingState as UiState.Error).message}" }
+            UiState.Empty -> storeInfoLogger.d { "StoreInfoCard rating empty for vendor=${vendor.id}" }
+        }
+    }
+
     Card(
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.inverseOnSurface),
@@ -106,7 +122,7 @@ fun StoreInfoCard(
                                             imageVector = Icons.Filled.Star,
                                             contentDescription = "Rating",
                                             modifier = Modifier.size(18.dp),
-                                            tint = Color(0xFFFFB800)
+                                            tint = MaterialTheme.colorScheme.primary
                                         )
                                         Text(
                                             text = (kotlin.math.round(rating.averageRating * 10) / 10.0).toString(),

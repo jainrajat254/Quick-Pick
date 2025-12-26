@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,7 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -23,7 +21,6 @@ import org.rajat.quickpick.domain.modal.search.GetAllVendorsInCollegeResponse
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.components.ErrorState
 import org.rajat.quickpick.presentation.feature.home.components.EmptyState
-import org.rajat.quickpick.presentation.feature.home.components.SearchBar
 import org.rajat.quickpick.presentation.feature.home.components.VendorsList
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.viewmodel.HomeViewModel
@@ -34,6 +31,7 @@ import org.rajat.quickpick.utils.BackHandler
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
+import org.rajat.quickpick.utils.ErrorUtils
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -45,7 +43,6 @@ fun HomeScreen(
     reviewViewModel: ReviewViewModel,
     menuItemViewModel: MenuItemViewModel
 ) {
-    var searchQuery by remember { mutableStateOf("") }
     var backPressedTime by remember { mutableStateOf(0L) }
 
     val vendorsState by homeViewModel.vendorsInCollegeState.collectAsState()
@@ -67,7 +64,8 @@ fun HomeScreen(
     LaunchedEffect(vendorsState) {
         when (vendorsState) {
             is UiState.Error -> {
-                val message = (vendorsState as UiState.Error).message ?: "Failed to load vendors"
+                val raw = (vendorsState as UiState.Error).message
+                val message = ErrorUtils.sanitizeError(raw)
                 showToast(message)
             }
             else -> Unit
@@ -79,14 +77,6 @@ fun HomeScreen(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        SearchBar(
-            query = searchQuery,
-            onQueryChange = { searchQuery = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-        )
-
         when (vendorsState) {
             is UiState.Loading -> {
                 Box(
@@ -99,14 +89,13 @@ fun HomeScreen(
 
             UiState.Empty -> {
                 EmptyState(
-                    searchQuery = searchQuery,
                     modifier = Modifier.fillMaxSize()
                 )
             }
 
             is UiState.Error -> {
                 ErrorState(
-                    message = (vendorsState as UiState.Error).message ?: "Failed to load vendors",
+                    message = ErrorUtils.sanitizeError((vendorsState as UiState.Error).message),
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -116,7 +105,6 @@ fun HomeScreen(
 
                 if (vendors.vendors.isEmpty()) {
                     EmptyState(
-                        searchQuery = searchQuery,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {

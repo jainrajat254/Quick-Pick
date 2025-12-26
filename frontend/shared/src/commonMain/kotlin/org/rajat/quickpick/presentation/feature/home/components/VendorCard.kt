@@ -14,10 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import org.koin.compose.koinInject
 import org.rajat.quickpick.domain.modal.search.Vendor
 import org.rajat.quickpick.presentation.viewmodel.ReviewViewModel
 import org.rajat.quickpick.utils.UiState
+
+private val vendorCardLogger = Logger.withTag("VendorCard")
 
 @Composable
 fun VendorCard(
@@ -26,7 +29,31 @@ fun VendorCard(
     onVendorClick: () -> Unit,
     reviewViewModel: ReviewViewModel = koinInject()
 ) {
-    val ratingState by reviewViewModel.getVendorRatingState(vendor.id ?: "").collectAsState()
+    val vendorId = vendor.id
+
+    val ratingStateFlow = if (!vendorId.isNullOrBlank()) reviewViewModel.getVendorRatingState(vendorId) else null
+    val ratingState by (ratingStateFlow?.collectAsState() ?: androidx.compose.runtime.mutableStateOf(UiState.Empty))
+
+    LaunchedEffect(vendorId) {
+        if (!vendorId.isNullOrBlank()) {
+            vendorCardLogger.d { "Requesting vendor rating for id=$vendorId" }
+            reviewViewModel.getVendorRating(vendorId)
+        } else {
+            vendorCardLogger.w { "Vendor id is blank/null; skipping rating fetch" }
+        }
+    }
+
+    LaunchedEffect(ratingState) {
+        when (ratingState) {
+            is UiState.Success -> {
+                val r = (ratingState as UiState.Success).data
+                vendorCardLogger.d { "VendorCard rating for id=$vendorId -> avg=${r.averageRating} total=${r.totalReviews} distribution=${r.ratingDistribution}" }
+            }
+            is UiState.Loading -> vendorCardLogger.d { "VendorCard rating loading for id=$vendorId" }
+            is UiState.Error -> vendorCardLogger.e(Exception((ratingState as UiState.Error).message)) { "VendorCard rating error for id=$vendorId: ${(ratingState as UiState.Error).message}" }
+            UiState.Empty -> vendorCardLogger.d { "VendorCard rating empty for id=$vendorId" }
+        }
+    }
 
     Card(
         modifier = modifier
@@ -59,17 +86,16 @@ fun VendorCard(
                 verticalArrangement = Arrangement.Center
             ) {
                 Column {
-                    vendor.storeName?.let {
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    if (!vendor.vendorDescription.isNullOrBlank()) {
+                    Text(
+                        text = vendor.storeName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    if (vendor.vendorDescription.isNotBlank()) {
                         Text(
                             text = vendor.vendorDescription,
                             style = MaterialTheme.typography.bodySmall,
@@ -103,12 +129,12 @@ fun VendorCard(
                             }
                             UiState.Empty -> {}
                         }
-                        if (vendor.address?.length!! < 15) {
+                        if (vendor.address.length < 15) {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f, fill = false)) {
                                 Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(modifier = Modifier.width(2.dp))
                                 Text(
-                                    text = vendor.address?.take(20) ?: "",
+                                    text = vendor.address.take(20),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1,

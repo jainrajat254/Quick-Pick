@@ -23,6 +23,9 @@ sealed class AppScreenUser {
     data object Onboarding3 : AppScreenUser()
 
     @Serializable
+    data object NotificationPermission : AppScreenUser()
+
+    @Serializable
     data object UserRegister : AppScreenUser()
 
     @Serializable
@@ -116,6 +119,7 @@ fun getAppScreenUserFromRoute(route: String?): AppScreenUser? {
         "Onboarding1" to AppScreenUser.Onboarding1,
         "Onboarding2" to AppScreenUser.Onboarding2,
         "Onboarding3" to AppScreenUser.Onboarding3,
+        "NotificationPermission" to AppScreenUser.NotificationPermission,
         "UserRegister" to AppScreenUser.UserRegister,
         "UserLogin" to AppScreenUser.UserLogin,
         "VendorRegister" to AppScreenUser.VendorRegister,

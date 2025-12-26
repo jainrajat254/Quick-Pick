@@ -14,7 +14,6 @@ object Validators {
         address: String,
         gstNumber: String,
         licenseNumber: String,
-        foodLicenseNumber: String,
         selectedCollege: String
     ): Boolean {
         return vendorName.isNotBlank() &&
@@ -25,7 +24,6 @@ object Validators {
                 address.isNotBlank() &&
                 gstNumber.isNotBlank() &&
                 licenseNumber.isNotBlank() &&
-                foodLicenseNumber.isNotBlank() &&
                 selectedCollege.isNotBlank()
     }
 
@@ -33,20 +31,14 @@ object Validators {
         fullName: String,
         email: String,
         phone: String,
-        studentId: String,
         password: String,
-        collegeName: String,
-        gender: String,
-        branch: String
+        collegeName: String
     ): Boolean {
         return fullName.isNotBlank() &&
                 email.isNotBlank() && email.matches(emailRegex) &&
                 phone.isNotBlank() && phone.matches(phoneRegex) &&
-                studentId.isNotBlank() &&
                 password.isNotBlank() &&
-                collegeName.isNotBlank() &&
-                gender.isNotBlank() &&
-                branch.isNotBlank()
+                collegeName.isNotBlank()
     }
 
     fun isLoginFormValid(

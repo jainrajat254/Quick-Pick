@@ -67,6 +67,7 @@ import org.rajat.quickpick.presentation.viewmodel.ReviewViewModel
 import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
 import org.rajat.quickpick.utils.rememberImagePickerHelper
+import org.rajat.quickpick.presentation.feature.notification.NotificationPermissionScreen
 
 @Composable
 fun AppNavigation(
@@ -101,6 +102,7 @@ fun AppNavigation(
 
     val showVendorBasePage = when (currentRouteVendor) {
         null -> false
+        AppScreenVendor.VendorVerificationPending -> false
         else -> true
     }
 
@@ -111,6 +113,7 @@ fun AppNavigation(
         AppScreenUser.Onboarding1,
         AppScreenUser.Onboarding2,
         AppScreenUser.Onboarding3,
+        AppScreenUser.NotificationPermission,
         AppScreenUser.Welcome,
         AppScreenUser.LaunchWelcome,
         AppScreenUser.UserLogin,
@@ -204,7 +207,7 @@ private fun AppNavHost(
             SplashScreen(
                 navController = navController,
                 datastore = dataStore,
-                refreshTokenManager = refreshTokenManager
+                authViewModel = authViewModel
             )
         }
 
@@ -224,6 +227,13 @@ private fun AppNavHost(
 
         composable<AppScreenUser.Onboarding3> {
             OnboardingScreen3(
+                navController = navController,
+                dataStore = dataStore
+            )
+        }
+
+        composable<AppScreenUser.NotificationPermission> {
+            NotificationPermissionScreen(
                 navController = navController,
                 dataStore = dataStore
             )
@@ -369,6 +379,11 @@ private fun AppNavHost(
                 navController = navController,
                 paddingValues = appPaddingValues,
                 imagePickerHelper = imagePickerHelper
+            )
+        }
+        composable<AppScreenVendor.VendorVerificationPending> {
+            org.rajat.quickpick.presentation.feature.vendor.verification.VendorVerificationPendingScreen(
+                navController = navController
             )
         }
         composable<AppScreenVendor.AddMenuItemScreen> {

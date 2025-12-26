@@ -78,6 +78,17 @@ class OrderViewModel(
     private val _paymentSuccessEvent = MutableStateFlow<String?>(null)
     val paymentSuccessEvent: StateFlow<String?> = _paymentSuccessEvent
 
+    private val _initialVendorOrdersTab = MutableStateFlow<Int?>(null)
+    val initialVendorOrdersTab: StateFlow<Int?> = _initialVendorOrdersTab
+
+    fun setInitialVendorOrdersTab(tab: Int) {
+        _initialVendorOrdersTab.value = tab
+    }
+
+    fun resetInitialVendorOrdersTab() {
+        _initialVendorOrdersTab.value = null
+    }
+
     private var cachedMyOrders: GetMyOrdersResponse? = null
     private var cachedOrderStats: GetMyOrderStatsResponse? = null
     private var cachedOrderById: MutableMap<String, GetOrderByIdResponse> = mutableMapOf()
@@ -161,14 +172,12 @@ class OrderViewModel(
     fun cancelOrder(orderId: String) {
         executeWithUiState(_cancelOrderState) {
             val result = orderRepository.cancelOrder(orderId)
-            // Invalidate caches after cancelling
             invalidateOrderCaches()
             result
         }
     }
 
     fun getMyOrderStats(forceRefresh: Boolean = false) {
-        // Use cache if valid and not forcing refresh
         if (!forceRefresh && cachedOrderStats != null && isCacheValid(orderStatsCacheTime)) {
             _myOrderStatsState.value = UiState.Success(cachedOrderStats!!)
             return

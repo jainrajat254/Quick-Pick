@@ -35,7 +35,8 @@ fun OrderReviewInfo(
     comment : String,
     navController: NavHostController,
     onRatingChange : (Int) -> Unit,
-    onCommentChange : (String) -> Unit
+    onCommentChange : (String) -> Unit,
+    onSubmit: () -> Unit
 
 ){
     CoilImage(
@@ -117,8 +118,7 @@ fun OrderReviewInfo(
         }
         Button(
             onClick = {
-                //Viewmodel method to submit review using orderId, rating, comment
-                navController.navigate(AppScreenUser.ReviewOrderConfirmation)
+                onSubmit()
             },
             modifier = Modifier.weight(1f),
             enabled = rating > 0
@@ -128,4 +128,3 @@ fun OrderReviewInfo(
     }
     Spacer(modifier = Modifier.height(16.dp))
 }
-

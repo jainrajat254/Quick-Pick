@@ -45,8 +45,10 @@ import org.rajat.quickpick.utils.toast.showToast
 import co.touchlab.kermit.Logger
 import org.rajat.quickpick.presentation.feature.payment.openRazorpayCheckout
 import org.rajat.quickpick.presentation.feature.payment.getPlatformActivityForPayment
+import org.rajat.quickpick.utils.ErrorUtils
 
 private val razorLogger = Logger.withTag("RAZORPAYDEBUG")
+private val logger = Logger.withTag("MyOrdersScreen")
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -80,7 +82,9 @@ fun MyOrderScreen(
 
     LaunchedEffect(myOrdersState) {
         if (myOrdersState is UiState.Error) {
-            showToast((myOrdersState as UiState.Error).message)
+            val raw = (myOrdersState as UiState.Error).message
+            logger.e { "MyOrders load error: $raw" }
+            showToast(ErrorUtils.sanitizeError(raw))
         }
     }
 
@@ -244,6 +248,8 @@ fun MyOrderScreen(
 
                 }
                 is UiState.Error -> {
+                    val raw = state.message
+                    logger.e { "MyOrders UI error display: $raw" }
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(top = 32.dp)
@@ -254,7 +260,7 @@ fun MyOrderScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         Text(
-                            text = state.message ?: "Unknown error occurred",
+                            text = ErrorUtils.sanitizeError(raw),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 8.dp)

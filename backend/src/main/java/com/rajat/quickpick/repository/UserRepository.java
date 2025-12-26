@@ -21,7 +21,6 @@ public interface UserRepository extends MongoRepository<User, String> {
 
     boolean existsByPhone(String phone);
 
-    boolean existsByStudentId(String studentId);
 
     List<User> findByCollegeName(String collegeName);
 

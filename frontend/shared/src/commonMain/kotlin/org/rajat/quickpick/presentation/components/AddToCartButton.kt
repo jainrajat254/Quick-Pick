@@ -12,11 +12,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.rajat.quickpick.presentation.viewmodel.CartViewModel
+import org.rajat.quickpick.utils.ErrorUtils
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
+
+private val logger = Logger.withTag("AddToCartButton")
 
 @Composable
 fun AddToCartButton(
@@ -37,7 +41,9 @@ fun AddToCartButton(
                 showToast("Added to cart")
             }
             is UiState.Error -> {
-                showToast(state.message)
+                val raw = state.message
+                logger.e { "AddToCart error: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
             }
             else -> {}
         }
@@ -132,4 +138,3 @@ fun AddToCartButton(
         }
     }
 }
-

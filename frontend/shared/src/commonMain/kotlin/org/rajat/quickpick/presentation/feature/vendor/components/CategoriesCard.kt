@@ -57,7 +57,7 @@ fun CategoryCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color=MaterialTheme.colorScheme.primary)
+                    .background(color = MaterialTheme.colorScheme.primary)
                     .padding(horizontal = 8.dp, vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -65,7 +65,7 @@ fun CategoryCard(
                     text = category,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     textAlign = TextAlign.Center,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis

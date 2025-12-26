@@ -42,6 +42,7 @@ import org.rajat.quickpick.utils.tokens.PlatformScheduler
 import org.rajat.quickpick.utils.websocket.VendorWebSocketManager
 import quickpick.shared.generated.resources.Res
 import quickpick.shared.generated.resources.storeimage
+import org.rajat.quickpick.utils.ErrorUtils
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -179,7 +180,8 @@ fun VendorProfileScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .navigationBarsPadding(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 item {
@@ -481,6 +483,8 @@ fun VendorProfileScreen(
         }
 
         is UiState.Error -> {
+            val raw = (vendorProfileState as UiState.Error).message
+            Logger.withTag("VENDOR_PROFILE_SCREEN").e(Exception(raw)) { "Vendor profile load error" }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -492,7 +496,7 @@ fun VendorProfileScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = (vendorProfileState as UiState.Error).message ?: "Error loading profile",
+                        text = ErrorUtils.sanitizeError(raw),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.error
                     )

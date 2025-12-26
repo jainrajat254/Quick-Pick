@@ -1,8 +1,10 @@
 package com.rajat.quickpick.dto.vendor;
 
 import com.rajat.quickpick.enums.Role;
+import com.rajat.quickpick.enums.VendorVerificationStatus;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -21,5 +23,10 @@ public class VendorResponseDto {
     private Role role;
     private boolean isPhoneVerified;
     private boolean isEmailVerified;
+
+    private VendorVerificationStatus verificationStatus;
+    private LocalDateTime verifiedAt;
+    private LocalDateTime rejectedAt;
+    private String rejectionReason;
 
 }

@@ -38,6 +38,7 @@ fun NotificationSettingsScreen(
             .padding(paddingValues)
             .background(MaterialTheme.colorScheme.surface)
             .verticalScroll(rememberScrollState())
+            .navigationBarsPadding()
             .padding(16.dp)
             ,
         verticalArrangement = Arrangement.spacedBy(16.dp)

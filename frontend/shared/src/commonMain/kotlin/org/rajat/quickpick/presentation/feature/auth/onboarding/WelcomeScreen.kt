@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -86,7 +87,7 @@ fun LaunchWelcomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Primary),
+            .background(AppColors.SunnyYellowContainer),
         contentAlignment = Alignment.TopCenter
     ) {
         Column(
@@ -95,10 +96,11 @@ fun LaunchWelcomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 32.dp, vertical = 64.dp)
+                .navigationBarsPadding()
         ) {
 
             Image(
-                painter = painterResource(resource = Res.drawable.bgremlight),
+                painter = painterResource(resource = Res.drawable.bgrem),
                 contentDescription = "App Logo",
                 modifier = Modifier.size(150.dp)
             )
@@ -109,7 +111,7 @@ fun LaunchWelcomeScreen(
                 text = "Quick Pick",
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Black,
-                color = Color.White
+                color = AppColors.Primary
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -117,7 +119,7 @@ fun LaunchWelcomeScreen(
             Text(
                 text = "Skip the line, grab your meal!\nQuickPick makes campus food just a tap away.",
                 style = MaterialTheme.typography.titleMedium,
-                color = Color.White.copy(alpha = 0.8f),
+                color = AppColors.Primary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(0.8f)
             )

@@ -3,12 +3,10 @@ package org.rajat.quickpick.presentation.feature.auth.onboarding
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -48,7 +46,7 @@ fun OnboardingScreen3(
         onButtonClick = {
             coroutineScope.launch {
                 dataStore.setHasOnboarded(true)
-                navController.navigate(AppScreenUser.LaunchWelcome) {
+                navController.navigate(AppScreenUser.NotificationPermission) {
                     popUpTo(AppScreenUser.Onboarding3) { inclusive = true }
                 }
             }
@@ -56,7 +54,7 @@ fun OnboardingScreen3(
         onSkipClick = {
             coroutineScope.launch {
                 dataStore.setHasOnboarded(true)
-                navController.navigate(AppScreenUser.LaunchWelcome) {
+                navController.navigate(AppScreenUser.NotificationPermission) {
                     popUpTo(AppScreenUser.Onboarding3) { inclusive = true }
                 }
             }

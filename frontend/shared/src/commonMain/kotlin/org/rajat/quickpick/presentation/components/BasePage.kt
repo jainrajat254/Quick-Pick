@@ -1,9 +1,7 @@
 package org.rajat.quickpick.presentation.components
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -13,10 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.navigation.BottomNavItem
 import org.rajat.quickpick.utils.BackHandler
@@ -41,7 +38,6 @@ fun BasePage(
         AppScreenUser.Profile::class.simpleName
     )
     val isRootScreen = currentRoute in rootScreens
-    val showBackButton = !isRootScreen && currentRoute.isNotEmpty()
 
     var backPressedTime by remember { mutableStateOf(0L) }
 
@@ -99,6 +95,7 @@ fun BasePage(
     )
 
     Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
                 title = {
@@ -112,6 +109,8 @@ fun BasePage(
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 28.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 },
@@ -128,7 +127,7 @@ fun BasePage(
                 items = bottomNavItems,
                 currentRoute = currentRoute,
                 onItemClick = { route ->
-                    onNavigate(route as String)
+                    onNavigate(route)
                 }
             )
         }
@@ -138,163 +137,18 @@ fun BasePage(
 }
 
 @Composable
-private fun DrawerContent(
-    userName: String,
-    userEmail: String,
-    onItemClick: (String) -> Unit
-) {
-    ModalDrawerSheet(
-        drawerContainerColor = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.width(280.dp)
-    ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-
-                .padding(24.dp),
-            horizontalAlignment = Alignment.Start,
-
-
-            ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ){
-                Surface(
-                    modifier = Modifier.size(64.dp),
-                    shape = MaterialTheme.shapes.large,
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "User Avatar",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.Start
-                ){
-                    Text(
-                        text = userName,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Text(
-                        text = userEmail,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        HorizontalDivider(
-            modifier = Modifier.padding(vertical = 8.dp),
-            color = MaterialTheme.colorScheme.outlineVariant
-        )
-
-        val drawerItems = listOf(
-            DrawerMenuItem(
-                route = "my_profile",
-                label = "My Profile",
-                icon = Icons.Default.Person
-            ),
-            DrawerMenuItem(
-                route = "my_orders",
-                label = "My Orders",
-                icon = Icons.Default.ShoppingBag
-            ),
-            DrawerMenuItem(
-                route = "favorites",
-                label = "Favorites",
-                icon = Icons.Default.Favorite
-            ),
-            DrawerMenuItem(
-                route = "privacy_settings",
-                label = "Privacy Settings",
-                icon = Icons.Default.Lock
-            ),
-            DrawerMenuItem(
-                route = "notifications",
-                label = "Notifications",
-                icon = Icons.Default.Notifications
-            ),
-            DrawerMenuItem(
-                route = "contact_us",
-                label = "Contact Us",
-                icon = Icons.Default.Email
-            ),
-            DrawerMenuItem(
-                route = "about",
-                label = "About",
-                icon = Icons.Default.Info
-            ),
-            DrawerMenuItem(
-                route = "logout",
-                label = "Logout",
-                icon = Icons.AutoMirrored.Filled.ExitToApp
-            )
-        )
-
-        drawerItems.forEach { item ->
-            NavigationDrawerItem(
-                icon = {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.label
-                    )
-                },
-                label = {
-                    Text(
-                        text = item.label,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                },
-                selected = false,
-                onClick = {
-                    onItemClick(item.route)
-                },
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                colors = NavigationDrawerItemDefaults.colors(
-                    unselectedContainerColor = MaterialTheme.colorScheme.surface,
-                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurface,
-                    selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-// This is your original BottomNavigationBar implementation
-@Composable
 private fun BottomNavigationBar(
     items: List<BottomNavItem>,
-    currentRoute: Any,
-    onItemClick: (Any) -> Unit
+    currentRoute: String,
+    onItemClick: (String) -> Unit
 ) {
     NavigationBar(
+        windowInsets = NavigationBarDefaults.windowInsets,
         containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 8.dp
+        tonalElevation = 0.dp
     ) {
         items.forEach { item ->
+            val isSelected = currentRoute.contains(item.route)
             NavigationBarItem(
                 icon = {
                     BadgedBox(
@@ -304,34 +158,22 @@ private fun BottomNavigationBar(
                                     containerColor = MaterialTheme.colorScheme.error,
                                     contentColor = MaterialTheme.colorScheme.onError
                                 ) {
-                                    Text(
-                                        text = if (item.badgeCount > 99) "99+" else item.badgeCount.toString(),
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
+                                    Text(text = item.badgeCount.toString())
                                 }
                             }
                         }
                     ) {
                         Icon(
-                            imageVector = if (currentRoute == item.route) {
-                                item.selectedIcon
-                            } else {
-                                item.unselectedIcon
-                            },
+                            imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
                             contentDescription = item.label
                         )
                     }
                 },
                 label = {
-                    Text(
-                        text = item.label,
-                        style = MaterialTheme.typography.labelMedium
-                    )
+                    Text(text = item.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 },
-                selected = currentRoute == item.route,
-                onClick = {
-                    onItemClick(item.route)
-                },
+                selected = isSelected,
+                onClick = { onItemClick(item.route) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = MaterialTheme.colorScheme.primary,
                     selectedTextColor = MaterialTheme.colorScheme.primary,

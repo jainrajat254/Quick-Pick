@@ -19,7 +19,6 @@ public class AdminVendorDto {
     private List<String> foodCategories;
     private String gstNumber;
     private String licenseNumber;
-    private String foodLicenseNumber;
     private Role role;
     private boolean emailVerified;
     private boolean phoneVerified;

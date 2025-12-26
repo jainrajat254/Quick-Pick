@@ -26,7 +26,6 @@ public interface VendorRepository extends MongoRepository<Vendor, String> {
 
     boolean existsByLicenseNumber(String licenseNumber);
 
-    boolean existsByFoodLicenseNumber(String foodLicenseNumber);
 
     List<Vendor> findByCollegeName(String collegeName);
 

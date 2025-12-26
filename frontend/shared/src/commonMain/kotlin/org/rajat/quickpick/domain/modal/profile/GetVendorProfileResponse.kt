@@ -16,5 +16,9 @@ data class GetVendorProfileResponse(
     val role: String? = null,
     val storeName: String? = null,
     val vendorDescription: String? = null,
-    val vendorName: String? = null
+    val vendorName: String? = null,
+    val verificationStatus: String? = null,
+    val verifiedAt: String? = null,
+    val rejectedAt: String? = null,
+    val rejectionReason: String? = null
 )

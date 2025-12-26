@@ -45,7 +45,7 @@ fun OrderCardFooter(
                         contentColor = MaterialTheme.colorScheme.onErrorContainer
                     )
                 ) {
-                    Text("Cancel Order")
+                    Text("Cancel")
                 }
                 OutlinedButton(
                     onClick = {

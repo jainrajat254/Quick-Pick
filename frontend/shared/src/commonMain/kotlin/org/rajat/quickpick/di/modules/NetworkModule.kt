@@ -17,6 +17,7 @@ import org.koin.mp.KoinPlatform.getKoin
 import org.rajat.quickpick.di.TokenProvider
 import org.rajat.quickpick.di.getKtorEngine
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
+import org.rajat.quickpick.utils.Constants
 
 private val logger = Logger.withTag("REFRESH_TOKEN")
 
@@ -42,7 +43,13 @@ val AuthHeaderPlugin = createClientPlugin("AuthHeaderPlugin") {
         }
 
         val token = TokenProvider.token
-        val excludedPaths = listOf("/request-otp", "/verify-otp", "/auth/users")
+        val excludedPaths = listOf(
+            Constants.Endpoints.SEND_EMAIL_OTP,
+            Constants.Endpoints.VERIFY_EMAIL_OTP,
+            Constants.Endpoints.SEND_PASSWORD_OTP,
+            Constants.Endpoints.RESET_PASSWORD_OTP,
+            Constants.Endpoints.RESEND_EMAIL_VERIFICATION
+        )
 
         when {
             excludedPaths.any { request.url.encodedPath.endsWith(it) } -> {

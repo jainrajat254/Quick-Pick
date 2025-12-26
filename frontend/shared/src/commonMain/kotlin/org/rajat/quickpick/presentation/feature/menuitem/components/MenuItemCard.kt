@@ -12,14 +12,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.rajat.quickpick.domain.modal.menuitems.MenuItem
 import org.rajat.quickpick.presentation.viewmodel.CartViewModel
+import org.rajat.quickpick.utils.ErrorUtils
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
 
+private val logger = Logger.withTag("MenuItemCard")
 
 @Composable
 fun MenuItemCard(
@@ -47,7 +49,9 @@ fun MenuItemCard(
                 showToast("Added to cart")
             }
             is UiState.Error -> {
-                showToast(state.message)
+                val raw = state.message
+                logger.e { "Add to cart error: $raw" }
+                showToast(ErrorUtils.sanitizeError(raw))
             }
             else -> {}
         }
@@ -89,7 +93,7 @@ fun MenuItemCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        VegNonVegBadge(isVeg = menuItem.isVeg ?: true)
+                        VegNonVegBadge(isVeg = menuItem.isVeg ?: false)
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = menuItem.name ?: "Item",

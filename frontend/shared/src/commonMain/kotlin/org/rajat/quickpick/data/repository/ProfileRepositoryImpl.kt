@@ -6,6 +6,7 @@ import org.rajat.quickpick.domain.modal.profile.UpdateUserProfileRequest
 import org.rajat.quickpick.domain.modal.profile.UpdateUserProfileResponse
 import org.rajat.quickpick.domain.modal.profile.UpdateVendorProfileRequest
 import org.rajat.quickpick.domain.modal.profile.UpdateVendorProfileResponse
+import org.rajat.quickpick.domain.modal.profile.VendorVerificationStatusResponse
 import org.rajat.quickpick.domain.repository.ProfileRepository
 import org.rajat.quickpick.domain.service.ProfileApiService
 
@@ -20,6 +21,12 @@ class ProfileRepositoryImpl(private val profileApiService: ProfileApiService) : 
     override suspend fun getVendorProfile(): Result<GetVendorProfileResponse> {
         return runCatching {
             profileApiService.getVendorProfile()
+        }
+    }
+
+    override suspend fun getVendorVerificationStatus(): Result<VendorVerificationStatusResponse> {
+        return runCatching {
+            profileApiService.getVendorVerificationStatus()
         }
     }
 

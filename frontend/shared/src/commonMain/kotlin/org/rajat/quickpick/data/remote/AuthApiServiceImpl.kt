@@ -23,9 +23,11 @@ import org.rajat.quickpick.domain.modal.auth.ResetPasswordResponse
 import org.rajat.quickpick.domain.modal.auth.SimpleMessageResponse
 import org.rajat.quickpick.domain.modal.auth.PasswordOtpRequest
 import org.rajat.quickpick.domain.modal.auth.ResetPasswordOtpRequest
+import org.rajat.quickpick.domain.modal.auth.IsSessionValidResponse
 import org.rajat.quickpick.domain.service.AuthApiService
 import org.rajat.quickpick.utils.Constants
 import org.rajat.quickpick.utils.network.safePost
+import org.rajat.quickpick.utils.network.safeGet
 
 class AuthApiServiceImpl(private val httpClient: HttpClient) : AuthApiService {
 
@@ -117,6 +119,12 @@ class AuthApiServiceImpl(private val httpClient: HttpClient) : AuthApiService {
         return httpClient.safePost(
             endpoint = "${Constants.BASE_URL}${Constants.Endpoints.RESET_PASSWORD_OTP}",
             body = request
+        )
+    }
+
+    override suspend fun isSessionValid(): IsSessionValidResponse {
+        return httpClient.safeGet(
+            endpoint = "${Constants.BASE_URL}${Constants.Endpoints.IS_SESSION_VALID}"
         )
     }
 }
