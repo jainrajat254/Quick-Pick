@@ -37,11 +37,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.coil3.CoilImage
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.domain.modal.profile.GetStudentProfileResponse
 import org.rajat.quickpick.domain.modal.profile.UpdateUserProfileRequest
+import org.rajat.quickpick.presentation.components.InitialsAvatar
 import quickpick.shared.generated.resources.Res
 import quickpick.shared.generated.resources.delivery
 
@@ -66,23 +68,36 @@ fun MyProfileFields(
             modifier = Modifier.padding(vertical = 16.dp),
             contentAlignment = Alignment.BottomEnd
         ) {
-            CoilImage(
-                imageModel = { profile.profileImageUrl ?: "" },
-                imageOptions = ImageOptions(
-                    contentScale = ContentScale.Crop
-                ),
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                previewPlaceholder = painterResource(resource = Res.drawable.delivery)
-            )
+            if (!profile.profileImageUrl.isNullOrBlank()) {
+                CoilImage(
+                    imageModel = { profile.profileImageUrl },
+                    imageOptions = ImageOptions(
+                        contentScale = ContentScale.Crop
+                    ),
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    previewPlaceholder = painterResource(resource = Res.drawable.delivery),
+                    failure = {
+                        InitialsAvatar(
+                            name = profile.fullName,
+                            modifier = Modifier.size(120.dp),
+                            fontSize = 48.sp
+                        )
+                    }
+                )
+            } else {
+                InitialsAvatar(
+                    name = profile.fullName,
+                    modifier = Modifier.size(120.dp),
+                    fontSize = 48.sp
+                )
+            }
 
-            // Only show edit icon button when in edit mode
             if (isEditMode) {
                 IconButton(
                     onClick = {
-                        //Logic to change the profile picture
                     },
                     modifier = Modifier
                         .size(36.dp)

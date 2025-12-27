@@ -15,11 +15,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.coil3.CoilImage
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.domain.modal.profile.GetVendorProfileResponse
 import org.rajat.quickpick.domain.modal.profile.UpdateVendorProfileRequest
+import org.rajat.quickpick.presentation.components.InitialsAvatar
 import org.rajat.quickpick.presentation.feature.vendor.menu.components.ProfileInfoField
 import org.rajat.quickpick.utils.ImageUploadState
 import quickpick.shared.generated.resources.Res
@@ -60,17 +62,32 @@ fun VendorProfileFields(
             // Show uploaded image or existing profile image
             val displayImageUrl = uploadedImageUrl ?: profile.profileImageUrl
 
-            CoilImage(
-                imageModel = { displayImageUrl ?: "" },
-                imageOptions = ImageOptions(
-                    contentScale = ContentScale.Crop
-                ),
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                previewPlaceholder = painterResource(resource = Res.drawable.delivery)
-            )
+            if (!displayImageUrl.isNullOrBlank()) {
+                CoilImage(
+                    imageModel = { displayImageUrl },
+                    imageOptions = ImageOptions(
+                        contentScale = ContentScale.Crop
+                    ),
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    previewPlaceholder = painterResource(resource = Res.drawable.delivery),
+                    failure = {
+                        InitialsAvatar(
+                            name = profile.storeName ?: profile.vendorName,
+                            modifier = Modifier.size(120.dp),
+                            fontSize = 48.sp
+                        )
+                    }
+                )
+            } else {
+                InitialsAvatar(
+                    name = profile.storeName ?: profile.vendorName,
+                    modifier = Modifier.size(120.dp),
+                    fontSize = 48.sp
+                )
+            }
 
             if (isEditMode) {
                 Box(

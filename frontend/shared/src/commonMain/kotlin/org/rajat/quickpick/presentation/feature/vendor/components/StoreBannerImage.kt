@@ -1,6 +1,5 @@
 package org.rajat.quickpick.presentation.feature.vendor.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,9 +14,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.coil3.CoilImage
 import org.jetbrains.compose.resources.painterResource
+import org.rajat.quickpick.presentation.components.InitialsAvatar
 import quickpick.shared.generated.resources.Res
 import quickpick.shared.generated.resources.storeimage
 
@@ -53,22 +54,22 @@ fun StoreBannerImage(
                     .clip(RoundedCornerShape(0.dp)),
                 previewPlaceholder = painterResource(Res.drawable.storeimage),
                 failure = {
-                    Image(
-                        painter = painterResource(Res.drawable.storeimage),
-                        contentDescription = storeName,
+                    InitialsAvatar(
+                        name = storeName,
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                        fontSize = 72.sp,
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        textColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             )
         } else {
-            Image(
-                painter = painterResource(Res.drawable.storeimage),
-                contentDescription = storeName,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(0.dp)),
-                contentScale = ContentScale.Crop
+            InitialsAvatar(
+                name = storeName,
+                modifier = Modifier.fillMaxSize(),
+                fontSize = 72.sp,
+                backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                textColor = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
     }

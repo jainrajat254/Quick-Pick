@@ -30,6 +30,9 @@ sealed class AppScreenVendor {
     data object HelpAndSupportScreenVendor : AppScreenVendor()
 
     @Serializable
+    data object PrivacyPolicy : AppScreenVendor()
+
+    @Serializable
     data class UpdateMenuItemScreen(val orderId : String) : AppScreenVendor()
 
     @Serializable
@@ -51,6 +54,7 @@ fun getAppScreenVendorFromRoute(route: String?): AppScreenVendor?? {
         "VendorProfileUpdate" to AppScreenVendor.VendorProfileUpdate,
         "AddMenuItemScreen" to AppScreenVendor.AddMenuItemScreen,
         "HelpAndSupportScreenVendor" to AppScreenVendor.HelpAndSupportScreenVendor,
+        "PrivacyPolicy" to AppScreenVendor.PrivacyPolicy,
         "UpdateMenuItemScreen" to AppScreenVendor.UpdateMenuItemScreen(
             orderId = ""
         ),
