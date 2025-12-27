@@ -90,6 +90,9 @@ sealed class AppScreenUser {
     data object Settings : AppScreenUser()
 
     @Serializable
+    data object PrivacyPolicy : AppScreenUser()
+
+    @Serializable
     data object Cart : AppScreenUser()
 
     @Serializable
@@ -148,6 +151,7 @@ fun getAppScreenUserFromRoute(route: String?): AppScreenUser? {
         "ChangePassword" to AppScreenUser.ChangePassword,
         "NotificationSetting" to AppScreenUser.NotificationSetting,
         "Settings" to AppScreenUser.Settings,
+        "PrivacyPolicy" to AppScreenUser.PrivacyPolicy,
         "Cart" to AppScreenUser.Cart,
         "Checkout" to AppScreenUser.Checkout,
         "ConfirmOrder" to AppScreenUser.ConfirmOrder(

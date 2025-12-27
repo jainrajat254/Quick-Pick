@@ -106,29 +106,35 @@ class NotificationPermissionState(
 
 
     fun openAppSettings() {
-        logger.d { "openAppSettings called" }
+        logger.d { "openAppSettings called - launching app details settings" }
         logger.d { "Context package name: ${context.packageName}" }
 
+        val activity = context.findActivity()
+
+        val appDetailsIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", context.packageName, null)
+        }
+
         try {
-            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.fromParts("package", context.packageName, null)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            if (activity != null) {
+                logger.d { "starting app details from settings.... " }
+                activity.startActivity(appDetailsIntent)
+            } else {
+                logger.d { "starting app details from context.." }
+                appDetailsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(appDetailsIntent)
             }
-            logger.d { "Starting app settings intent: $intent" }
-            logger.d { "Intent action: ${intent.action}, data: ${intent.data}, flags: ${intent.flags}" }
-            context.startActivity(intent)
-            logger.i { "Successfully launched app settings" }
+            logger.i { "launched app details settings" }
         } catch (e: Exception) {
-            logger.e(e) { "Failed to open app settings, trying fallback" }
+            logger.e(e) { "Failed to launch app details settings.. attempting general settings..." }
             try {
-                val intent = Intent(Settings.ACTION_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                val generalSettingsIntent = Intent(Settings.ACTION_SETTINGS).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-                logger.d { "Starting fallback settings intent" }
-                context.startActivity(intent)
-                logger.i { "Successfully launched general settings" }
-            } catch (e2: Exception) {
-                logger.e(e2) { "Failed to open any settings screen" }
+                context.startActivity(generalSettingsIntent)
+                logger.i { "Launched general settings as fallback" }
+            } catch (ex: Exception) {
+                logger.e(ex) { "Failed to launch any settings screen" }
             }
         }
     }
@@ -142,4 +148,3 @@ private fun Context.findActivity(): Activity? {
     }
     return null
 }
-

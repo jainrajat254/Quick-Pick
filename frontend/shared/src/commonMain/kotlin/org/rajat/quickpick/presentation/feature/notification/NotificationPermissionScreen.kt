@@ -30,45 +30,33 @@ fun NotificationPermissionScreen(
     suppressAutoNavigate: Boolean = false
 ) {
     val logger = Logger.withTag("NotificationPermissionScreen")
-
     val scope = rememberCoroutineScope()
-
     var isLoading by remember { mutableStateOf(false) }
 
     val navigateToNextScreen: () -> Unit = {
         scope.launch {
-            logger.d { "Marking notification permission as requested" }
             dataStore.setHasRequestedNotificationPermission(true)
-
             val token = dataStore.getToken()
             val userRole = dataStore.getUserRole()
-
-            logger.d { "Token: $token, UserRole: $userRole" }
-
             if (!token.isNullOrEmpty()) {
                 when (userRole) {
                     "VENDOR" -> {
-                        logger.d { "Navigating to VendorDashboard" }
                         navController.navigate(AppScreenVendor.VendorDashboard) {
                             popUpTo(0) { inclusive = true }
                         }
                     }
                     "USER" -> {
-                        logger.d { "Navigating to HomeScreen" }
                         navController.navigate(AppScreenUser.HomeScreen) {
                             popUpTo(0) { inclusive = true }
                         }
                     }
                     else -> {
-                        logger.d { "Invalid role, navigating to LaunchWelcome" }
                         navController.navigate(AppScreenUser.LaunchWelcome) {
                             popUpTo(0) { inclusive = true }
                         }
                     }
                 }
             } else {
-                // No token, navigate to welcome screen
-                logger.d { "No token found, navigating to LaunchWelcome" }
                 navController.navigate(AppScreenUser.LaunchWelcome) {
                     popUpTo(0) { inclusive = true }
                 }
@@ -168,8 +156,12 @@ fun NotificationPermissionScreen(
             ) {
                 Button(
                     onClick = {
-                        isLoading = true
+                        if (!suppressAutoNavigate) {
+                            isLoading = true
+                        }
+
                         onPermissionGranted()
+
                         if (!suppressAutoNavigate) {
                             navigateToNextScreen()
                         } else {
@@ -200,9 +192,26 @@ fun NotificationPermissionScreen(
                     }
                 }
 
+
+                OutlinedButton(
+                    onClick = {
+                        navigateToNextScreen()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    enabled = !isLoading
+                ) {
+                    Text(
+                        text = "Done",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
                 TextButton(
                     onClick = {
-                        logger.d { "User skipped notification permission" }
                         navigateToNextScreen()
                     },
                     modifier = Modifier

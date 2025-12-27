@@ -164,6 +164,16 @@ class LocalDataStoreImpl(
     }
 
     override suspend fun clearAll() {
-        dataStore.edit { it.clear() }
+        dataStore.edit { prefs ->
+            prefs.remove(ACCESS_TOKEN_KEY)
+            prefs.remove(REFRESH_TOKEN_KEY)
+            prefs.remove(KEY_TOKEN_EXPIRY)
+            prefs.remove(ID_KEY)
+            prefs.remove(USER_ROLE_KEY)
+            prefs.remove(VENDOR_PROFILE_KEY)
+            prefs.remove(USER_PROFILE_KEY)
+            prefs.remove(PENDING_VERIFICATION_EMAIL_KEY)
+            prefs.remove(PENDING_VERIFICATION_USER_TYPE_KEY)
+        }
     }
 }

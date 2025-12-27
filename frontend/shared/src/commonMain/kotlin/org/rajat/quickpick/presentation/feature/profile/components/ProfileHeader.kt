@@ -7,22 +7,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.input.key.Key.Companion.R
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.coil3.CoilImage
 import org.jetbrains.compose.resources.painterResource
+import org.rajat.quickpick.presentation.components.InitialsAvatar
 import quickpick.shared.generated.resources.Res
 import quickpick.shared.generated.resources.delivery
 
@@ -36,27 +34,32 @@ fun ProfileHeader(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        CoilImage(
-            imageModel = { profileUrl },
-            imageOptions = ImageOptions(
-                contentScale = ContentScale.Crop
-            ),
-            modifier = Modifier
-                .size(64.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            // Placeholder and error
-            previewPlaceholder = painterResource( Res.drawable.delivery), // optional drawable
-            failure = {
-                androidx.compose.foundation.Image(
-                    painter = rememberVectorPainter(Icons.Default.Person),
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                )
-            }
-        )
+        if (profileUrl.isNotBlank()) {
+            CoilImage(
+                imageModel = { profileUrl },
+                imageOptions = ImageOptions(
+                    contentScale = ContentScale.Crop
+                ),
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                previewPlaceholder = painterResource(Res.drawable.delivery),
+                failure = {
+                    InitialsAvatar(
+                        name = userName,
+                        modifier = Modifier.size(64.dp),
+                        fontSize = 24.sp
+                    )
+                }
+            )
+        } else {
+            InitialsAvatar(
+                name = userName,
+                modifier = Modifier.size(64.dp),
+                fontSize = 24.sp
+            )
+        }
 
         Spacer(modifier = Modifier.width(16.dp))
 

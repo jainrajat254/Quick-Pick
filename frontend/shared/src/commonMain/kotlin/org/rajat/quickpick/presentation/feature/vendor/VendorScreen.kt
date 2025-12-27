@@ -36,6 +36,7 @@ import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
 import kotlin.math.roundToInt
 import org.rajat.quickpick.utils.ErrorUtils
+import kotlinx.coroutines.delay
 
 private val vendorScreenLogger = Logger.withTag("VendorScreen")
 
@@ -110,7 +111,6 @@ fun VendorScreen(
     ) { paddingValues ->
         when (vendorDetailsState) {
             is UiState.Loading -> {
-                // Show scrollable loading placeholders
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -118,7 +118,6 @@ fun VendorScreen(
                         .navigationBarsPadding(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Header placeholder
                     item {
                         Surface(
                             modifier = Modifier
@@ -131,7 +130,6 @@ fun VendorScreen(
                         ) {}
                     }
 
-                    // Offers placeholder
                     item {
                         Surface(
                             modifier = Modifier
@@ -144,7 +142,6 @@ fun VendorScreen(
                         ) {}
                     }
 
-                    // Tab placeholder
                     item {
                         Surface(
                             modifier = Modifier
@@ -155,7 +152,6 @@ fun VendorScreen(
                         ) {}
                     }
 
-                    // Menu items placeholders
                     repeat(8) {
                         item {
                             Surface(
@@ -236,6 +232,30 @@ fun VendorScreen(
                     }
                 }
 
+                var showEmptyMessage by remember { mutableStateOf(false) }
+
+                LaunchedEffect(key1 = vendorMenuState) {
+                    if (vendorMenuState is UiState.Success) {
+                        val items = (vendorMenuState as UiState.Success<List<CreateMenuItemResponse>>).data
+                        if (items.isEmpty()) {
+                            showEmptyMessage = false
+                            try {
+                                delay(60_000L)
+                            } catch (_: Exception) {
+                            }
+
+                            if (vendorMenuState is UiState.Success) {
+                                val currentItems = (vendorMenuState as UiState.Success<List<CreateMenuItemResponse>>).data
+                                if (currentItems.isEmpty()) showEmptyMessage = true
+                            }
+                        } else {
+                            showEmptyMessage = false
+                        }
+                    } else {
+                        showEmptyMessage = false
+                    }
+                }
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -304,7 +324,30 @@ fun VendorScreen(
                             is UiState.Success -> {
                                 val itemsList = (vendorMenuState as UiState.Success<List<CreateMenuItemResponse>>).data
 
-                                if (itemsList.isEmpty()) {
+                                if (itemsList.isEmpty() && !showEmptyMessage) {
+                                    item {
+                                        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(24.dp),
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+
+                                    repeat(8) {
+                                        item {
+                                            Surface(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(100.dp)
+                                                    .padding(horizontal = 16.dp),
+                                                tonalElevation = 0.dp,
+                                                shape = RoundedCornerShape(8.dp),
+                                                color = MaterialTheme.colorScheme.surfaceVariant
+                                            ) {}
+                                        }
+                                    }
+                                } else if (itemsList.isEmpty() && showEmptyMessage) {
                                     item {
                                         Box(
                                             modifier = Modifier
@@ -353,7 +396,7 @@ fun VendorScreen(
                                        )
                                     }
                                     item{
-                                        Spacer(modifier = Modifier.height(16.dp))
+                                        Spacer(modifier = Modifier.height(40.dp))
                                     }
                                 }
                             }
@@ -425,6 +468,7 @@ fun VendorScreen(
                             }
 
                             item {
+                                Spacer(modifier = Modifier.height(40.dp))
                             }
                         }
                     }

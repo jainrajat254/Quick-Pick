@@ -41,6 +41,7 @@ import org.rajat.quickpick.presentation.feature.profile.ContactUsScreen
 import org.rajat.quickpick.presentation.feature.profile.HelpAndFaqsScreen
 import org.rajat.quickpick.presentation.feature.profile.MyProfileScreen
 import org.rajat.quickpick.presentation.feature.profile.NotificationSettingsScreen
+import org.rajat.quickpick.presentation.feature.profile.PrivacyPolicyScreen
 import org.rajat.quickpick.presentation.feature.profile.ProfileScreen
 import org.rajat.quickpick.presentation.feature.profile.SettingsScreen
 import org.rajat.quickpick.presentation.feature.vendor.VendorScreen
@@ -503,7 +504,18 @@ private fun AppNavHost(
             )
         }
 
-        // --- CART/CHECKOUT SCREENS ---
+        composable<AppScreenUser.PrivacyPolicy> {
+            PrivacyPolicyScreen(
+                navController = navController
+            )
+        }
+
+        composable<AppScreenVendor.PrivacyPolicy> {
+            PrivacyPolicyScreen(
+                navController = navController
+            )
+        }
+
         composable<AppScreenUser.Cart> {
             CartScreen(
                 paddingValues = appPaddingValues,

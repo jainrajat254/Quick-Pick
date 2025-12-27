@@ -102,6 +102,12 @@ class AuthViewModel(
 
     fun hasPendingRegistrationCredentials(): Boolean = pendingEmail != null && pendingPassword != null && pendingUserType != null
 
+    fun clearPendingRegistrationCredentials() {
+        pendingEmail = null
+        pendingPassword = null
+        pendingUserType = null
+    }
+
     private fun <T> executeWithUiState(
         stateFlow: MutableStateFlow<UiState<T>>,
         block: suspend () -> Result<T>
@@ -258,7 +264,18 @@ class AuthViewModel(
     }
 
     fun logout() {
-        resetAuthStates()
+        viewModelScope.launch {
+            resetAuthStates()
+            clearPendingRegistrationCredentials()
+
+            try { VendorWebSocketManager.disconnect() } catch (_: Exception) {}
+            try { PlatformScheduler.cancelScheduledRefresh() } catch (_: Exception) {}
+
+            try { dataStore.clearPendingVerification() } catch (_: Exception) {}
+            try { dataStore.clearAll() } catch (_: Exception) {}
+
+            TokenProvider.token = null
+        }
     }
 
 }

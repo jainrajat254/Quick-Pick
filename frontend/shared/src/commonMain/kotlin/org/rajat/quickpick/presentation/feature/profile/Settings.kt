@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -52,6 +53,13 @@ fun SettingsScreen(
             icon = Icons.Filled.Key,
             onClick = {
                 navController.navigate(AppScreenUser.ChangePassword)
+            }
+        )
+        SettingComponentCard(
+            text = "Privacy Policy",
+            icon = Icons.Filled.PrivacyTip,
+            onClick = {
+                navController.navigate(AppScreenUser.PrivacyPolicy)
             }
         )
     }
