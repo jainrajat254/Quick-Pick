@@ -221,4 +221,9 @@ public class AuthController {
             return ResponseEntity.ok(res);
         }
     }
+
+    @GetMapping("/delete")
+    public ResponseEntity<String> deleteAccount() {
+        return ResponseEntity.ok("");
+    }
 }
