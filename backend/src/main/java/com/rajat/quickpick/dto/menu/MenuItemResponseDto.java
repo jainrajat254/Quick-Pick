@@ -18,7 +18,7 @@ public class MenuItemResponseDto {
     @JsonProperty("isVeg")
     private boolean veg;
     private String imageUrl;
-     @JsonProperty("isAvailable")
+    @JsonProperty("isAvailable")
     private boolean isAvailable;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
