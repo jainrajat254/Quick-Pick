@@ -61,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/create").permitAll()
                         .requestMatchers("/api/admin/login").permitAll()
                         .requestMatchers("/api/admin/delete/**").permitAll()
+                        .requestMatchers("/api/auth/delete").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
