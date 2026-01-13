@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -17,7 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.rajat.quickpick.presentation.theme.AppColors
 
 @Composable
@@ -27,7 +31,10 @@ fun StyledTabRow(
     onTabSelected: (Int) -> Unit
 ) {
     Card(
-        modifier = Modifier.padding(top=10.dp).fillMaxWidth(),
+        modifier = Modifier
+            .padding(top=10.dp)
+            .fillMaxWidth()
+            .wrapContentHeight(),
         shape = RoundedCornerShape(50),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -37,6 +44,7 @@ fun StyledTabRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(IntrinsicSize.Min)
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically,
 
@@ -49,17 +57,21 @@ fun StyledTabRow(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(40.dp)
+                        .wrapContentHeight()
                         .clip(RoundedCornerShape(50))
                         .background(backgroundColor)
-                        .clickable { onTabSelected(index) },
+                        .clickable { onTabSelected(index) }
+                        .padding(vertical = 12.dp, horizontal = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = title,
+                        fontSize = 12.sp,
                         color = contentColor,
                         style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1
                     )
                 }
             }

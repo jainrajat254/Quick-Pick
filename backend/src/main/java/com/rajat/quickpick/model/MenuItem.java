@@ -23,6 +23,9 @@ public class MenuItem {
     private String description;
 
     private double price;
+
+    private boolean quantityEnabled = true;
+
     private int quantity;
 
     private String category;

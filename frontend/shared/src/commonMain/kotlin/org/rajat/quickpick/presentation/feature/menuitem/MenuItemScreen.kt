@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import org.rajat.quickpick.domain.modal.search.SearchMenuItemsResponse
 import org.rajat.quickpick.presentation.components.CustomLoader
 import org.rajat.quickpick.presentation.components.ErrorState
 import org.rajat.quickpick.presentation.feature.menuitem.components.FilterSortBottomSheet
@@ -150,7 +149,7 @@ fun MenuItemScreen(
 
             is UiState.Success -> {
                 val response = (menuItemsState as UiState.Success<org.rajat.quickpick.domain.modal.menuitems.GetVendorMenuByCategoryResponse>).data
-                val menuItems = response.menuItems?.filterNotNull() ?: emptyList()
+                val menuItems = response.menuItems ?: emptyList()
 
                 if (menuItems.isEmpty()) {
                     MenuItemEmptyState(
@@ -193,6 +192,7 @@ fun MenuItemScreen(
                                     name = menuItem.name,
                                     price = menuItem.price ?: 0.0,
                                     quantity = menuItem.quantity,
+                                    quantityEnabled = menuItem.quantityEnabled,
                                     updatedAt = menuItem.updatedAt,
                                     isVeg = menuItem.isVeg,
                                     vendorId = menuItem.vendorId

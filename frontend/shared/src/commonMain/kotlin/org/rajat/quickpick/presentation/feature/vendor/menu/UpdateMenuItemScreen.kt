@@ -42,6 +42,7 @@ fun UpdateMenuItemScreen(
     var description by rememberSaveable { mutableStateOf("") }
     var price by rememberSaveable { mutableStateOf("") }
     var category by rememberSaveable { mutableStateOf("") }
+    var quantityEnabled by rememberSaveable { mutableStateOf(true) }
     var quantity by rememberSaveable { mutableStateOf("") }
     var isAvailable by rememberSaveable { mutableStateOf(true) }
     var isVeg by rememberSaveable { mutableStateOf(true) }
@@ -79,7 +80,8 @@ fun UpdateMenuItemScreen(
                 description = item.description ?: ""
                 price = item.price?.toString() ?: ""
                 category = item.category ?: ""
-                quantity = item.quantity?.toString() ?: ""
+                quantityEnabled = item.quantityEnabled ?: true
+                quantity = if (quantityEnabled) (item.quantity?.toString() ?: "") else ""
                 isAvailable = item.available ?: true
                 isVeg = item.isVeg ?: true
                 existingImageUrl = item.imageUrl
@@ -187,12 +189,23 @@ fun UpdateMenuItemScreen(
             return
         }
 
+        val qty: Int? = if (quantityEnabled) {
+            quantity.toIntOrNull()
+        } else {
+            0
+        }
+        if (quantityEnabled && qty == null) {
+            showToast("Please enter a valid quantity.")
+            return
+        }
+
         val request = UpdateMenuItemRequest(
             name = name,
             description = description.ifBlank { null },
             price = priceDouble,
             category = category.ifBlank { null },
-            quantity = quantity.toIntOrNull(),
+            quantity = qty,
+            quantityEnabled = quantityEnabled,
             isVeg = isVeg,
             isAvailable = isAvailable,
             imageUrl = uploadedImageUrl ?: existingImageUrl
@@ -260,6 +273,11 @@ fun UpdateMenuItemScreen(
                     onPriceChange = { price = it },
                     category = category,
                     onCategoryChange = { category = it },
+                    quantityEnabled = quantityEnabled,
+                    onQuantityEnabledChange = {
+                        quantityEnabled = it
+                        if (!it) quantity = ""
+                    },
                     quantity = quantity,
                     onQuantityChange = { quantity = it },
                     isVeg = isVeg,

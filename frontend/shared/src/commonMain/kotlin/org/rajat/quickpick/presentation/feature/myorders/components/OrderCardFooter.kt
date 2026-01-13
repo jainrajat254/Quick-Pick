@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.rajat.quickpick.domain.modal.ordermanagement.OrderStatus
 import co.touchlab.kermit.Logger
 
@@ -54,7 +55,7 @@ fun OrderCardFooter(
                     },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Order details")
+                    Text("Details")
                 }
             }
             OrderStatus.COMPLETED -> {
@@ -74,7 +75,7 @@ fun OrderCardFooter(
                     },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Leave a review")
+                    Text("Review")
                 }
             }
             OrderStatus.CANCELLED, OrderStatus.REJECTED -> {
@@ -98,7 +99,7 @@ fun OrderCardFooter(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Order details")
+                        Text("Details")
                     }
                 } else {
                     OutlinedButton(
@@ -108,7 +109,7 @@ fun OrderCardFooter(
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Order details")
+                        Text("Details")
                     }
                     Button(
                         onClick = {
@@ -132,7 +133,7 @@ fun OrderCardFooter(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Order details")
+                        Text("Details")
                     }
                 } else {
                     OutlinedButton(
@@ -142,7 +143,7 @@ fun OrderCardFooter(
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Order details")
+                        Text("Details")
                     }
                     Button(
                         onClick = {

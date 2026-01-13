@@ -39,6 +39,7 @@ fun AddMenuItemScreen(
     var description by rememberSaveable { mutableStateOf("") }
     var price by rememberSaveable { mutableStateOf("") }
     var category by rememberSaveable { mutableStateOf("") }
+    var quantityEnabled by rememberSaveable { mutableStateOf(true) }
     var quantity by rememberSaveable { mutableStateOf("") }
     var isAvailable by rememberSaveable { mutableStateOf(true) }
     var isVeg by rememberSaveable { mutableStateOf(true) }
@@ -132,12 +133,23 @@ fun AddMenuItemScreen(
             }
         }
 
+        val qty: Int? = if (quantityEnabled) {
+            quantity.toIntOrNull()
+        } else {
+            0
+        }
+        if (quantityEnabled && qty == null) {
+            showToast("Please enter a valid quantity.")
+            return
+        }
+
         val request = CreateMenuItemRequest(
             name = name,
             description = description.ifBlank { null },
             price = priceDouble,
             category = category.ifBlank { null },
-            quantity = quantity.toIntOrNull(),
+            quantity = qty,
+            quantityEnabled = quantityEnabled,
             isVeg = isVeg,
             isAvailable = isAvailable,
             imageUrl = uploadedImageUrl
@@ -186,6 +198,11 @@ fun AddMenuItemScreen(
             onPriceChange = { price = it },
             category = category,
             onCategoryChange = { category = it },
+            quantityEnabled = quantityEnabled,
+            onQuantityEnabledChange = {
+                quantityEnabled = it
+                if (!it) quantity = ""
+            },
             quantity = quantity,
             onQuantityChange = { quantity = it },
             isVeg = isVeg,
@@ -198,3 +215,4 @@ fun AddMenuItemScreen(
         AddMenuItemButton(isLoading = isLoading, onClick = ::handleAddItemClick)
     }
 }
+

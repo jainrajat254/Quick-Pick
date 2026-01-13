@@ -1,8 +1,6 @@
 package org.rajat.quickpick.presentation.feature.vendor.menu.components
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +32,8 @@ fun MenuItemDetailsForm(
     onPriceChange: (String) -> Unit,
     category: String,
     onCategoryChange: (String) -> Unit,
+    quantityEnabled: Boolean,
+    onQuantityEnabledChange: (Boolean) -> Unit,
     quantity: String,
     onQuantityChange: (String) -> Unit,
     isVeg: Boolean,
@@ -86,21 +86,20 @@ fun MenuItemDetailsForm(
             )
 
 
-                OutlinedTextField(
-                    value = price,
-                    onValueChange = onPriceChange,
-                    label = { Text("Price*") },
-                    modifier = Modifier.fillMaxWidth(),
-                    leadingIcon = {
-                        Text(
-                            "₹",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-
+            OutlinedTextField(
+                value = price,
+                onValueChange = onPriceChange,
+                label = { Text("Price*") },
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = {
+                    Text(
+                        "₹",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
 
 
             CustomDropdown(
@@ -113,15 +112,25 @@ fun MenuItemDetailsForm(
                     .fillMaxWidth()
                     .padding(top = 16.dp, bottom = 16.dp)
             )
-            FormInfoField(
-                label = "Quantity",
-                value = quantity,
-                onValueChange = onQuantityChange,
-                icon = Icons.Default.Inventory2,
-                keyboardType = KeyboardType.Number,
-                placeholder = "e.g. 10",
-                modifier = Modifier.fillMaxWidth()
+
+            ToggleRow(
+                text = "Track quantity for this item?",
+                checked = quantityEnabled,
+                onCheckedChange = onQuantityEnabledChange
             )
+
+            if (quantityEnabled) {
+                FormInfoField(
+                    label = "Quantity",
+                    value = quantity,
+                    onValueChange = onQuantityChange,
+                    icon = Icons.Default.Inventory2,
+                    keyboardType = KeyboardType.Number,
+                    placeholder = "e.g. 10",
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             ToggleRow(
                 text = "Item is Vegetarian",
                 checked = isVeg,

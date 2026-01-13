@@ -13,5 +13,6 @@ data class CreateMenuItemRequest(
     val isVeg: Boolean? = null,
     val name: String? = null,
     val price: Double? = null,
-    val quantity: Int? = null
+    val quantity: Int? = null,
+    val quantityEnabled: Boolean? = null
 )

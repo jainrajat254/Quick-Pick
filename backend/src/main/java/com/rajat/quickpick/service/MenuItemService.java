@@ -63,6 +63,7 @@ public class MenuItemService {
         dto.setName(menuItem.getName());
         dto.setDescription(menuItem.getDescription());
         dto.setPrice(menuItem.getPrice());
+        dto.setQuantityEnabled(menuItem.isQuantityEnabled());
         dto.setQuantity(menuItem.getQuantity());
         dto.setCategory(menuItem.getCategory());
         dto.setVeg(menuItem.isVeg());
@@ -96,7 +97,10 @@ public class MenuItemService {
         menuItem.setName(createDto.getName().trim());
         menuItem.setDescription(createDto.getDescription() != null ? createDto.getDescription().trim() : null);
         menuItem.setPrice(createDto.getPrice());
+
+        menuItem.setQuantityEnabled(createDto.isQuantityEnabled());
         menuItem.setQuantity(createDto.getQuantity());
+
         menuItem.setCategory(createDto.getCategory().trim());
         menuItem.setVeg(createDto.isVeg());
         menuItem.setImageUrl(createDto.getImageUrl());
@@ -198,6 +202,9 @@ public class MenuItemService {
         if (updateDto.getPrice() != null) {
             menuItem.setPrice(updateDto.getPrice());
         }
+        if (updateDto.getQuantityEnabled() != null) {
+            menuItem.setQuantityEnabled(updateDto.getQuantityEnabled());
+        }
         if (updateDto.getQuantity() != null) {
             menuItem.setQuantity(updateDto.getQuantity());
         }
@@ -243,9 +250,11 @@ public class MenuItemService {
             throw new BadRequestException("Quantity cannot be negative");
         }
         menuItem.setQuantity(newQuantity);
-        if (newQuantity == 0) {
+
+        if (menuItem.isQuantityEnabled() && newQuantity == 0) {
             menuItem.setIsAvailable(false);
         }
+
         menuItem.setUpdatedAt(LocalDateTime.now());
 
         MenuItem updatedMenuItem = menuItemRepository.save(menuItem);
@@ -291,7 +300,7 @@ public class MenuItemService {
 
         List<MenuItem> menuItems = menuItemRepository.findByVendorIdAndIsAvailable(vendorId, true);
         List<MenuItemResponseDto> menuItemDtos = menuItems.stream()
-                .filter(item -> item.getQuantity() > 0)
+                .filter(item -> !item.isQuantityEnabled() || item.getQuantity() > 0)
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
         return MenuItemsResponseDto.builder()
@@ -310,7 +319,8 @@ public class MenuItemService {
 
         List<MenuItem> menuItems = menuItemRepository.findByVendorIdAndCategory(vendorId, category);
         List<MenuItemResponseDto> menuItemDtos = menuItems.stream()
-                .filter(item -> item.getIsAvailable() && item.getQuantity() > 0)
+                .filter(item -> item.getIsAvailable())
+                .filter(item -> !item.isQuantityEnabled() || item.getQuantity() > 0)
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
         return MenuItemsResponseDto.builder()
@@ -320,3 +330,4 @@ public class MenuItemService {
     }
 
 }
+

@@ -82,10 +82,10 @@ fun VendorCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp),
-                verticalArrangement = Arrangement.Center
+                    .weight(1f),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = vendor.storeName,
                         style = MaterialTheme.typography.titleMedium,
@@ -105,42 +105,51 @@ fun VendorCard(
                             modifier = Modifier.padding(top = 2.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        when (ratingState) {
-                            is UiState.Success -> {
-                                val rating = (ratingState as UiState.Success).data
-                                if (rating.averageRating != null && rating.totalReviews != null) {
-                                    RatingBadge(
-                                        rating = (kotlin.math.round(rating.averageRating * 10) / 10.0),
-                                        reviewCount = rating.totalReviews
-                                    )
-                                }
-                            }
-                            is UiState.Loading -> {
-                                Text("Loading...", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                            is UiState.Error -> {
-                                Text("N/A", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
-                            }
-                            UiState.Empty -> {}
-                        }
-                        if (vendor.address.length < 15) {
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f, fill = false)) {
-                                Icon(imageVector = Icons.Outlined.LocationOn, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Spacer(modifier = Modifier.width(2.dp))
-                                Text(
-                                    text = vendor.address.take(20),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    when (ratingState) {
+                        is UiState.Success -> {
+                            val rating = (ratingState as UiState.Success).data
+                            if (rating.averageRating != null && rating.totalReviews != null) {
+                                RatingBadge(
+                                    rating = (kotlin.math.round(rating.averageRating * 10) / 10.0),
+                                    reviewCount = rating.totalReviews
                                 )
                             }
+                        }
+                        is UiState.Loading -> {
+                            Text("Loading...", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        is UiState.Error -> {
+                            Text("N/A", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
+                        }
+                        UiState.Empty -> {}
+                    }
+
+                    if (vendor.address.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.LocationOn,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text(
+                                text = vendor.address,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false)
+                            )
                         }
                     }
                 }
