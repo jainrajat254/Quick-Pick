@@ -17,6 +17,8 @@ public class MenuItemCreateDto {
     @Positive(message = "Price must be positive")
     private double price;
 
+    private boolean quantityEnabled = true;
+
     @PositiveOrZero(message = "Quantity cannot be negative")
     private int quantity;
 

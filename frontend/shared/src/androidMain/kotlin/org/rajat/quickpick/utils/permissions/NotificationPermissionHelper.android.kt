@@ -45,19 +45,21 @@ fun rememberNotificationPermissionState(
         onPermissionResult(isGranted)
     }
 
-    return remember {
+    return remember(context) {
         NotificationPermissionState(
             context = context,
             permissionLauncher = { permission ->
                 permissionLauncher.launch(permission)
-            }
+            },
+            onPermissionResult = onPermissionResult
         )
     }
 }
 
 class NotificationPermissionState(
     private val context: Context,
-    private val permissionLauncher: (String) -> Unit
+    private val permissionLauncher: (String) -> Unit,
+    private val onPermissionResult: (Boolean) -> Unit
 ) {
     private val logger = Logger.withTag("NotificationImplementation")
 
@@ -79,6 +81,22 @@ class NotificationPermissionState(
         }
         logger.d { "isPermissionGranted: $isGranted" }
         return isGranted
+    }
+
+    fun launchPermissionRequest() {
+        logger.d { "launchPermissionRequest called, SDK_INT: ${Build.VERSION.SDK_INT}" }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (isPermissionGranted()) {
+                logger.d { "Permission already granted, invoking callback" }
+                onPermissionResult(true)
+            } else {
+                logger.d { "Launching permission request for POST_NOTIFICATIONS" }
+                permissionLauncher(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            logger.d { "Permission not needed for SDK < 33, treating as granted" }
+            onPermissionResult(true)
+        }
     }
 
     fun requestPermission() {
@@ -148,3 +166,7 @@ private fun Context.findActivity(): Activity? {
     }
     return null
 }
+
+@ChecksSdkIntAtLeast(api = Build.VERSION_CODES.TIRAMISU)
+actual fun isAndroid13OrAbove(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+

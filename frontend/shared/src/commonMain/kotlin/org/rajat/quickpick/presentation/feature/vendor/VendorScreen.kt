@@ -386,6 +386,7 @@ fun VendorScreen(
                                                name = menuResp.name,
                                                price = menuResp.price ?: 0.0,
                                                quantity = menuResp.quantity,
+                                               quantityEnabled = menuResp.quantityEnabled,
                                                updatedAt = menuResp.updatedAt,
                                                isVeg = menuResp.isVeg,
                                                vendorId = menuResp.vendorId

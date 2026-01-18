@@ -6,14 +6,12 @@ actual fun getNotificationPermissionHelper(): NotificationPermissionHelper {
 
 object IosNotificationPermissionHelper : NotificationPermissionHelper {
     override fun shouldShowPermissionRequest(): Boolean {
-        // iOS handles notification permission differently
-        // For now, we'll return false and handle iOS permission separately if needed
         return false
     }
 
     override fun requestNotificationPermission(onResult: (Boolean) -> Unit) {
-
         onResult(true)
     }
 }
 
+actual fun isAndroid13OrAbove(): Boolean = false

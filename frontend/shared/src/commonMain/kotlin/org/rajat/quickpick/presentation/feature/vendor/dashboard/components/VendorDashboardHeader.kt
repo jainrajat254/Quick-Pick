@@ -29,6 +29,7 @@ import androidx.compose.ui.input.key.Key.Companion.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.painterResource
 import org.rajat.quickpick.presentation.theme.AppColors
 import quickpick.shared.generated.resources.Res
@@ -89,14 +90,16 @@ fun VendorDashboardHeader(
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.surface.copy(alpha = 9f),
                     fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.End
+                    textAlign = TextAlign.End,
+                    fontSize = 12.sp
                 )
 
                 Text(
                     text = "Here’s how your kitchen is performing",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.surface.copy(alpha = 7f),
-                    textAlign = TextAlign.End
+                    textAlign = TextAlign.End,
+                    fontSize = 10.sp
                 )
             }
 

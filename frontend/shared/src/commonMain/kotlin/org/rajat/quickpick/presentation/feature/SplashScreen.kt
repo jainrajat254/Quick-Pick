@@ -48,14 +48,6 @@ fun SplashScreen(
             return@LaunchedEffect
         }
 
-        val hasRequestedNotificationPermission = datastore.getHasRequestedNotificationPermission()
-
-        if (!hasRequestedNotificationPermission) {
-            navController.navigate(AppScreenUser.NotificationPermission) {
-                popUpTo(0) { inclusive = true }
-            }
-            return@LaunchedEffect
-        }
 
         val accessToken = datastore.getToken()
         val refreshToken = datastore.getRefreshToken()

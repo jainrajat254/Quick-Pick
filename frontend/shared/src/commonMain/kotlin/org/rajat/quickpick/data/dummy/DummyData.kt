@@ -20,20 +20,9 @@ object DummyData {
         College("5", "Indian Institute of Technology, Mumbai"),
         College("6", "Indian Institute of Technology, Bangalore"),
         College("7", "BITS Pilani"),
-        College("8", "Amity University")
+        College("8", "Amity University"),
+        College("10","SR Group of Institutions")
     )
-
-    val branches = listOf(
-        Branch("1", "Computer Science"),
-        Branch("2", "Information Technology"),
-        Branch("3", "Electronics & Communication"),
-        Branch("4", "Mechanical Engineering"),
-        Branch("5", "Civil Engineering"),
-        Branch("6", "Business Administration"),
-        Branch("7", "Commerce"),
-        Branch("8", "Arts & Humanities")
-    )
-
 
 
     val vendors = listOf(

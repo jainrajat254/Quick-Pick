@@ -7,3 +7,4 @@ interface NotificationPermissionHelper {
 
 expect fun getNotificationPermissionHelper(): NotificationPermissionHelper
 
+expect fun isAndroid13OrAbove(): Boolean
