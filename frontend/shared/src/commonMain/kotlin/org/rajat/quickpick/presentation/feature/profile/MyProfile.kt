@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +18,7 @@ import org.rajat.quickpick.utils.ErrorUtils
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyProfileScreen(
     navController: NavController,
@@ -25,6 +27,7 @@ fun MyProfileScreen(
 ) {
     val studentProfileState by profileViewModel.studentProfileState.collectAsState()
     val updateProfileState by profileViewModel.updateStudentProfileState.collectAsState()
+    val isRefreshing by profileViewModel.isRefreshing.collectAsState()
 
     var fullName by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -32,7 +35,9 @@ fun MyProfileScreen(
     var currentProfile by remember { mutableStateOf<GetStudentProfileResponse?>(null) }
 
     LaunchedEffect(Unit) {
-        profileViewModel.getStudentProfile()
+        if (studentProfileState is UiState.Empty) {
+            profileViewModel.getStudentProfile()
+        }
     }
 
     LaunchedEffect(studentProfileState) {
@@ -56,8 +61,7 @@ fun MyProfileScreen(
         when (updateProfileState) {
             is UiState.Success -> {
                 showToast("Profile updated successfully")
-                // Refresh the profile data
-                profileViewModel.getStudentProfile()
+                profileViewModel.getStudentProfile(forceRefresh = true)
                 profileViewModel.resetProfileStates()
             }
             is UiState.Error -> {
@@ -72,7 +76,9 @@ fun MyProfileScreen(
 
     val isLoading = studentProfileState is UiState.Loading || updateProfileState is UiState.Loading
 
-    Box(
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { profileViewModel.getStudentProfile(forceRefresh = true) },
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
@@ -99,7 +105,7 @@ fun MyProfileScreen(
                         modifier = Modifier.padding(top = 32.dp)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { profileViewModel.getStudentProfile() }) {
+                    Button(onClick = { profileViewModel.getStudentProfile(forceRefresh = true) }) {
                         Text("Retry")
                     }
                 }
@@ -115,7 +121,6 @@ fun MyProfileScreen(
                         onEditModeChange = {
                             isEditMode = it
                             if (!it) {
-                                // Reset to original values when canceling edit
                                 fullName = currentProfile?.fullName ?: ""
                                 phone = currentProfile?.phone ?: ""
                             }

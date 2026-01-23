@@ -63,7 +63,9 @@ fun BasePage(
     }
 
     LaunchedEffect(Unit) {
-        cartViewModel.getCart()
+        if (cartState is org.rajat.quickpick.utils.UiState.Empty) {
+            cartViewModel.getCart()
+        }
     }
 
     val bottomNavItems = listOf(

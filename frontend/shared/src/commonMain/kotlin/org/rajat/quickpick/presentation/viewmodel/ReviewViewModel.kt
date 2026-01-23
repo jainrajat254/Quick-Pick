@@ -11,15 +11,20 @@ import org.rajat.quickpick.domain.modal.review.*
 import org.rajat.quickpick.domain.modal.review.getPaginatedReviewsforVendor.GetPaginatedReviewsForVendorResponse
 import org.rajat.quickpick.domain.repository.ReviewRepository
 import org.rajat.quickpick.utils.UiState
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 private val reviewLogger = Logger.withTag("ReviewViewModel")
 
+@OptIn(ExperimentalTime::class)
 class ReviewViewModel(private val reviewRepository: ReviewRepository): ViewModel() {
 
     private val _vendorRatingState = MutableStateFlow<UiState<GetVendorRatingStatsResponse>>(UiState.Empty)
     val vendorRatingState: StateFlow<UiState<GetVendorRatingStatsResponse>> = _vendorRatingState.asStateFlow()
 
     private val ratingStates = mutableMapOf<String, MutableStateFlow<UiState<GetVendorRatingStatsResponse>>>()
+    private val ratingCacheTimes = mutableMapOf<String, Long>()
+    private val cacheValidityDuration = 60_000L
 
     private val _vendorReviewsState = MutableStateFlow<UiState<GetPaginatedReviewsForVendorResponse>>(UiState.Empty)
     val vendorReviewsState: StateFlow<UiState<GetPaginatedReviewsForVendorResponse>> = _vendorReviewsState.asStateFlow()
@@ -39,6 +44,15 @@ class ReviewViewModel(private val reviewRepository: ReviewRepository): ViewModel
     private val _hasReviewedState = MutableStateFlow<UiState<CheckIfUserHasReviewedAnOrderResponse>>(UiState.Empty)
     val hasReviewedState: StateFlow<UiState<CheckIfUserHasReviewedAnOrderResponse>> = _hasReviewedState.asStateFlow()
 
+    init {
+        reviewLogger.d { "ReviewViewModel instance created: ${this.hashCode()}" }
+    }
+
+    private fun isCacheValid(vendorId: String): Boolean {
+        val cacheTime = ratingCacheTimes[vendorId] ?: return false
+        return (Clock.System.now().toEpochMilliseconds() - cacheTime) < cacheValidityDuration
+    }
+
     private fun <T> execute(state: MutableStateFlow<UiState<T>>, block: suspend () -> Result<T>) {
         viewModelScope.launch {
             state.value = UiState.Loading
@@ -50,34 +64,124 @@ class ReviewViewModel(private val reviewRepository: ReviewRepository): ViewModel
         }
     }
 
-    fun getVendorRating(vendorId: String) {
-        reviewLogger.d { "getVendorRating called for vendor=$vendorId" }
-        execute(_vendorRatingState) { reviewRepository.getVendorRating(vendorId) }
+    private val ratingLoadingStates = mutableMapOf<String, Boolean>()
+
+    fun getVendorRating(vendorId: String, forceRefresh: Boolean = false) {
+        val isLoading = ratingLoadingStates[vendorId] ?: false
+        reviewLogger.d { "getVendorRating called for vendor=$vendorId, forceRefresh=$forceRefresh, isLoading=$isLoading" }
+
+        if (isLoading && !forceRefresh) {
+            reviewLogger.d { "⏳ REQUEST IN FLIGHT - Skipping duplicate call for vendor=$vendorId" }
+            return
+        }
+
+        val flow = ratingStates.getOrPut(vendorId) { MutableStateFlow(UiState.Empty) }
+
+        if (!forceRefresh && flow.value is UiState.Success && isCacheValid(vendorId)) {
+            reviewLogger.d { "✅ CACHE HIT - Rating already cached for vendor=$vendorId" }
+            return
+        }
+
+        reviewLogger.d { "❌ CACHE MISS - Fetching rating for vendor=$vendorId" }
+        ratingLoadingStates[vendorId] = true
+        viewModelScope.launch {
+            flow.value = UiState.Loading
+            val result = reviewRepository.getVendorRating(vendorId)
+            result.fold(
+                onSuccess = { data ->
+                    flow.value = UiState.Success(data)
+                    ratingCacheTimes[vendorId] = Clock.System.now().toEpochMilliseconds()
+                    reviewLogger.d { "Rating cached for vendor=$vendorId" }
+                },
+                onFailure = { error ->
+                    flow.value = UiState.Error(error.message ?: "Unknown error")
+                    reviewLogger.e { "Rating fetch failed for vendor=$vendorId: ${error.message}" }
+                }
+            )
+            ratingLoadingStates[vendorId] = false
+        }
     }
 
     fun getVendorRatingState(vendorId: String): StateFlow<UiState<GetVendorRatingStatsResponse>> {
         reviewLogger.d { "getVendorRatingState requested for vendor=$vendorId" }
         val flow = ratingStates.getOrPut(vendorId) { MutableStateFlow(UiState.Empty) }
-        if (flow.value is UiState.Empty) {
-            reviewLogger.d { "Initial fetch for vendor rating for vendor=$vendorId" }
-            execute(flow) { reviewRepository.getVendorRating(vendorId) }
+        if (flow.value is UiState.Success) {
+            reviewLogger.d { "✅ Returning cached rating state for vendor=$vendorId" }
         }
         return flow.asStateFlow()
     }
 
-    fun refreshVendorRating(vendorId: String) {
-        reviewLogger.d { "refreshVendorRating for vendor=$vendorId" }
+    fun ensureVendorRatingLoaded(vendorId: String) {
         val flow = ratingStates.getOrPut(vendorId) { MutableStateFlow(UiState.Empty) }
-        execute(flow) { reviewRepository.getVendorRating(vendorId) }
-        if (_vendorRatingState.value is UiState.Success && (_vendorRatingState.value as UiState.Success<GetVendorRatingStatsResponse>).data.vendorId == vendorId) {
-            reviewLogger.d { "refreshing single vendorRatingState for vendor=$vendorId" }
-            execute(_vendorRatingState) { reviewRepository.getVendorRating(vendorId) }
+        val isLoading = ratingLoadingStates[vendorId] ?: false
+        if (isLoading) {
+            reviewLogger.d { "ensureVendorRatingLoaded: Already loading for vendor=$vendorId, skipping" }
+            return
+        }
+        if (flow.value is UiState.Empty || (flow.value !is UiState.Loading && flow.value !is UiState.Success) || (flow.value is UiState.Success && !isCacheValid(vendorId))) {
+            reviewLogger.d { "ensureVendorRatingLoaded: State is Empty/Error or cache invalid, triggering fetch for vendor=$vendorId" }
+            getVendorRating(vendorId, forceRefresh = false)
+        } else {
+            reviewLogger.d { "ensureVendorRatingLoaded: Data already available for vendor=$vendorId" }
         }
     }
 
-    fun getVendorReviewsPaginated(vendorId: String, page: Int = 0, size: Int = 25) {
-        reviewLogger.d { "getVendorReviewsPaginated vendor=$vendorId page=$page size=$size" }
-        execute(_vendorReviewsState) { reviewRepository.getReviewsByVendorPaginated(vendorId, page, size) }
+    fun refreshVendorRating(vendorId: String) {
+        reviewLogger.d { "refreshVendorRating for vendor=$vendorId (force refresh)" }
+        ratingCacheTimes.remove(vendorId)
+        getVendorRating(vendorId, forceRefresh = true)
+    }
+
+    private val cachedVendorReviews = mutableMapOf<String, GetPaginatedReviewsForVendorResponse>()
+    private val vendorReviewsCacheTime = mutableMapOf<String, Long>()
+    private val vendorReviewsLoadingStates = mutableMapOf<String, Boolean>()
+    private var currentVendorReviewsId: String? = null
+
+    fun getVendorReviewsPaginated(vendorId: String, page: Int = 0, size: Int = 25, forceRefresh: Boolean = false) {
+        val isLoading = vendorReviewsLoadingStates[vendorId] ?: false
+        reviewLogger.d { "getVendorReviewsPaginated vendor=$vendorId page=$page size=$size forceRefresh=$forceRefresh isLoading=$isLoading" }
+
+        if (isLoading && !forceRefresh) {
+            reviewLogger.d { "⏳ REQUEST IN FLIGHT - Skipping duplicate call for vendor=$vendorId" }
+            return
+        }
+
+        val cacheTime = vendorReviewsCacheTime[vendorId] ?: 0
+        if (!forceRefresh && cachedVendorReviews.containsKey(vendorId) &&
+            (Clock.System.now().toEpochMilliseconds() - cacheTime) < cacheValidityDuration) {
+            if (_vendorReviewsState.value is UiState.Success && currentVendorReviewsId == vendorId) {
+                reviewLogger.d { "✅ CACHE HIT - Reviews already cached for vendor=$vendorId" }
+                return
+            }
+            currentVendorReviewsId = vendorId
+            _vendorReviewsState.value = UiState.Success(cachedVendorReviews[vendorId]!!)
+            return
+        }
+
+        reviewLogger.d { "❌ CACHE MISS - Fetching reviews for vendor=$vendorId" }
+        vendorReviewsLoadingStates[vendorId] = true
+        viewModelScope.launch {
+            _vendorReviewsState.value = UiState.Loading
+            val result = reviewRepository.getReviewsByVendorPaginated(vendorId, page, size)
+            result.fold(
+                onSuccess = { data ->
+                    cachedVendorReviews[vendorId] = data
+                    vendorReviewsCacheTime[vendorId] = Clock.System.now().toEpochMilliseconds()
+                    currentVendorReviewsId = vendorId
+                    _vendorReviewsState.value = UiState.Success(data)
+                    reviewLogger.d { "Reviews cached for vendor=$vendorId" }
+                },
+                onFailure = { error ->
+                    _vendorReviewsState.value = UiState.Error(error.message ?: "Unknown error")
+                    reviewLogger.e { "Reviews fetch failed for vendor=$vendorId: ${error.message}" }
+                }
+            )
+            vendorReviewsLoadingStates[vendorId] = false
+        }
+    }
+
+    fun isVendorReviewsDataLoadedFor(vendorId: String): Boolean {
+        return _vendorReviewsState.value is UiState.Success && currentVendorReviewsId == vendorId
     }
 
     // New methods to connect UI create/update/delete and user-specific endpoints

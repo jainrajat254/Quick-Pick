@@ -32,12 +32,15 @@ fun VendorReviewsScreen(
     reviewViewModel: ReviewViewModel = koinInject(),
     onBackClick: () -> Unit = { navController.navigateUp() }
 ) {
-    val ratingState by reviewViewModel.vendorRatingState.collectAsState()
+    val ratingStateFlow = reviewViewModel.getVendorRatingState(vendorId)
+    val ratingState by ratingStateFlow.collectAsState()
     val reviewsState by reviewViewModel.vendorReviewsState.collectAsState()
 
     LaunchedEffect(vendorId) {
-        reviewViewModel.getVendorRating(vendorId)
-        reviewViewModel.getVendorReviewsPaginated(vendorId, page = 0, size = 50)
+        reviewViewModel.ensureVendorRatingLoaded(vendorId)
+        if (!reviewViewModel.isVendorReviewsDataLoadedFor(vendorId)) {
+            reviewViewModel.getVendorReviewsPaginated(vendorId, page = 0, size = 50)
+        }
     }
 
     Scaffold(

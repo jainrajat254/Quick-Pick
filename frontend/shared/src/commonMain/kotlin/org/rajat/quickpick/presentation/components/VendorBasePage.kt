@@ -52,7 +52,9 @@ fun VendorBasePage(
     }
 
     LaunchedEffect(Unit) {
-        orderViewModel.getPendingOrdersForVendor()
+        if (pendingOrdersState is org.rajat.quickpick.utils.UiState.Empty) {
+            orderViewModel.getPendingOrdersForVendor()
+        }
     }
 
     val bottomNavItems = listOf(

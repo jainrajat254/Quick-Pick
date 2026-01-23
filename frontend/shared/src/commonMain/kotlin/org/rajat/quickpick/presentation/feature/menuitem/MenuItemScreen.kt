@@ -46,7 +46,9 @@ fun MenuItemScreen(
 
     LaunchedEffect(vendorId, category) {
         menuItemViewModel.setVendorAndCategory(vendorId, category)
-        menuItemViewModel.getMenuItemsByCategory(vendorId, category)
+        if (!menuItemViewModel.isMenuCategoryDataLoadedFor(vendorId, category)) {
+            menuItemViewModel.getMenuItemsByCategory(vendorId, category)
+        }
     }
 
     LaunchedEffect(menuItemsState) {

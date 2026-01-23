@@ -40,7 +40,9 @@ fun CheckoutScreen(
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        cartViewModel.getCart()
+        if (cartState is UiState.Empty) {
+            cartViewModel.getCart()
+        }
     }
 
     LaunchedEffect(createOrderState) {

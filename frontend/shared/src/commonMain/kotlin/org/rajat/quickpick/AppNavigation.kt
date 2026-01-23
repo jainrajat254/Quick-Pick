@@ -69,6 +69,8 @@ import org.rajat.quickpick.presentation.viewmodel.VendorViewModel
 import org.rajat.quickpick.utils.tokens.RefreshTokenManager
 import org.rajat.quickpick.utils.rememberImagePickerHelper
 import org.rajat.quickpick.presentation.feature.notification.NotificationPermissionScreen
+import org.rajat.quickpick.presentation.viewmodel.CartViewModel
+import org.rajat.quickpick.presentation.viewmodel.ProfileViewModel
 
 @Composable
 fun AppNavigation(
@@ -79,6 +81,8 @@ fun AppNavigation(
     val vendorViewModel: VendorViewModel = koinInject()
     val menuItemViewModel: MenuItemViewModel = koinInject()
     val orderViewModel: OrderViewModel = koinInject()
+    val profileViewModel: ProfileViewModel = koinInject()
+    val cartViewModel: CartViewModel = koinInject()
     val dataStore: LocalDataStore = koinInject()
     val refreshTokenManager: RefreshTokenManager = koinInject()
     val reviewViewModel : ReviewViewModel = koinInject()
@@ -144,6 +148,9 @@ fun AppNavigation(
                 vendorViewModel = vendorViewModel,
                 menuItemViewModel = menuItemViewModel,
                 orderViewModel = orderViewModel,
+                profileViewModel = profileViewModel,
+                cartViewModel = cartViewModel,
+                reviewViewModel = reviewViewModel,
                 dataStore = dataStore,
                 refreshTokenManager = refreshTokenManager,
                 imagePickerHelper = imagePickerHelper,
@@ -165,6 +172,9 @@ fun AppNavigation(
                 vendorViewModel = vendorViewModel,
                 menuItemViewModel = menuItemViewModel,
                 orderViewModel = orderViewModel,
+                profileViewModel = profileViewModel,
+                cartViewModel = cartViewModel,
+                reviewViewModel = reviewViewModel,
                 dataStore = dataStore,
                 refreshTokenManager = refreshTokenManager,
                 imagePickerHelper = imagePickerHelper,
@@ -180,6 +190,9 @@ fun AppNavigation(
             vendorViewModel = vendorViewModel,
             menuItemViewModel = menuItemViewModel,
             orderViewModel = orderViewModel,
+            profileViewModel = profileViewModel,
+            cartViewModel = cartViewModel,
+            reviewViewModel = reviewViewModel,
             dataStore = dataStore,
             refreshTokenManager = refreshTokenManager,
             imagePickerHelper = imagePickerHelper,
@@ -195,6 +208,9 @@ private fun AppNavHost(
     vendorViewModel: VendorViewModel,
     menuItemViewModel: MenuItemViewModel,
     orderViewModel: OrderViewModel,
+    profileViewModel: ProfileViewModel,
+    cartViewModel: CartViewModel,
+    reviewViewModel: ReviewViewModel,
     dataStore: LocalDataStore,
     refreshTokenManager: RefreshTokenManager,
     imagePickerHelper: org.rajat.quickpick.utils.ImagePickerHelper,
@@ -299,7 +315,7 @@ private fun AppNavHost(
                 paddingValues = appPaddingValues,
                 homeViewModel = homeViewModel,
                 vendorViewModel = vendorViewModel,
-                reviewViewModel = koinInject(),
+                reviewViewModel = reviewViewModel,
                 menuItemViewModel = menuItemViewModel
             )
         }
@@ -310,7 +326,7 @@ private fun AppNavHost(
                 navController = navController,
                 vendorViewModel = vendorViewModel,
                 menuItemViewModel = menuItemViewModel,
-                reviewViewModel = koinInject(),
+                reviewViewModel = reviewViewModel,
                 vendorId = route.vendorId
             )
         }

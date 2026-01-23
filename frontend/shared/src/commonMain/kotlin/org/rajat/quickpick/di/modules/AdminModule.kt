@@ -1,7 +1,6 @@
 package org.rajat.quickpick.di.modules
 
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.rajat.quickpick.data.remote.AdminApiServiceImpl
@@ -14,5 +13,5 @@ val adminModule = module {
 
     single<AdminApiService> { AdminApiServiceImpl(get()) }
     singleOf(::AdminRepositoryImpl) bind AdminRepository::class
-    viewModel { AdminViewModel(get()) }
+    single { AdminViewModel(get()) }
 }

@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +29,7 @@ import co.touchlab.kermit.Logger
 
 private val logger = Logger.withTag("CartScreen")
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(
     paddingValues: PaddingValues,
@@ -37,10 +39,10 @@ fun CartScreen(
     val cartState by cartViewModel.cartState.collectAsState()
     val updateCartState by cartViewModel.updateCartState.collectAsState()
     val removeFromCartState by cartViewModel.removeFromCartState.collectAsState()
+    val isRefreshing by cartViewModel.isRefreshing.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     var backPressedTime by remember { mutableStateOf(0L) }
 
-    // Double back press to exit
     BackHandler(enabled = true) {
         val currentTime = Clock.System.now().toEpochMilliseconds()
         if (currentTime - backPressedTime < 2000) {
@@ -51,14 +53,10 @@ fun CartScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        cartViewModel.getCart()
-    }
 
     LaunchedEffect(updateCartState) {
         when (updateCartState) {
             is UiState.Success -> {
-                // Cart automatically updated via main cart state
             }
             is UiState.Error -> {
                 val raw = (updateCartState as UiState.Error).message
@@ -69,7 +67,13 @@ fun CartScreen(
         }
     }
 
-    LaunchedEffect(removeFromCartState) {
+    LaunchedEffect(Unit) {
+        if (cartState is UiState.Empty) {
+            cartViewModel.getCart()
+        }
+    }
+
+    LaunchedEffect(updateCartState) {
         when (removeFromCartState) {
             is UiState.Success -> {
                 showToast("Item removed from cart")
@@ -83,78 +87,85 @@ fun CartScreen(
         }
     }
 
-    Column(
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { cartViewModel.getCart(forceRefresh = true) },
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .padding(horizontal = 16.dp)
     ) {
-        when (val state = cartState) {
-            is UiState.Loading -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-            is UiState.Success -> {
-                val cart = state.data
-                val cartItems = cart.items
-
-                if (cartItems.isEmpty()) {
-                    EmptyCartView()
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f)
-                            .navigationBarsPadding(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(vertical = 16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+        ) {
+            when (val state = cartState) {
+                is UiState.Loading -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        items(cartItems, key = { it.menuItemId ?: "" }) {
-                            item ->
-                            CartItemRow(
-                                item = CartItem(
-                                    id = item.menuItemId ?: "",
-                                    name = item.menuItemName ?: "",
-                                    price = item.unitPrice,
-                                    quantity = item.quantity,
-                                    imageUrl = item.menuItemImage
-                                ),
-                                onQuantityChange = { itemId, newQuantity ->
-                                    coroutineScope.launch {
-                                        cartViewModel.updateCartItem(itemId, newQuantity)
-                                    }
-                                },
-                                onRemoveItem = { itemId ->
-                                    coroutineScope.launch {
-                                        cartViewModel.removeFromCart(itemId)
-                                    }
-                                },
-                                navController = navController
-                            )
-                        }
-                        item{
-                            Spacer(modifier = Modifier.height(60.dp))
-                        }
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
-
-                    CartSummary(
-                        totalAmount = cart.totalAmount,
-                        navController = navController,
-                        vendorId = cart.vendorId,
-                        vendorName = cart.vendorName
-                    )
                 }
-            }
-            is UiState.Error -> {
-                EmptyCartView()
-            }
-            is UiState.Empty -> {
-                EmptyCartView()
+                is UiState.Success -> {
+                    val cart = state.data
+                    val cartItems = cart.items
+
+                    if (cartItems.isEmpty()) {
+                        EmptyCartView()
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f)
+                                .navigationBarsPadding(),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(vertical = 16.dp)
+                        ) {
+                            items(cartItems, key = { it.menuItemId ?: "" }) {
+                                item ->
+                                CartItemRow(
+                                    item = CartItem(
+                                        id = item.menuItemId ?: "",
+                                        name = item.menuItemName ?: "",
+                                        price = item.unitPrice,
+                                        quantity = item.quantity,
+                                        imageUrl = item.menuItemImage
+                                    ),
+                                    onQuantityChange = { itemId, newQuantity ->
+                                        coroutineScope.launch {
+                                            cartViewModel.updateCartItem(itemId, newQuantity)
+                                        }
+                                    },
+                                    onRemoveItem = { itemId ->
+                                        coroutineScope.launch {
+                                            cartViewModel.removeFromCart(itemId)
+                                        }
+                                    },
+                                    navController = navController
+                                )
+                            }
+                            item{
+                                Spacer(modifier = Modifier.height(60.dp))
+                            }
+                        }
+
+                        CartSummary(
+                            totalAmount = cart.totalAmount,
+                            navController = navController,
+                            vendorId = cart.vendorId,
+                            vendorName = cart.vendorName
+                        )
+                    }
+                }
+                is UiState.Error -> {
+                    EmptyCartView()
+                }
+                is UiState.Empty -> {
+                    EmptyCartView()
+                }
             }
         }
     }

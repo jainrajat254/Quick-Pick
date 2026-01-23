@@ -18,7 +18,10 @@ import org.rajat.quickpick.domain.modal.search.SearchMenuItemsResponse
 import org.rajat.quickpick.domain.repository.MenuItemRepository
 import org.rajat.quickpick.domain.repository.SearchRepository
 import org.rajat.quickpick.utils.UiState
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 class MenuItemViewModel(
     private val menuItemRepository: MenuItemRepository,
     private val searchRepository: SearchRepository
@@ -63,7 +66,6 @@ class MenuItemViewModel(
     val deleteMenuItemState: StateFlow<UiState<DeleteMenuItemResponse>> =
         _deleteMenuItemState.asStateFlow()
 
-    // Simplified: expose a UiState<List<CreateMenuItemResponse>> for vendor menu
     private val _vendorMenuState = MutableStateFlow<UiState<List<CreateMenuItemResponse>>>(UiState.Empty)
     val vendorMenuState: StateFlow<UiState<List<CreateMenuItemResponse>>> = _vendorMenuState.asStateFlow()
 
@@ -94,6 +96,22 @@ class MenuItemViewModel(
     private val _isVeg = MutableStateFlow<Boolean?>(null)
     val isVeg: StateFlow<Boolean?> = _isVeg.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    private var cachedMyMenuItems: GetMyMenuItemsPaginatedResponse? = null
+    private var myMenuItemsCacheTime: Long = 0
+    private val cachedVendorMenu: MutableMap<String, List<CreateMenuItemResponse>> = mutableMapOf()
+    private val vendorMenuCacheTime: MutableMap<String, Long> = mutableMapOf()
+    private val cachedMenuItemsByCategory: MutableMap<String, GetVendorMenuByCategoryResponse> = mutableMapOf()
+    private val menuItemsByCategoryCacheTime: MutableMap<String, Long> = mutableMapOf()
+    private var currentMenuCategoryKey: String? = null
+    private val cacheValidityDuration = 60_000L
+
+    private fun isCacheValid(cacheTime: Long): Boolean {
+        return (Clock.System.now().toEpochMilliseconds() - cacheTime) < cacheValidityDuration
+    }
+
     private fun <T> executeWithUiState(
         stateFlow: MutableStateFlow<UiState<T>>,
         block: suspend () -> Result<T>
@@ -113,22 +131,83 @@ class MenuItemViewModel(
         _selectedCategory.value = category
     }
 
-    fun getMenuItemsByCategory(vendorId: String, category: String) {
-        executeWithUiState(_menuItemsState) {
-            menuItemRepository.getVendorMenuByCategory(vendorId, category)
+    fun getMenuItemsByCategory(vendorId: String, category: String, forceRefresh: Boolean = false) {
+        val cacheKey = "${vendorId}_$category"
+        val cachedTime = menuItemsByCategoryCacheTime[cacheKey] ?: 0
+
+        if (!forceRefresh && cachedMenuItemsByCategory.containsKey(cacheKey) && isCacheValid(cachedTime)) {
+            if (_menuItemsState.value is UiState.Success && currentMenuCategoryKey == cacheKey) {
+                return
+            }
+            currentMenuCategoryKey = cacheKey
+            _menuItemsState.value = UiState.Success(cachedMenuItemsByCategory[cacheKey]!!)
+            return
+        }
+
+        viewModelScope.launch {
+            _menuItemsState.value = UiState.Loading
+            val result = menuItemRepository.getVendorMenuByCategory(vendorId, category)
+            result.fold(
+                onSuccess = { data ->
+                    cachedMenuItemsByCategory[cacheKey] = data
+                    menuItemsByCategoryCacheTime[cacheKey] = Clock.System.now().toEpochMilliseconds()
+                    currentMenuCategoryKey = cacheKey
+                    _menuItemsState.value = UiState.Success(data)
+                },
+                onFailure = { error ->
+                    _menuItemsState.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            )
         }
     }
 
-    // Fetch all vendor menu items and expose as a UiState<List<CreateMenuItemResponse>>
-    fun getVendorMenu(vendorId: String) {
+    fun isMenuCategoryDataLoadedFor(vendorId: String, category: String): Boolean {
+        val cacheKey = "${vendorId}_$category"
+        return _menuItemsState.value is UiState.Success && currentMenuCategoryKey == cacheKey
+    }
+
+    private var currentVendorMenuId: String? = null
+    private val vendorMenuLoadingStates: MutableMap<String, Boolean> = mutableMapOf()
+
+    fun getVendorMenu(vendorId: String, forceRefresh: Boolean = false) {
+        val isLoading = vendorMenuLoadingStates[vendorId] ?: false
+        val cachedTime = vendorMenuCacheTime[vendorId] ?: 0
+
+        if (isLoading && !forceRefresh) {
+            return
+        }
+
+        if (!forceRefresh && cachedVendorMenu.containsKey(vendorId) && isCacheValid(cachedTime)) {
+            if (_vendorMenuState.value is UiState.Success && currentVendorMenuId == vendorId) {
+                return
+            }
+            currentVendorMenuId = vendorId
+            _vendorMenuState.value = UiState.Success(cachedVendorMenu[vendorId]!!)
+            return
+        }
+
+        vendorMenuLoadingStates[vendorId] = true
         viewModelScope.launch {
             _vendorMenuState.value = UiState.Loading
             val result = menuItemRepository.getVendorMenu(vendorId)
-            _vendorMenuState.value = result.fold(
-                onSuccess = { list -> UiState.Success(list.filterNotNull()) },
-                onFailure = { throwable -> UiState.Error(throwable.message ?: "Unknown error") }
+            result.fold(
+                onSuccess = { list ->
+                    val filteredList = list.filterNotNull()
+                    cachedVendorMenu[vendorId] = filteredList
+                    vendorMenuCacheTime[vendorId] = Clock.System.now().toEpochMilliseconds()
+                    currentVendorMenuId = vendorId
+                    _vendorMenuState.value = UiState.Success(filteredList)
+                },
+                onFailure = { throwable ->
+                    _vendorMenuState.value = UiState.Error(throwable.message ?: "Unknown error")
+                }
             )
+            vendorMenuLoadingStates[vendorId] = false
         }
+    }
+
+    fun isVendorMenuDataLoadedFor(vendorId: String): Boolean {
+        return _vendorMenuState.value is UiState.Success && currentVendorMenuId == vendorId
     }
 
     fun getVendorMenuByCategories(vendorId: String, categories: List<String>) {
@@ -252,21 +331,66 @@ class MenuItemViewModel(
         _selectedCategory.value = null
     }
 
-    fun getMyMenuItems(page: Int = 0, size: Int = 50) {
-        executeWithUiState(_myMenuItemsState) {
-            menuItemRepository.getMyMenuItems(page, size)
+    fun getMyMenuItems(page: Int = 0, size: Int = 50, forceRefresh: Boolean = false) {
+        if (!forceRefresh && cachedMyMenuItems != null && isCacheValid(myMenuItemsCacheTime)) {
+            if (_myMenuItemsState.value is UiState.Success) {
+                return
+            }
+            _myMenuItemsState.value = UiState.Success(cachedMyMenuItems!!)
+            return
+        }
+
+        viewModelScope.launch {
+            if (forceRefresh) {
+                _isRefreshing.value = true
+            } else {
+                _myMenuItemsState.value = UiState.Loading
+            }
+
+            val result = menuItemRepository.getMyMenuItems(page, size)
+            result.fold(
+                onSuccess = { data ->
+                    cachedMyMenuItems = data
+                    myMenuItemsCacheTime = Clock.System.now().toEpochMilliseconds()
+                    _myMenuItemsState.value = UiState.Success(data)
+                },
+                onFailure = { error ->
+                    _myMenuItemsState.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            )
+            _isRefreshing.value = false
         }
     }
 
     fun toggleMenuItemAvailability(menuItemId: String) {
-        executeWithUiState(_toggleAvailabilityState) {
-            menuItemRepository.toggleMenuItemAvailability(menuItemId)
+        viewModelScope.launch {
+            _toggleAvailabilityState.value = UiState.Loading
+            val result = menuItemRepository.toggleMenuItemAvailability(menuItemId)
+            result.fold(
+                onSuccess = { data ->
+                    invalidateMyMenuItemsCache()
+                    _toggleAvailabilityState.value = UiState.Success(data)
+                },
+                onFailure = { error ->
+                    _toggleAvailabilityState.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            )
         }
     }
 
     fun createMenuItem(request: CreateMenuItemRequest) {
-        executeWithUiState(_createMenuItemState) {
-            menuItemRepository.createMenuItem(request)
+        viewModelScope.launch {
+            _createMenuItemState.value = UiState.Loading
+            val result = menuItemRepository.createMenuItem(request)
+            result.fold(
+                onSuccess = { data ->
+                    invalidateMyMenuItemsCache()
+                    _createMenuItemState.value = UiState.Success(data)
+                },
+                onFailure = { error ->
+                    _createMenuItemState.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            )
         }
     }
 
@@ -277,14 +401,54 @@ class MenuItemViewModel(
     }
 
     fun updateMenuItem(menuItemId: String, request: UpdateMenuItemRequest) {
-        executeWithUiState(_updateMenuItemState) {
-            menuItemRepository.updateMenuItem(menuItemId, request)
+        viewModelScope.launch {
+            _updateMenuItemState.value = UiState.Loading
+            val result = menuItemRepository.updateMenuItem(menuItemId, request)
+            result.fold(
+                onSuccess = { data ->
+                    invalidateMyMenuItemsCache()
+                    _updateMenuItemState.value = UiState.Success(data)
+                },
+                onFailure = { error ->
+                    _updateMenuItemState.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            )
         }
     }
 
     fun deleteMenuItem(menuItemId: String) {
-        executeWithUiState(_deleteMenuItemState) {
-            menuItemRepository.deleteMenuItem(menuItemId)
+        viewModelScope.launch {
+            _deleteMenuItemState.value = UiState.Loading
+            val result = menuItemRepository.deleteMenuItem(menuItemId)
+            result.fold(
+                onSuccess = { data ->
+                    invalidateMyMenuItemsCache()
+                    _deleteMenuItemState.value = UiState.Success(data)
+                },
+                onFailure = { error ->
+                    _deleteMenuItemState.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            )
         }
+    }
+
+    fun invalidateMyMenuItemsCache() {
+        cachedMyMenuItems = null
+        myMenuItemsCacheTime = 0
+    }
+
+    fun invalidateVendorMenuCache(vendorId: String) {
+        cachedVendorMenu.remove(vendorId)
+        vendorMenuCacheTime.remove(vendorId)
+    }
+
+    fun invalidateAllCache() {
+        cachedMyMenuItems = null
+        myMenuItemsCacheTime = 0
+        cachedVendorMenu.clear()
+        vendorMenuCacheTime.clear()
+        cachedMenuItemsByCategory.clear()
+        menuItemsByCategoryCacheTime.clear()
+        currentMenuCategoryKey = null
     }
 }

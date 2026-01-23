@@ -36,10 +36,7 @@ fun VendorCard(
 
     LaunchedEffect(vendorId) {
         if (!vendorId.isNullOrBlank()) {
-            vendorCardLogger.d { "Requesting vendor rating for id=$vendorId" }
-            reviewViewModel.getVendorRating(vendorId)
-        } else {
-            vendorCardLogger.w { "Vendor id is blank/null; skipping rating fetch" }
+            reviewViewModel.ensureVendorRatingLoaded(vendorId)
         }
     }
 

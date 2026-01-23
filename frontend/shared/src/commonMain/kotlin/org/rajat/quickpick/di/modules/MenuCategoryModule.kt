@@ -1,7 +1,6 @@
 package org.rajat.quickpick.di.modules
 
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.rajat.quickpick.data.remote.MenuCategoryApiServiceImpl
@@ -14,5 +13,5 @@ val menuCategoryModule = module {
 
     single<MenuCategoryApiService> { MenuCategoryApiServiceImpl(get()) }
     singleOf(::MenuCategoryRepositoryImpl) bind MenuCategoryRepository::class
-    viewModel { MenuCategoryViewModel(get()) }
+    single { MenuCategoryViewModel(get()) }
 }

@@ -36,9 +36,10 @@ fun OrderDetailScreen(
 ) {
     val orderByIdState by orderViewModel.orderByIdState.collectAsState()
 
-    // Fetch order details when screen loads
     LaunchedEffect(orderId) {
-        orderViewModel.getOrderById(orderId)
+        if (!orderViewModel.isOrderDataLoadedFor(orderId)) {
+            orderViewModel.getOrderById(orderId)
+        }
     }
 
     Box(

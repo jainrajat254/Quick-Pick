@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -51,16 +52,28 @@ fun VendorScreen(
     onBackClick: () -> Unit = { navController.navigateUp() }
 ) {
     val vendorDetailsState by vendorViewModel.vendorsDetailState.collectAsState()
-    val ratingState by reviewViewModel.vendorRatingState.collectAsState()
+    val ratingStateFlow = reviewViewModel.getVendorRatingState(vendorId)
+    val ratingState by ratingStateFlow.collectAsState()
     val vendorMenuState by menuItemViewModel.vendorMenuState.collectAsState()
     val reviewsState by reviewViewModel.vendorReviewsState.collectAsState()
+    val isRefreshing by vendorViewModel.isRefreshing.collectAsState()
 
     LaunchedEffect(vendorId) {
         vendorScreenLogger.d { "VendorScreen Launched for vendorId=$vendorId" }
-        vendorViewModel.getVendorsDetails(vendorId)
-        reviewViewModel.getVendorRating(vendorId)
-        reviewViewModel.getVendorReviewsPaginated(vendorId, page = 0, size = 50)
-        menuItemViewModel.getVendorMenu(vendorId)
+
+        if (!vendorViewModel.isDataLoadedFor(vendorId)) {
+            vendorViewModel.getVendorsDetails(vendorId)
+        }
+
+        reviewViewModel.ensureVendorRatingLoaded(vendorId)
+
+        if (!reviewViewModel.isVendorReviewsDataLoadedFor(vendorId)) {
+            reviewViewModel.getVendorReviewsPaginated(vendorId, page = 0, size = 50)
+        }
+
+        if (!menuItemViewModel.isVendorMenuDataLoadedFor(vendorId)) {
+            menuItemViewModel.getVendorMenu(vendorId)
+        }
     }
 
     LaunchedEffect(vendorDetailsState) {
@@ -80,6 +93,13 @@ fun VendorScreen(
 
     LaunchedEffect(reviewsState) {
         vendorScreenLogger.d { "VendorScreen reviewsState changed: ${reviewsState::class.simpleName}" }
+    }
+
+    fun refreshAll() {
+        vendorViewModel.getVendorsDetails(vendorId, forceRefresh = true)
+        reviewViewModel.refreshVendorRating(vendorId)
+        reviewViewModel.getVendorReviewsPaginated(vendorId, page = 0, size = 50, forceRefresh = true)
+        menuItemViewModel.getVendorMenu(vendorId, forceRefresh = true)
     }
 
     Scaffold(
@@ -109,16 +129,22 @@ fun VendorScreen(
             )
         }
     ) { paddingValues ->
-        when (vendorDetailsState) {
-            is UiState.Loading -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .navigationBarsPadding(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { refreshAll() },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (vendorDetailsState) {
+                is UiState.Loading -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        item {
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -487,13 +513,16 @@ fun ReviewsScreen(
     vendorId: String,
     onBackClick: () -> Unit = { navController.navigateUp() }
 ) {
-    val ratingState by reviewViewModel.vendorRatingState.collectAsState()
+    val ratingStateFlow = reviewViewModel.getVendorRatingState(vendorId)
+    val ratingState by ratingStateFlow.collectAsState()
     val reviewsState by reviewViewModel.vendorReviewsState.collectAsState()
 
     LaunchedEffect(vendorId) {
         vendorScreenLogger.d { "ReviewsScreen Launched for vendorId=$vendorId" }
-        reviewViewModel.getVendorRating(vendorId)
-        reviewViewModel.getVendorReviewsPaginated(vendorId, page = 0, size = 50)
+        reviewViewModel.ensureVendorRatingLoaded(vendorId)
+        if (!reviewViewModel.isVendorReviewsDataLoadedFor(vendorId)) {
+            reviewViewModel.getVendorReviewsPaginated(vendorId, page = 0, size = 50)
+        }
     }
 
     LaunchedEffect(ratingState) {
@@ -562,6 +591,7 @@ fun ReviewsScreen(
                 }
                 UiState.Empty -> {}
             }
+        }
         }
     }
 }

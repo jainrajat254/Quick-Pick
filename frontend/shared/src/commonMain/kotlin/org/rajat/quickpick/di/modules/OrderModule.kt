@@ -1,6 +1,5 @@
 package org.rajat.quickpick.di.modules
 
-import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 import org.rajat.quickpick.data.remote.OrderApiServiceImpl
 import org.rajat.quickpick.data.remote.PaymentApiServiceImpl
@@ -14,5 +13,5 @@ val orderModule = module {
     single<OrderApiService> { OrderApiServiceImpl(get()) }
     single<PaymentApiService> { PaymentApiServiceImpl(get()) }
     single<OrderRepository> { OrderRepositoryImpl(get()) }
-    viewModelOf(::OrderViewModel)
+    single { OrderViewModel(get(), get()) }
 }

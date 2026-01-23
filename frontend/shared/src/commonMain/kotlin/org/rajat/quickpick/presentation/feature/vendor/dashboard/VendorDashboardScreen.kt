@@ -6,12 +6,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -25,7 +23,7 @@ import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalMaterial3Api::class)
 @Composable
 fun VendorDashboardScreen(
     navController: NavController,
@@ -33,6 +31,7 @@ fun VendorDashboardScreen(
     orderViewModel: OrderViewModel
 ) {
     val vendorOrderStatsState by orderViewModel.vendorOrderStatsState.collectAsState()
+    val isRefreshing by orderViewModel.isRefreshing.collectAsState()
     var backPressedTime by remember { mutableStateOf(0L) }
 
     BackHandler(enabled = true) {
@@ -46,164 +45,171 @@ fun VendorDashboardScreen(
     }
 
     LaunchedEffect(Unit) {
-        orderViewModel.getVendorOrderStats()
+        if (vendorOrderStatsState is UiState.Empty) {
+            orderViewModel.getVendorOrderStats()
+        }
     }
 
-    LazyColumn(
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { orderViewModel.getVendorOrderStats(forceRefresh = true) },
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item {
-            Spacer(modifier = Modifier.height(12.dp))
-            VendorDashboardHeader()
-        }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                Spacer(modifier = Modifier.height(12.dp))
+                VendorDashboardHeader()
+            }
 
-        item {
-            when (vendorOrderStatsState) {
-                is UiState.Success -> {
-                    val stats = (vendorOrderStatsState as UiState.Success).data
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        StatsCard(
-                            title = "Total Orders",
-                            value = stats.totalOrders.toString(),
-                            icon = Icons.Default.ShoppingBag,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable {
-                                    orderViewModel.setInitialVendorOrdersTab(0)
-                                    navController.navigate(AppScreenVendor.VendorOrders)
-                                }
-                        )
-                        StatsCard(
-                            title = "Pending",
-                            value = stats.pendingOrders.toString(),
-                            icon = Icons.Default.Pending,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable {
-                                    orderViewModel.setInitialVendorOrdersTab(0)
-                                    navController.navigate(AppScreenVendor.VendorOrders)
-                                }
-                        )
+            item {
+                when (vendorOrderStatsState) {
+                    is UiState.Success -> {
+                        val stats = (vendorOrderStatsState as UiState.Success).data
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            StatsCard(
+                                title = "Total Orders",
+                                value = stats.totalOrders.toString(),
+                                icon = Icons.Default.ShoppingBag,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        orderViewModel.setInitialVendorOrdersTab(0)
+                                        navController.navigate(AppScreenVendor.VendorOrders)
+                                    }
+                            )
+                            StatsCard(
+                                title = "Pending",
+                                value = stats.pendingOrders.toString(),
+                                icon = Icons.Default.Pending,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        orderViewModel.setInitialVendorOrdersTab(0)
+                                        navController.navigate(AppScreenVendor.VendorOrders)
+                                    }
+                            )
+                        }
                     }
-                }
-                else -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        StatsCard(
-                            title = "Total Orders",
-                            value = "0",
-                            icon = Icons.Default.ShoppingBag,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable {
-                                    orderViewModel.setInitialVendorOrdersTab(0)
-                                    navController.navigate(AppScreenVendor.VendorOrders)
-                                }
-                        )
-                        StatsCard(
-                            title = "Pending",
-                            value = "0",
-                            icon = Icons.Default.Pending,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable {
-                                    orderViewModel.setInitialVendorOrdersTab(0)
-                                    navController.navigate(AppScreenVendor.VendorOrders)
-                                }
-                        )
+                    else -> {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            StatsCard(
+                                title = "Total Orders",
+                                value = "0",
+                                icon = Icons.Default.ShoppingBag,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        orderViewModel.setInitialVendorOrdersTab(0)
+                                        navController.navigate(AppScreenVendor.VendorOrders)
+                                    }
+                            )
+                            StatsCard(
+                                title = "Pending",
+                                value = "0",
+                                icon = Icons.Default.Pending,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        orderViewModel.setInitialVendorOrdersTab(0)
+                                        navController.navigate(AppScreenVendor.VendorOrders)
+                                    }
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        item {
-            when (vendorOrderStatsState) {
-                is UiState.Success -> {
-                    val stats = (vendorOrderStatsState as UiState.Success).data
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        StatsCard(
-                            title = "Completed",
-                            value = stats.completedOrders.toString(),
-                            icon = Icons.Default.CheckCircle,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable {
-                                    orderViewModel.setInitialVendorOrdersTab(2)
-                                    navController.navigate(AppScreenVendor.VendorOrders)
-                                }
-                        )
-                        StatsCard(
-                            title = "Cancelled",
-                            value = stats.cancelledOrders.toString(),
-                            icon = Icons.Default.Cancel,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable {
-                                    orderViewModel.setInitialVendorOrdersTab(2)
-                                    navController.navigate(AppScreenVendor.VendorOrders)
-                                }
-                        )
+            item {
+                when (vendorOrderStatsState) {
+                    is UiState.Success -> {
+                        val stats = (vendorOrderStatsState as UiState.Success).data
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            StatsCard(
+                                title = "Completed",
+                                value = stats.completedOrders.toString(),
+                                icon = Icons.Default.CheckCircle,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        orderViewModel.setInitialVendorOrdersTab(2)
+                                        navController.navigate(AppScreenVendor.VendorOrders)
+                                    }
+                            )
+                            StatsCard(
+                                title = "Cancelled",
+                                value = stats.cancelledOrders.toString(),
+                                icon = Icons.Default.Cancel,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        orderViewModel.setInitialVendorOrdersTab(2)
+                                        navController.navigate(AppScreenVendor.VendorOrders)
+                                    }
+                            )
+                        }
                     }
-                }
-                else -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        StatsCard(
-                            title = "Completed",
-                            value = "0",
-                            icon = Icons.Default.CheckCircle,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable {
-                                    orderViewModel.setInitialVendorOrdersTab(2)
-                                    navController.navigate(AppScreenVendor.VendorOrders)
-                                }
-                        )
-                        StatsCard(
-                            title = "Cancelled",
-                            value = "0",
-                            icon = Icons.Default.Cancel,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable {
-                                    orderViewModel.setInitialVendorOrdersTab(2)
-                                    navController.navigate(AppScreenVendor.VendorOrders)
-                                }
-                        )
+                    else -> {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            StatsCard(
+                                title = "Completed",
+                                value = "0",
+                                icon = Icons.Default.CheckCircle,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        orderViewModel.setInitialVendorOrdersTab(2)
+                                        navController.navigate(AppScreenVendor.VendorOrders)
+                                    }
+                            )
+                            StatsCard(
+                                title = "Cancelled",
+                                value = "0",
+                                icon = Icons.Default.Cancel,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        orderViewModel.setInitialVendorOrdersTab(2)
+                                        navController.navigate(AppScreenVendor.VendorOrders)
+                                    }
+                            )
+                        }
                     }
                 }
             }
-        }
 
+            item {
+                QuickActionsSection(
+                    onViewOrders = {
+                        navController.navigate(AppScreenVendor.VendorOrders)
+                    },
+                    onManageMenu = {
+                        navController.navigate(AppScreenVendor.VendorMenu)
+                    }
+                )
+            }
 
-
-        item {
-            QuickActionsSection(
-                onViewOrders = {
-                    navController.navigate(AppScreenVendor.VendorOrders)
-                },
-                onManageMenu = {
-                    navController.navigate(AppScreenVendor.VendorMenu)
-                }
-            )
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
     }
 }

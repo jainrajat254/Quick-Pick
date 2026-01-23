@@ -17,13 +17,18 @@ import org.rajat.quickpick.domain.repository.ImageUploadRepository
 import org.rajat.quickpick.domain.repository.ProfileRepository
 import org.rajat.quickpick.utils.ImageUploadState
 import org.rajat.quickpick.utils.UiState
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 private val logger = Logger.withTag("CLOUDINARY_IMAGE_DEBUG")
 
+@OptIn(ExperimentalTime::class)
 class ProfileViewModel(
     private val profileRepository: ProfileRepository,
     private val imageUploadRepository: ImageUploadRepository
 ) : ViewModel() {
+
+    private val cacheLogger = Logger.withTag("ProfileViewModel_Cache")
 
     private val _studentProfileState =
         MutableStateFlow<UiState<GetStudentProfileResponse>>(UiState.Empty)
@@ -52,6 +57,23 @@ class ProfileViewModel(
 
     private val _uploadedImageUrl = MutableStateFlow<String?>(null)
     val uploadedImageUrl: StateFlow<String?> = _uploadedImageUrl
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
+    private var cachedStudentProfile: GetStudentProfileResponse? = null
+    private var studentProfileCacheTime: Long = 0
+    private var cachedVendorProfile: GetVendorProfileResponse? = null
+    private var vendorProfileCacheTime: Long = 0
+    private val cacheValidityDuration = 60_000L
+
+    init {
+        cacheLogger.d { "ProfileViewModel instance created: ${this.hashCode()}" }
+    }
+
+    private fun isCacheValid(cacheTime: Long): Boolean {
+        return (Clock.System.now().toEpochMilliseconds() - cacheTime) < cacheValidityDuration
+    }
 
     private fun <T> executeWithUiState(
         stateFlow: MutableStateFlow<UiState<T>>,
@@ -96,15 +118,95 @@ class ProfileViewModel(
         logger.d { "clearUploadedImage: State cleared and set to Idle" }
     }
 
-    fun getStudentProfile() {
-        executeWithUiState(_studentProfileState) {
-            profileRepository.getStudentProfile()
+    private var isStudentProfileLoading = false
+
+    fun getStudentProfile(forceRefresh: Boolean = false) {
+        cacheLogger.d { "getStudentProfile called - forceRefresh=$forceRefresh, cachedData=${cachedStudentProfile != null}, cacheValid=${if (cachedStudentProfile != null) isCacheValid(studentProfileCacheTime) else false}, currentState=${_studentProfileState.value::class.simpleName}, isLoading=$isStudentProfileLoading" }
+
+        if (isStudentProfileLoading && !forceRefresh) {
+            cacheLogger.d { "⏳ REQUEST IN FLIGHT - Skipping duplicate call" }
+            return
+        }
+
+        if (!forceRefresh && _studentProfileState.value is UiState.Success && cachedStudentProfile != null && isCacheValid(studentProfileCacheTime)) {
+            cacheLogger.d { "✅ CACHE HIT - State already Success, returning without API call" }
+            return
+        }
+
+        if (!forceRefresh && cachedStudentProfile != null && isCacheValid(studentProfileCacheTime)) {
+            cacheLogger.d { "✅ CACHE HIT - Setting state to cached Success" }
+            _studentProfileState.value = UiState.Success(cachedStudentProfile!!)
+            return
+        }
+
+        cacheLogger.d { "❌ CACHE MISS - Making API call" }
+        isStudentProfileLoading = true
+        viewModelScope.launch {
+            if (forceRefresh) {
+                _isRefreshing.value = true
+            } else {
+                _studentProfileState.value = UiState.Loading
+            }
+
+            val result = profileRepository.getStudentProfile()
+            result.fold(
+                onSuccess = { data ->
+                    cachedStudentProfile = data
+                    studentProfileCacheTime = Clock.System.now().toEpochMilliseconds()
+                    _studentProfileState.value = UiState.Success(data)
+                    cacheLogger.d { "API call successful, data cached" }
+                },
+                onFailure = { error ->
+                    _studentProfileState.value = UiState.Error(error.message ?: "Unknown error")
+                    cacheLogger.e { "API call failed: ${error.message}" }
+                }
+            )
+            _isRefreshing.value = false
+            isStudentProfileLoading = false
         }
     }
 
-    fun getVendorProfile() {
-        executeWithUiState(_vendorProfileState) {
-            profileRepository.getVendorProfile()
+    private var isVendorProfileLoading = false
+
+    fun getVendorProfile(forceRefresh: Boolean = false) {
+        cacheLogger.d { "getVendorProfile called - forceRefresh=$forceRefresh, isLoading=$isVendorProfileLoading" }
+
+        if (isVendorProfileLoading && !forceRefresh) {
+            cacheLogger.d { "⏳ REQUEST IN FLIGHT - Skipping duplicate call" }
+            return
+        }
+
+        if (!forceRefresh && _vendorProfileState.value is UiState.Success && cachedVendorProfile != null && isCacheValid(vendorProfileCacheTime)) {
+            cacheLogger.d { "✅ CACHE HIT - State already Success, returning without API call" }
+            return
+        }
+
+        if (!forceRefresh && cachedVendorProfile != null && isCacheValid(vendorProfileCacheTime)) {
+            _vendorProfileState.value = UiState.Success(cachedVendorProfile!!)
+            return
+        }
+
+        isVendorProfileLoading = true
+        viewModelScope.launch {
+            if (forceRefresh) {
+                _isRefreshing.value = true
+            } else {
+                _vendorProfileState.value = UiState.Loading
+            }
+
+            val result = profileRepository.getVendorProfile()
+            result.fold(
+                onSuccess = { data ->
+                    cachedVendorProfile = data
+                    vendorProfileCacheTime = Clock.System.now().toEpochMilliseconds()
+                    _vendorProfileState.value = UiState.Success(data)
+                },
+                onFailure = { error ->
+                    _vendorProfileState.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            )
+            _isRefreshing.value = false
+            isVendorProfileLoading = false
         }
     }
 
@@ -115,15 +217,47 @@ class ProfileViewModel(
     }
 
     fun updateStudentProfile(request: UpdateUserProfileRequest) {
-        executeWithUiState(_updateStudentProfileState) {
-            profileRepository.updateStudentProfile(request)
+        viewModelScope.launch {
+            _updateStudentProfileState.value = UiState.Loading
+            val result = profileRepository.updateStudentProfile(request)
+            result.fold(
+                onSuccess = { data ->
+                    cachedStudentProfile = null
+                    studentProfileCacheTime = 0
+                    _updateStudentProfileState.value = UiState.Success(data)
+                },
+                onFailure = { error ->
+                    _updateStudentProfileState.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            )
         }
     }
 
     fun updateVendorProfile(request: UpdateVendorProfileRequest) {
-        executeWithUiState(_updateVendorProfileState) {
-            profileRepository.updateVendorProfile(request)
+        viewModelScope.launch {
+            _updateVendorProfileState.value = UiState.Loading
+            val result = profileRepository.updateVendorProfile(request)
+            result.fold(
+                onSuccess = { data ->
+                    cachedVendorProfile = null
+                    vendorProfileCacheTime = 0
+                    _updateVendorProfileState.value = UiState.Success(data)
+                },
+                onFailure = { error ->
+                    _updateVendorProfileState.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            )
         }
+    }
+
+    fun invalidateStudentProfileCache() {
+        cachedStudentProfile = null
+        studentProfileCacheTime = 0
+    }
+
+    fun invalidateVendorProfileCache() {
+        cachedVendorProfile = null
+        vendorProfileCacheTime = 0
     }
 
     fun resetProfileStates() {
@@ -132,5 +266,9 @@ class ProfileViewModel(
         _vendorVerificationStatusState.value = UiState.Empty
         _updateStudentProfileState.value = UiState.Empty
         _updateVendorProfileState.value = UiState.Empty
+        cachedStudentProfile = null
+        cachedVendorProfile = null
+        studentProfileCacheTime = 0
+        vendorProfileCacheTime = 0
     }
 }
