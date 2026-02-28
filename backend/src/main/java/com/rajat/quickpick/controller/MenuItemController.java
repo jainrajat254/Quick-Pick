@@ -112,16 +112,6 @@ public class MenuItemController {
         return ResponseEntity.ok(updatedMenuItem);
     }
 
-    @PatchMapping("/{menuItemId}/quantity")
-    @PreAuthorize("hasRole('VENDOR')")
-    public ResponseEntity<MenuItemResponseDto> updateQuantity(@PathVariable String menuItemId,
-                                                              @RequestParam int quantity,
-                                                              HttpServletRequest request) {
-        String vendorId = extractUserIdFromToken(request);
-        MenuItemResponseDto updatedMenuItem = menuItemService.updateQuantity(vendorId, menuItemId, quantity);
-        return ResponseEntity.ok(updatedMenuItem);
-    }
-
     @DeleteMapping("/{menuItemId}")
     @PreAuthorize("hasRole('VENDOR')")
     public ResponseEntity<Map<String, String>> deleteMenuItem(@PathVariable String menuItemId,

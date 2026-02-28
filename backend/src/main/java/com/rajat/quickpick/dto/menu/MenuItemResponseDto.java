@@ -14,9 +14,6 @@ public class MenuItemResponseDto {
     private String description;
     private double price;
 
-    private boolean quantityEnabled;
-
-    private int quantity;
     private String category;
     @JsonProperty("isVeg")
     private boolean veg;

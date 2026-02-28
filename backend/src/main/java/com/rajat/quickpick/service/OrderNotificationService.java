@@ -165,6 +165,7 @@ public class OrderNotificationService {
             case ACCEPTED: return "ORDER_ACCEPTED";
             case REJECTED: return "ORDER_REJECTED";
             case PREPARING: return "ORDER_PREPARING";
+            case PACKED: return "ORDER_PACKED";
             case READY_FOR_PICKUP: return "ORDER_READY";
             case COMPLETED: return "ORDER_COMPLETED";
             case CANCELLED: return "ORDER_CANCELLED";
@@ -177,6 +178,7 @@ public class OrderNotificationService {
             case ACCEPTED: return "Your order has been accepted!";
             case REJECTED: return "Your order has been rejected";
             case PREPARING: return "Your order is being prepared";
+            case PACKED: return "Your order has been packed!";
             case READY_FOR_PICKUP: return "Your order is ready for pickup!";
             case COMPLETED: return "Order completed successfully!";
             case CANCELLED: return "Your order has been cancelled";

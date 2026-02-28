@@ -1,21 +1,28 @@
 package com.rajat.quickpick.config;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableCaching
 public class CacheConfig {
 
     @Bean
-    public CacheManager cacheManager(){
-        ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager();
-        cacheManager.setCacheNames(List.of("vendorRatings"));
-        return cacheManager;
+    public CacheManager cacheManager() {
+        CaffeineCacheManager manager = new CaffeineCacheManager(
+                "vendorMenu",
+                "vendorMenuByCategory",
+                "vendorRatings"
+        );
+        manager.setCaffeine(Caffeine.newBuilder()
+                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .maximumSize(500));
+        return manager;
     }
 }

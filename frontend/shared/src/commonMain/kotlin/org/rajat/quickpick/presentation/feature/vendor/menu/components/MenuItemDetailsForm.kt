@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Fastfood
-import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -32,10 +31,6 @@ fun MenuItemDetailsForm(
     onPriceChange: (String) -> Unit,
     category: String,
     onCategoryChange: (String) -> Unit,
-    quantityEnabled: Boolean,
-    onQuantityEnabledChange: (Boolean) -> Unit,
-    quantity: String,
-    onQuantityChange: (String) -> Unit,
     isVeg: Boolean,
     onIsVegChange: (Boolean) -> Unit,
     isAvailable: Boolean,
@@ -112,24 +107,6 @@ fun MenuItemDetailsForm(
                     .fillMaxWidth()
                     .padding(top = 16.dp, bottom = 16.dp)
             )
-
-            ToggleRow(
-                text = "Track quantity for this item?",
-                checked = quantityEnabled,
-                onCheckedChange = onQuantityEnabledChange
-            )
-
-            if (quantityEnabled) {
-                FormInfoField(
-                    label = "Quantity",
-                    value = quantity,
-                    onValueChange = onQuantityChange,
-                    icon = Icons.Default.Inventory2,
-                    keyboardType = KeyboardType.Number,
-                    placeholder = "e.g. 10",
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
 
             ToggleRow(
                 text = "Item is Vegetarian",

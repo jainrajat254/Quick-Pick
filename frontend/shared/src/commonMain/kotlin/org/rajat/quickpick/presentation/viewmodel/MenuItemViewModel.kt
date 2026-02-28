@@ -2,6 +2,8 @@ package org.rajat.quickpick.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -106,7 +108,7 @@ class MenuItemViewModel(
     private val cachedMenuItemsByCategory: MutableMap<String, GetVendorMenuByCategoryResponse> = mutableMapOf()
     private val menuItemsByCategoryCacheTime: MutableMap<String, Long> = mutableMapOf()
     private var currentMenuCategoryKey: String? = null
-    private val cacheValidityDuration = 60_000L
+    private val cacheValidityDuration = 300_000L 
 
     private fun isCacheValid(cacheTime: Long): Boolean {
         return (Clock.System.now().toEpochMilliseconds() - cacheTime) < cacheValidityDuration
@@ -213,23 +215,28 @@ class MenuItemViewModel(
     fun getVendorMenuByCategories(vendorId: String, categories: List<String>) {
         viewModelScope.launch {
             _vendorMenuState.value = UiState.Loading
+            val deferreds = categories.map { category ->
+                async { menuItemRepository.getVendorMenuByCategory(vendorId, category) }
+            }
+            val results = deferreds.awaitAll()
+
             val aggregated = mutableListOf<CreateMenuItemResponse>()
             var firstErrorMessage: String? = null
-            for (category in categories) {
-                val res = menuItemRepository.getVendorMenuByCategory(vendorId, category)
-                res.fold(onSuccess = { resp ->
-                    val items = resp.menuItems ?: emptyList()
-                    aggregated.addAll(items.filterNotNull())
-                }, onFailure = { thr ->
-                    if (firstErrorMessage == null) firstErrorMessage = thr.message
-                })
+            results.forEach { res ->
+                res.fold(
+                    onSuccess = { resp ->
+                        val items = resp.menuItems ?: emptyList()
+                        aggregated.addAll(items.filterNotNull())
+                    },
+                    onFailure = { thr ->
+                        if (firstErrorMessage == null) firstErrorMessage = thr.message
+                    }
+                )
             }
-            if (aggregated.isNotEmpty()) {
-                _vendorMenuState.value = UiState.Success(aggregated)
-            } else if (firstErrorMessage != null) {
-                _vendorMenuState.value = UiState.Error(firstErrorMessage)
-            } else {
-                _vendorMenuState.value = UiState.Success(aggregated)
+            _vendorMenuState.value = when {
+                aggregated.isNotEmpty() -> UiState.Success(aggregated)
+                firstErrorMessage != null -> UiState.Error(firstErrorMessage!!)
+                else -> UiState.Success(aggregated)
             }
         }
     }

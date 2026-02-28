@@ -47,10 +47,6 @@ public class CartService {
             throw new BadRequestException("Menu item '" + menuItem.getName() + "' is not available");
         }
 
-        if (menuItem.getQuantity() < addToCartDto.getQuantity()) {
-            throw new BadRequestException("Insufficient quantity for '" + menuItem.getName() + "'. Available: " + menuItem.getQuantity());
-        }
-
         // Get vendor details
         Vendor vendor = vendorRepository.findById(menuItem.getVendorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
@@ -81,10 +77,6 @@ public class CartService {
             // Update quantity
             CartItem item = existingItem.get();
             int newQuantity = item.getQuantity() + addToCartDto.getQuantity();
-
-            if (menuItem.getQuantity() < newQuantity) {
-                throw new BadRequestException("Cannot add more. Maximum available quantity: " + menuItem.getQuantity());
-            }
 
             item.setQuantity(newQuantity);
             item.setTotalPrice(item.getUnitPrice() * newQuantity);
@@ -134,14 +126,6 @@ public class CartService {
                 .filter(item -> item.getMenuItemId().equals(menuItemId))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found in cart"));
-
-        // Validate quantity against available stock
-        MenuItem menuItem = menuItemRepository.findById(menuItemId)
-                .orElseThrow(() -> new ResourceNotFoundException("Menu item not found"));
-
-        if (menuItem.getQuantity() < updateDto.getQuantity()) {
-            throw new BadRequestException("Insufficient quantity. Available: " + menuItem.getQuantity());
-        }
 
         cartItem.setQuantity(updateDto.getQuantity());
         cartItem.setTotalPrice(cartItem.getUnitPrice() * updateDto.getQuantity());

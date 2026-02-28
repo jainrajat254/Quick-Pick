@@ -193,8 +193,6 @@ fun MenuItemScreen(
                                     imageUrl = menuItem.imageUrl,
                                     name = menuItem.name,
                                     price = menuItem.price ?: 0.0,
-                                    quantity = menuItem.quantity,
-                                    quantityEnabled = menuItem.quantityEnabled,
                                     updatedAt = menuItem.updatedAt,
                                     isVeg = menuItem.isVeg,
                                     vendorId = menuItem.vendorId

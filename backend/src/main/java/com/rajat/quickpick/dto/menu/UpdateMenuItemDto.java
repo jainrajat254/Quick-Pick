@@ -13,11 +13,6 @@ public class UpdateMenuItemDto {
     @PositiveOrZero(message = "Price cannot be negative")
     private Double price;
 
-    private Boolean quantityEnabled;
-
-    @PositiveOrZero(message = "Quantity cannot be negative")
-    private Integer quantity;
-
     private String category;
     @JsonProperty("isVeg")
     private Boolean veg;

@@ -286,15 +286,12 @@ class OrderViewModel(
         }
     }
 
-    /**
-     * Fetch ACCEPTED, PREPARING and READY_FOR_PICKUP orders sequentially and merge them.
-     * Exposes a UiState with the merged list to avoid UI-level sequential-fetch complexity.
-     */
+   
     fun getCombinedAcceptedOrders() {
         viewModelScope.launch {
             _vendorOrdersAcceptedCombinedState.value = UiState.Loading
             try {
-                val statuses = listOf("ACCEPTED", "PREPARING", "READY_FOR_PICKUP")
+                val statuses = listOf("ACCEPTED", "PREPARING", "PACKED", "READY_FOR_PICKUP")
                 val combined = mutableListOf<GetOrderByIdResponse>()
                 var anySuccess = false
                 for (s in statuses) {
@@ -307,7 +304,6 @@ class OrderViewModel(
                         }
                     }
                 }
-                // Always succeed with a (possibly empty) list — UI can decide fallback behavior
                 _vendorOrdersAcceptedCombinedState.value = UiState.Success(combined.distinctBy { it.id })
             } catch (e: Exception) {
                 _vendorOrdersAcceptedCombinedState.value = UiState.Error(e.message ?: "Error fetching combined orders")

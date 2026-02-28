@@ -66,7 +66,6 @@ fun HomeScreen(
         }
     }
 
-//    LaunchedEffect(vendorsState) {
     LaunchedEffect(vendorsState) {
         when (vendorsState) {
             is UiState.Error -> {
@@ -122,6 +121,12 @@ fun HomeScreen(
                         onVendorClick = { vendorId ->
                             navController.navigate(AppScreenUser.VendorDetail(vendorId))
                         },
+                        onVendorVisible = { vendorId ->
+                            // Warm vendor detail & menu cache while user scrolls the home list
+                            // Both ViewModels guard against duplicate fetches internally
+                            vendorViewModel.getVendorsDetails(vendorId)
+                            menuItemViewModel.getVendorMenu(vendorId)
+                        },
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -129,5 +134,4 @@ fun HomeScreen(
         }
     }
 }
-
 

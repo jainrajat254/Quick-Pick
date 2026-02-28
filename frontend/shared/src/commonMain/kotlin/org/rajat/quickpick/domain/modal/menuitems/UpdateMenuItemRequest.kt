@@ -12,7 +12,5 @@ data class UpdateMenuItemRequest(
     @SerialName("isVeg")
     val isVeg: Boolean? = null,
     val name: String? = null,
-    val price: Double? = null,
-    val quantity: Int? = null,
-    val quantityEnabled: Boolean? = null
+    val price: Double? = null
 )
