@@ -12,8 +12,6 @@ data class UpdateMenuItemResponse(
     val imageUrl: String? = null,
     val name: String? = null,
     val price: Double,
-    val quantity: Int? = null,
-    val quantityEnabled: Boolean? = null,
     val updatedAt: String? = null,
     val veg: Boolean? = null,
     val vendorId: String? = null

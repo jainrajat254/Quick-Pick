@@ -106,7 +106,7 @@ fun OrderDetailFields(
         Spacer(modifier = Modifier.height(16.dp))
     }
 
-    if (!order.otp.isNullOrBlank() && order.orderStatus in listOf("ACCEPTED", "PREPARING", "READY_FOR_PICKUP", "READY")) {
+    if (!order.otp.isNullOrBlank() && order.orderStatus in listOf("ACCEPTED", "PREPARING", "PACKED", "READY_FOR_PICKUP", "READY")) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(

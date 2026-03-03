@@ -3,7 +3,6 @@ package com.rajat.quickpick.dto.menu;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 @Data
@@ -16,11 +15,6 @@ public class MenuItemCreateDto {
 
     @Positive(message = "Price must be positive")
     private double price;
-
-    private boolean quantityEnabled = true;
-
-    @PositiveOrZero(message = "Quantity cannot be negative")
-    private int quantity;
 
     @NotBlank(message = "Category is required")
     private String category;

@@ -1,7 +1,6 @@
 package org.rajat.quickpick.di.modules
 
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.rajat.quickpick.data.remote.ProfileApiServiceImpl
@@ -14,5 +13,5 @@ val profileModule = module {
 
     single<ProfileApiService> { ProfileApiServiceImpl(get()) }
     singleOf(::ProfileRepositoryImpl) bind ProfileRepository::class
-    viewModel { ProfileViewModel(get(), get()) }
+    single { ProfileViewModel(get(), get()) }
 }

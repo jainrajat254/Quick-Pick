@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -12,6 +14,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "menu_items")
+@CompoundIndexes({
+    @CompoundIndex(name = "idx_vendorId_isAvailable", def = "{'vendorId': 1, 'isAvailable': 1}"),
+    @CompoundIndex(name = "idx_vendorId_category",    def = "{'vendorId': 1, 'category': 1}"),
+    @CompoundIndex(name = "idx_vendorId_name",        def = "{'vendorId': 1, 'name': 1}")
+})
 public class MenuItem {
 
     @Id
@@ -23,10 +30,6 @@ public class MenuItem {
     private String description;
 
     private double price;
-
-    private boolean quantityEnabled = true;
-
-    private int quantity;
 
     private String category;
 

@@ -29,6 +29,7 @@ fun StatusChip(status: OrderStatus) {
         OrderStatus.PENDING -> AppColors.WarningContainer
         OrderStatus.ACCEPTED,
         OrderStatus.PREPARING,
+        OrderStatus.PACKED,
         OrderStatus.READY_FOR_PICKUP -> MaterialTheme.colorScheme.secondaryContainer
     }
 
@@ -38,6 +39,7 @@ fun StatusChip(status: OrderStatus) {
         OrderStatus.PENDING -> AppColors.Warning
         OrderStatus.ACCEPTED,
         OrderStatus.PREPARING,
+        OrderStatus.PACKED,
         OrderStatus.READY_FOR_PICKUP -> MaterialTheme.colorScheme.secondary
     }
 
@@ -54,6 +56,7 @@ fun StatusChip(status: OrderStatus) {
         OrderStatus.PENDING -> "Pending Confirmation"
         OrderStatus.ACCEPTED -> "Order Accepted"
         OrderStatus.PREPARING -> "Food is Preparing"
+        OrderStatus.PACKED -> "Order Packed"
         OrderStatus.READY_FOR_PICKUP -> "Ready for Pickup"
     }
 

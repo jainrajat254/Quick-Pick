@@ -131,6 +131,7 @@ private fun OrderStatusChip(status: String) {
         "PENDING" -> MaterialTheme.colorScheme.errorContainer
         "ACCEPTED" -> MaterialTheme.colorScheme.secondaryContainer
         "PREPARING" -> MaterialTheme.colorScheme.tertiaryContainer
+        "PACKED" -> MaterialTheme.colorScheme.primaryContainer
         "READY_FOR_PICKUP", "READY" -> MaterialTheme.colorScheme.primaryContainer
         "COMPLETED" -> MaterialTheme.colorScheme.secondaryContainer
         else -> MaterialTheme.colorScheme.surfaceVariant
@@ -140,6 +141,7 @@ private fun OrderStatusChip(status: String) {
         "PENDING" -> MaterialTheme.colorScheme.onErrorContainer
         "ACCEPTED" -> MaterialTheme.colorScheme.onSecondaryContainer
         "PREPARING" -> MaterialTheme.colorScheme.onTertiaryContainer
+        "PACKED" -> MaterialTheme.colorScheme.onPrimaryContainer
         "READY_FOR_PICKUP", "READY" -> MaterialTheme.colorScheme.onPrimaryContainer
         "COMPLETED" -> MaterialTheme.colorScheme.onSecondaryContainer
         else -> MaterialTheme.colorScheme.onSurfaceVariant

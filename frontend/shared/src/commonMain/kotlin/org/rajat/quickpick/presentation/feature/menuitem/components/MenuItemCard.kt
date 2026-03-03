@@ -34,6 +34,8 @@ fun MenuItemCard(
     val addToCartState by cartViewModel.addToCartState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
+    var pendingCartAction by remember { mutableStateOf(false) }
+
     val quantity = remember(cartState, menuItem.id) {
         if (cartState is UiState.Success) {
             val cart = (cartState as UiState.Success).data
@@ -44,11 +46,14 @@ fun MenuItemCard(
     }
 
     LaunchedEffect(addToCartState) {
+        if (!pendingCartAction) return@LaunchedEffect
         when (val state = addToCartState) {
             is UiState.Success -> {
+                pendingCartAction = false
                 showToast("Added to cart")
             }
             is UiState.Error -> {
+                pendingCartAction = false
                 val raw = state.message
                 logger.e { "Add to cart error: $raw" }
                 showToast(ErrorUtils.sanitizeError(raw))
@@ -178,10 +183,9 @@ fun MenuItemCard(
                                 onClick = {
                                     coroutineScope.launch {
                                         if (quantity == 0) {
-                                            // Add to cart for the first time
+                                            pendingCartAction = true
                                             cartViewModel.addToCart(menuItem.id ?: "", 1)
                                         } else {
-                                            // Increase quantity
                                             cartViewModel.updateCartItem(menuItem.id ?: "", quantity + 1)
                                         }
                                     }

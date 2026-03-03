@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -17,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import co.touchlab.kermit.Logger
 import org.rajat.quickpick.domain.modal.menuitems.CreateMenuItemResponse
 import org.rajat.quickpick.domain.modal.search.GetVendorByIDResponse
 import org.rajat.quickpick.presentation.components.ErrorState
@@ -36,9 +36,6 @@ import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.toast.showToast
 import kotlin.math.roundToInt
 import org.rajat.quickpick.utils.ErrorUtils
-import kotlinx.coroutines.delay
-
-private val vendorScreenLogger = Logger.withTag("VendorScreen")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,23 +48,34 @@ fun VendorScreen(
     onBackClick: () -> Unit = { navController.navigateUp() }
 ) {
     val vendorDetailsState by vendorViewModel.vendorsDetailState.collectAsState()
-    val ratingState by reviewViewModel.vendorRatingState.collectAsState()
+    val ratingStateFlow = reviewViewModel.getVendorRatingState(vendorId)
+    val ratingState by ratingStateFlow.collectAsState()
     val vendorMenuState by menuItemViewModel.vendorMenuState.collectAsState()
     val reviewsState by reviewViewModel.vendorReviewsState.collectAsState()
+    val isRefreshing by vendorViewModel.isRefreshing.collectAsState()
 
     LaunchedEffect(vendorId) {
-        vendorScreenLogger.d { "VendorScreen Launched for vendorId=$vendorId" }
-        vendorViewModel.getVendorsDetails(vendorId)
-        reviewViewModel.getVendorRating(vendorId)
-        reviewViewModel.getVendorReviewsPaginated(vendorId, page = 0, size = 50)
-        menuItemViewModel.getVendorMenu(vendorId)
+        val startTime = kotlin.time.Clock.System.now().toEpochMilliseconds()
+
+        if (!vendorViewModel.isDataLoadedFor(vendorId)) {
+            vendorViewModel.getVendorsDetails(vendorId)
+        }
+
+        reviewViewModel.ensureVendorRatingLoaded(vendorId)
+
+        if (!reviewViewModel.isVendorReviewsDataLoadedFor(vendorId)) {
+            reviewViewModel.getVendorReviewsPaginated(vendorId, page = 0, size = 50)
+        }
+
+        if (!menuItemViewModel.isVendorMenuDataLoadedFor(vendorId)) {
+            menuItemViewModel.getVendorMenu(vendorId)
+        }
     }
 
     LaunchedEffect(vendorDetailsState) {
         when (vendorDetailsState) {
             is UiState.Error -> {
                 val raw = (vendorDetailsState as UiState.Error).message
-                vendorScreenLogger.e { "Vendor details load error: $raw" }
                 showToast(ErrorUtils.sanitizeError(raw))
             }
             else -> Unit
@@ -75,11 +83,16 @@ fun VendorScreen(
     }
 
     LaunchedEffect(ratingState) {
-        vendorScreenLogger.d { "VendorScreen ratingState changed: $ratingState" }
     }
 
     LaunchedEffect(reviewsState) {
-        vendorScreenLogger.d { "VendorScreen reviewsState changed: ${reviewsState::class.simpleName}" }
+    }
+
+    fun refreshAll() {
+        vendorViewModel.getVendorsDetails(vendorId, forceRefresh = true)
+        reviewViewModel.refreshVendorRating(vendorId)
+        reviewViewModel.getVendorReviewsPaginated(vendorId, page = 0, size = 50, forceRefresh = true)
+        menuItemViewModel.getVendorMenu(vendorId, forceRefresh = true)
     }
 
     Scaffold(
@@ -109,16 +122,22 @@ fun VendorScreen(
             )
         }
     ) { paddingValues ->
-        when (vendorDetailsState) {
-            is UiState.Loading -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .navigationBarsPadding(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { refreshAll() },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (vendorDetailsState) {
+                is UiState.Loading -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        item {
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -170,7 +189,6 @@ fun VendorScreen(
 
             is UiState.Error -> {
                 val raw = (vendorDetailsState as UiState.Error).message
-                vendorScreenLogger.e { "Vendor details load error (UI state): $raw" }
                 ErrorState(
                     message = ErrorUtils.sanitizeError(raw),
                     modifier = Modifier
@@ -196,19 +214,13 @@ fun VendorScreen(
                 val vendor = (vendorDetailsState as UiState.Success<GetVendorByIDResponse>).data
                 val categories = vendor.foodCategories?.filterNotNull() ?: emptyList()
 
-                LaunchedEffect(vendor.id) {
-                    if (categories.isNotEmpty()) {
-                        menuItemViewModel.getVendorMenuByCategories(vendorId, categories)
-                    }
-                }
-
                 var selectedTab by remember { mutableStateOf(0) }
                 val tabs = listOf("All", "Categories")
 
                 var vendorMenuFallbackAttempted by remember { mutableStateOf(false) }
 
                 LaunchedEffect(selectedTab) {
-                    if (selectedTab == 0) {
+                    if (selectedTab == 0 && !menuItemViewModel.isVendorMenuDataLoadedFor(vendorId)) {
                         menuItemViewModel.getVendorMenu(vendorId)
                     }
                 }
@@ -228,29 +240,21 @@ fun VendorScreen(
                                 menuItemViewModel.getVendorMenuByCategories(vendorId, categories)
                             }
                         }
+                        is UiState.Loading -> {
+                        }
                         else -> Unit
                     }
                 }
 
                 var showEmptyMessage by remember { mutableStateOf(false) }
 
-                LaunchedEffect(key1 = vendorMenuState) {
+                // Show "no items" only after the fallback fetch has been attempted,
+                // so we never wait 60 seconds on an artificially delayed spinner.
+                LaunchedEffect(key1 = vendorMenuState, vendorMenuFallbackAttempted) {
                     if (vendorMenuState is UiState.Success) {
                         val items = (vendorMenuState as UiState.Success<List<CreateMenuItemResponse>>).data
-                        if (items.isEmpty()) {
-                            showEmptyMessage = false
-                            try {
-                                delay(60_000L)
-                            } catch (_: Exception) {
-                            }
-
-                            if (vendorMenuState is UiState.Success) {
-                                val currentItems = (vendorMenuState as UiState.Success<List<CreateMenuItemResponse>>).data
-                                if (currentItems.isEmpty()) showEmptyMessage = true
-                            }
-                        } else {
-                            showEmptyMessage = false
-                        }
+                        // Only reveal empty state once fallback is done (or there are no categories to fall back to)
+                        showEmptyMessage = items.isEmpty() && vendorMenuFallbackAttempted
                     } else {
                         showEmptyMessage = false
                     }
@@ -259,7 +263,6 @@ fun VendorScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues)
                         .navigationBarsPadding(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
@@ -299,7 +302,7 @@ fun VendorScreen(
                         when (vendorMenuState) {
                             is UiState.Loading, UiState.Empty -> {
                                 item {
-                                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                         CircularProgressIndicator(
                                             modifier = Modifier.size(24.dp),
                                             color = MaterialTheme.colorScheme.primary
@@ -385,8 +388,6 @@ fun VendorScreen(
                                                imageUrl = menuResp.imageUrl,
                                                name = menuResp.name,
                                                price = menuResp.price ?: 0.0,
-                                               quantity = menuResp.quantity,
-                                               quantityEnabled = menuResp.quantityEnabled,
                                                updatedAt = menuResp.updatedAt,
                                                isVeg = menuResp.isVeg,
                                                vendorId = menuResp.vendorId
@@ -487,21 +488,21 @@ fun ReviewsScreen(
     vendorId: String,
     onBackClick: () -> Unit = { navController.navigateUp() }
 ) {
-    val ratingState by reviewViewModel.vendorRatingState.collectAsState()
+    val ratingStateFlow = reviewViewModel.getVendorRatingState(vendorId)
+    val ratingState by ratingStateFlow.collectAsState()
     val reviewsState by reviewViewModel.vendorReviewsState.collectAsState()
 
     LaunchedEffect(vendorId) {
-        vendorScreenLogger.d { "ReviewsScreen Launched for vendorId=$vendorId" }
-        reviewViewModel.getVendorRating(vendorId)
-        reviewViewModel.getVendorReviewsPaginated(vendorId, page = 0, size = 50)
+        reviewViewModel.ensureVendorRatingLoaded(vendorId)
+        if (!reviewViewModel.isVendorReviewsDataLoadedFor(vendorId)) {
+            reviewViewModel.getVendorReviewsPaginated(vendorId, page = 0, size = 50)
+        }
     }
 
     LaunchedEffect(ratingState) {
-        vendorScreenLogger.d { "ReviewsScreen ratingState changed: $ratingState" }
     }
 
     LaunchedEffect(reviewsState) {
-        vendorScreenLogger.d { "ReviewsScreen reviewsState changed: ${reviewsState::class.simpleName}" }
     }
 
     Scaffold(
@@ -562,6 +563,7 @@ fun ReviewsScreen(
                 }
                 UiState.Empty -> {}
             }
+        }
         }
     }
 }

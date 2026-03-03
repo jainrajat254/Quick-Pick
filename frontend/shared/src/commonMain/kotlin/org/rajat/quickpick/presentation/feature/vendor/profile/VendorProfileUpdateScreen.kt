@@ -45,7 +45,9 @@ fun VendorProfileUpdateScreen(
     var currentProfile by remember { mutableStateOf<GetVendorProfileResponse?>(null) }
 
     LaunchedEffect(Unit) {
-        profileViewModel.getVendorProfile()
+        if (vendorProfileState is UiState.Empty) {
+            profileViewModel.getVendorProfile()
+        }
     }
 
     LaunchedEffect(vendorProfileState) {

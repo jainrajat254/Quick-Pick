@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +28,7 @@ import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
 import org.rajat.quickpick.utils.ErrorUtils
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalMaterial3Api::class)
 @Composable
 fun VendorMenuScreen(
     navController: NavController,
@@ -44,6 +45,7 @@ fun VendorMenuScreen(
     val searchedMenuItemsState by menuItemViewModel.searchedMenuItemsState.collectAsState()
     val toggleAvailabilityState by menuItemViewModel.toggleAvailabilityState.collectAsState()
     val deleteState by menuItemViewModel.deleteMenuItemState.collectAsState()
+    val isRefreshing by menuItemViewModel.isRefreshing.collectAsState()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var pendingDeleteId by remember { mutableStateOf<String?>(null) }
@@ -59,14 +61,18 @@ fun VendorMenuScreen(
         }
     }
 
-    LaunchedEffect(Unit) { menuItemViewModel.getMyMenuItems(page = 0, size = 100) }
+    LaunchedEffect(Unit) {
+        if (myMenuItemsState is UiState.Empty) {
+            menuItemViewModel.getMyMenuItems(page = 0, size = 100)
+        }
+    }
 
     LaunchedEffect(toggleAvailabilityState) {
         when (toggleAvailabilityState) {
             is UiState.Success -> {
                 showToast("Availability updated successfully")
                 menuItemViewModel.resetToggleAvailabilityState()
-                menuItemViewModel.getMyMenuItems(page = 0, size = 100)
+                menuItemViewModel.getMyMenuItems(page = 0, size = 100, forceRefresh = true)
             }
             is UiState.Error -> {
                 val raw = (toggleAvailabilityState as UiState.Error).message
@@ -82,7 +88,7 @@ fun VendorMenuScreen(
             is UiState.Success -> {
                 showToast("Item deleted")
                 menuItemViewModel.resetDeleteMenuItemState()
-                menuItemViewModel.getMyMenuItems(page = 0, size = 100)
+                menuItemViewModel.getMyMenuItems(page = 0, size = 100, forceRefresh = true)
                 isDeleting = false
             }
             is UiState.Error -> {
@@ -106,11 +112,16 @@ fun VendorMenuScreen(
         showDeleteDialog = false
     }
 
-    Column(
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { menuItemViewModel.getMyMenuItems(page = 0, size = 100, forceRefresh = true) },
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
     ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
             // Search Bar
 //            OutlinedTextField(
 //                value = searchQuery,
@@ -401,22 +412,26 @@ fun VendorMenuScreen(
                 }
             }
         }
-
-        if (showDeleteDialog) {
-            AlertDialog(
-                onDismissRequest = { showDeleteDialog = false },
-                title = { Text("Delete Menu Item") },
-                text = { Text("Are you sure you want to delete this item? This action cannot be undone.") },
-                confirmButton = {
-                    TextButton(onClick = { performDelete() }, enabled = !isDeleting) {
-                        if (isDeleting) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp))
-                        } else {
-                            Text("Delete", color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                },
-                dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") } }
-            )
-        }
     }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Menu Item") },
+            text = { Text("Are you sure you want to delete this item? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = { performDelete() }, enabled = !isDeleting) {
+                    if (isDeleting) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                    } else {
+                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
+}

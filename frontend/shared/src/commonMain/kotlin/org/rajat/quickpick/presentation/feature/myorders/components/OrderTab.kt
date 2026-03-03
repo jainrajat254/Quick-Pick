@@ -7,6 +7,7 @@ sealed class OrderTab(val title: String, val statuses: List<OrderStatus>) {
         OrderStatus.PENDING,
         OrderStatus.ACCEPTED,
         OrderStatus.PREPARING,
+        OrderStatus.PACKED,
         OrderStatus.READY_FOR_PICKUP
     ))
     object Completed : OrderTab("Completed", listOf(OrderStatus.COMPLETED))

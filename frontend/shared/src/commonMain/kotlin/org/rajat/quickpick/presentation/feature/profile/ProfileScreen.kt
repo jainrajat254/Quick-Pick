@@ -50,8 +50,10 @@ import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
 import org.rajat.quickpick.utils.tokens.PlatformScheduler
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavHostController,
@@ -62,6 +64,7 @@ fun ProfileScreen(
 ) {
     val studentProfileState by profileViewModel.studentProfileState.collectAsState()
     val logoutState by authViewModel.logoutState.collectAsState()
+    val isRefreshing by profileViewModel.isRefreshing.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
     var userName by remember { mutableStateOf("") }
@@ -81,9 +84,10 @@ fun ProfileScreen(
         }
     }
 
-    // Fetch profile on first composition
     LaunchedEffect(Unit) {
-        profileViewModel.getStudentProfile()
+        if (studentProfileState is UiState.Empty) {
+            profileViewModel.getStudentProfile()
+        }
     }
 
     LaunchedEffect(studentProfileState) {
@@ -124,30 +128,36 @@ fun ProfileScreen(
         }
     }
 
-    Column(
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { profileViewModel.getStudentProfile(forceRefresh = true) },
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
-        when (studentProfileState) {
-            is UiState.Loading -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary
-                    )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+        ) {
+            when (studentProfileState) {
+                is UiState.Loading -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
-            }
-            else -> {
-                ProfileHeader(
-                    userName = userName,
-                    userEmail = userEmail,
-                    profileUrl = profileUrl
-                )
+                else -> {
+                    ProfileHeader(
+                        userName = userName,
+                        userEmail = userEmail,
+                        profileUrl = profileUrl
+                    )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -212,6 +222,7 @@ fun ProfileScreen(
                     }
                 }
             }
+        }
         }
     }
 

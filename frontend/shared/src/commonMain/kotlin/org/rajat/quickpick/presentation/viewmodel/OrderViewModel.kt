@@ -81,6 +81,12 @@ class OrderViewModel(
     private val _initialVendorOrdersTab = MutableStateFlow<Int?>(null)
     val initialVendorOrdersTab: StateFlow<Int?> = _initialVendorOrdersTab
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
+    private val _currentOrderId = MutableStateFlow<String?>(null)
+    val currentOrderId: StateFlow<String?> = _currentOrderId
+
     fun setInitialVendorOrdersTab(tab: Int) {
         _initialVendorOrdersTab.value = tab
     }
@@ -92,10 +98,19 @@ class OrderViewModel(
     private var cachedMyOrders: GetMyOrdersResponse? = null
     private var cachedOrderStats: GetMyOrderStatsResponse? = null
     private var cachedOrderById: MutableMap<String, GetOrderByIdResponse> = mutableMapOf()
+    private var cachedVendorOrderStats: GetMyOrderStatsResponse? = null
 
     private var myOrdersCacheTime: Long = 0
     private var orderStatsCacheTime: Long = 0
+    private var vendorOrderStatsCacheTime: Long = 0
     private val cacheValidityDuration = 60_000L
+
+    private val orderLogger = Logger.withTag("OrderViewModel_Cache")
+
+    init {
+        orderLogger.d { "OrderViewModel instance created" }
+        getMyOrders(forceRefresh = false)
+    }
 
     private fun <T> executeWithUiState(
         stateFlow: MutableStateFlow<UiState<T>>,
@@ -134,32 +149,79 @@ class OrderViewModel(
 
     fun getOrderById(orderId: String, forceRefresh: Boolean = false) {
         if (!forceRefresh && cachedOrderById.containsKey(orderId)) {
+            if (_orderByIdState.value is UiState.Success && _currentOrderId.value == orderId) {
+                return
+            }
+            _currentOrderId.value = orderId
             _orderByIdState.value = UiState.Success(cachedOrderById[orderId]!!)
             return
         }
 
-        executeWithUiState(_orderByIdState) {
+        viewModelScope.launch {
+            _orderByIdState.value = UiState.Loading
             val result = orderRepository.getOrderById(orderId)
-            result.onSuccess { order ->
-                cachedOrderById[orderId] = order
-            }
-            result
+            result.fold(
+                onSuccess = { order ->
+                    cachedOrderById[orderId] = order
+                    _currentOrderId.value = orderId
+                    _orderByIdState.value = UiState.Success(order)
+                },
+                onFailure = { error ->
+                    _orderByIdState.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            )
         }
     }
 
+    fun isOrderDataLoadedFor(orderId: String): Boolean {
+        return _orderByIdState.value is UiState.Success && _currentOrderId.value == orderId
+    }
+
+    private var isMyOrdersLoading = false
+
     fun getMyOrders(forceRefresh: Boolean = false) {
+        orderLogger.d { "getMyOrders called - forceRefresh=$forceRefresh, isLoading=$isMyOrdersLoading, cachedData=${cachedMyOrders != null}, currentState=${_myOrdersState.value::class.simpleName}" }
+
+        if (isMyOrdersLoading && !forceRefresh) {
+            orderLogger.d { "⏳ REQUEST IN FLIGHT - Skipping duplicate call" }
+            return
+        }
+
+        if (!forceRefresh && _myOrdersState.value is UiState.Success && cachedMyOrders != null && isCacheValid(myOrdersCacheTime)) {
+            orderLogger.d { "✅ CACHE HIT - State already Success, returning without API call" }
+            return
+        }
+
         if (!forceRefresh && cachedMyOrders != null && isCacheValid(myOrdersCacheTime)) {
+            orderLogger.d { "✅ CACHE HIT - Setting state to cached Success" }
             _myOrdersState.value = UiState.Success(cachedMyOrders!!)
             return
         }
 
-        executeWithUiState(_myOrdersState) {
-            val result = orderRepository.getMyOrders()
-            result.onSuccess { orders ->
-                cachedMyOrders = orders
-                myOrdersCacheTime = Clock.System.now().toEpochMilliseconds()
+        orderLogger.d { "❌ CACHE MISS - Making API call" }
+        isMyOrdersLoading = true
+        viewModelScope.launch {
+            if (forceRefresh) {
+                _isRefreshing.value = true
+            } else {
+                _myOrdersState.value = UiState.Loading
             }
-            result
+
+            val result = orderRepository.getMyOrders()
+            result.fold(
+                onSuccess = { orders ->
+                    cachedMyOrders = orders
+                    myOrdersCacheTime = Clock.System.now().toEpochMilliseconds()
+                    _myOrdersState.value = UiState.Success(orders)
+                    orderLogger.d { "API call successful, data cached" }
+                },
+                onFailure = { error ->
+                    _myOrdersState.value = UiState.Error(error.message ?: "Unknown error")
+                    orderLogger.e { "API call failed: ${error.message}" }
+                }
+            )
+            _isRefreshing.value = false
+            isMyOrdersLoading = false
         }
     }
 
@@ -224,15 +286,12 @@ class OrderViewModel(
         }
     }
 
-    /**
-     * Fetch ACCEPTED, PREPARING and READY_FOR_PICKUP orders sequentially and merge them.
-     * Exposes a UiState with the merged list to avoid UI-level sequential-fetch complexity.
-     */
+   
     fun getCombinedAcceptedOrders() {
         viewModelScope.launch {
             _vendorOrdersAcceptedCombinedState.value = UiState.Loading
             try {
-                val statuses = listOf("ACCEPTED", "PREPARING", "READY_FOR_PICKUP")
+                val statuses = listOf("ACCEPTED", "PREPARING", "PACKED", "READY_FOR_PICKUP")
                 val combined = mutableListOf<GetOrderByIdResponse>()
                 var anySuccess = false
                 for (s in statuses) {
@@ -245,7 +304,6 @@ class OrderViewModel(
                         }
                     }
                 }
-                // Always succeed with a (possibly empty) list — UI can decide fallback behavior
                 _vendorOrdersAcceptedCombinedState.value = UiState.Success(combined.distinctBy { it.id })
             } catch (e: Exception) {
                 _vendorOrdersAcceptedCombinedState.value = UiState.Error(e.message ?: "Error fetching combined orders")
@@ -259,9 +317,34 @@ class OrderViewModel(
         }
     }
 
-    fun getVendorOrderStats() {
-        executeWithUiState(_vendorOrderStatsState) {
-            orderRepository.getVendorOrderStats()
+    fun getVendorOrderStats(forceRefresh: Boolean = false) {
+        if (!forceRefresh && cachedVendorOrderStats != null && isCacheValid(vendorOrderStatsCacheTime)) {
+            if (_vendorOrderStatsState.value is UiState.Success) {
+                return
+            }
+            _vendorOrderStatsState.value = UiState.Success(cachedVendorOrderStats!!)
+            return
+        }
+
+        viewModelScope.launch {
+            if (forceRefresh) {
+                _isRefreshing.value = true
+            } else {
+                _vendorOrderStatsState.value = UiState.Loading
+            }
+
+            val result = orderRepository.getVendorOrderStats()
+            result.fold(
+                onSuccess = { stats ->
+                    cachedVendorOrderStats = stats
+                    vendorOrderStatsCacheTime = Clock.System.now().toEpochMilliseconds()
+                    _vendorOrderStatsState.value = UiState.Success(stats)
+                },
+                onFailure = { error ->
+                    _vendorOrderStatsState.value = UiState.Error(error.message ?: "Unknown error")
+                }
+            )
+            _isRefreshing.value = false
         }
     }
 
@@ -316,20 +399,29 @@ class OrderViewModel(
     fun invalidateOrderCaches() {
         cachedMyOrders = null
         cachedOrderStats = null
+        cachedVendorOrderStats = null
         myOrdersCacheTime = 0
         orderStatsCacheTime = 0
+        vendorOrderStatsCacheTime = 0
     }
 
     fun invalidateOrderByIdCache(orderId: String) {
         cachedOrderById.remove(orderId)
     }
 
+    fun invalidateVendorOrderStatsCache() {
+        cachedVendorOrderStats = null
+        vendorOrderStatsCacheTime = 0
+    }
+
     fun clearAllCaches() {
         cachedMyOrders = null
         cachedOrderStats = null
+        cachedVendorOrderStats = null
         cachedOrderById.clear()
         myOrdersCacheTime = 0
         orderStatsCacheTime = 0
+        vendorOrderStatsCacheTime = 0
     }
 
     fun resetCreateOrderState() {

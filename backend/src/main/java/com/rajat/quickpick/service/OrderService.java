@@ -71,10 +71,6 @@ public class OrderService {
                 throw new BadRequestException("Menu item '" + menuItem.getName() + "' is not available");
             }
 
-            if (menuItem.getQuantity() < itemDto.getQuantity()) {
-                throw new BadRequestException("Insufficient quantity for '" + menuItem.getName() + "'. Available: " + menuItem.getQuantity());
-            }
-
             OrderItem orderItem = new OrderItem();
             orderItem.setMenuItemId(menuItem.getId());
             orderItem.setMenuItemName(menuItem.getName());
@@ -84,13 +80,6 @@ public class OrderService {
 
             orderItems.add(orderItem);
             totalAmount += orderItem.getTotalPrice();
-
-            menuItem.setQuantity(menuItem.getQuantity() - itemDto.getQuantity());
-            if (menuItem.getQuantity() == 0) {
-                menuItem.setIsAvailable(false);
-            }
-            menuItem.setUpdatedAt(LocalDateTime.now());
-            menuItemRepository.save(menuItem);
         }
 
         Order order = new Order();
@@ -364,8 +353,13 @@ public class OrderService {
                 }
                 break;
             case PREPARING:
-                if (newStatus != OrderStatus.READY_FOR_PICKUP) {
+                if (newStatus != OrderStatus.PACKED) {
                     throw new BadRequestException("Invalid status transition from PREPARING to " + newStatus);
+                }
+                break;
+            case PACKED:
+                if (newStatus != OrderStatus.READY_FOR_PICKUP) {
+                    throw new BadRequestException("Invalid status transition from PACKED to " + newStatus);
                 }
                 break;
             case READY_FOR_PICKUP:
@@ -386,7 +380,6 @@ public class OrderService {
         for (OrderItem item : orderItems) {
             MenuItem menuItem = menuItemRepository.findById(item.getMenuItemId()).orElse(null);
             if (menuItem != null) {
-                menuItem.setQuantity(menuItem.getQuantity() + item.getQuantity());
                 menuItem.setIsAvailable(true);
                 menuItem.setUpdatedAt(LocalDateTime.now());
                 menuItemRepository.save(menuItem);

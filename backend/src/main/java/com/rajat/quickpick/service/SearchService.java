@@ -218,7 +218,6 @@ public class SearchService {
         dto.setName(menuItem.getName());
         dto.setDescription(menuItem.getDescription());
         dto.setPrice(menuItem.getPrice());
-        dto.setQuantity(menuItem.getQuantity());
         dto.setCategory(menuItem.getCategory());
         dto.setVeg(menuItem.isVeg());
         dto.setImageUrl(menuItem.getImageUrl() != null ? menuItem.getImageUrl() : "");

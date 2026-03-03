@@ -124,7 +124,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/margherita.jpg",
             vendorId = "v1",
-            quantity = 50,
             createdAt = "2025-01-15T10:00:00Z",
             updatedAt = "2025-10-20T15:30:00Z"
         ),
@@ -138,7 +137,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/pepperoni.jpg",
             vendorId = "v1",
-            quantity = 30,
             createdAt = "2025-01-15T10:00:00Z",
             updatedAt = "2025-10-20T15:30:00Z"
         ),
@@ -152,7 +150,6 @@ object DummyData {
             available = true,
             imageUrl = null,
             vendorId = "v1",
-            quantity = 40,
             createdAt = "2025-01-15T10:00:00Z",
             updatedAt = "2025-10-20T15:30:00Z"
         ),
@@ -166,7 +163,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/paneer-tikka-pizza.jpg",
             vendorId = "v1",
-            quantity = 25,
             createdAt = "2025-01-15T10:00:00Z",
             updatedAt = "2025-10-20T15:30:00Z"
         ),
@@ -180,7 +176,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/cheese-pasta.jpg",
             vendorId = "v1",
-            quantity = 35,
             createdAt = "2025-01-15T10:00:00Z",
             updatedAt = "2025-10-20T15:30:00Z"
         ),
@@ -194,7 +189,6 @@ object DummyData {
             available = true,
             imageUrl = null,
             vendorId = "v1",
-            quantity = 35,
             createdAt = "2025-01-15T10:00:00Z",
             updatedAt = "2025-10-20T15:30:00Z"
         ),
@@ -208,7 +202,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/garlic-bread.jpg",
             vendorId = "v1",
-            quantity = 60,
             createdAt = "2025-01-15T10:00:00Z",
             updatedAt = "2025-10-20T15:30:00Z"
         ),
@@ -222,7 +215,6 @@ object DummyData {
             available = true,
             imageUrl = null,
             vendorId = "v1",
-            quantity = 40,
             createdAt = "2025-01-15T10:00:00Z",
             updatedAt = "2025-10-20T15:30:00Z"
         )
@@ -240,7 +232,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/isVeg-burger.jpg",
             vendorId = "v3",
-            quantity = 50,
             createdAt = "2025-02-01T10:00:00Z",
             updatedAt = "2025-10-21T12:00:00Z"
         ),
@@ -254,7 +245,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/chicken-burger.jpg",
             vendorId = "v3",
-            quantity = 40,
             createdAt = "2025-02-01T10:00:00Z",
             updatedAt = "2025-10-21T12:00:00Z"
         ),
@@ -268,7 +258,6 @@ object DummyData {
             available = true,
             imageUrl = null,
             vendorId = "v3",
-            quantity = 35,
             createdAt = "2025-02-01T10:00:00Z",
             updatedAt = "2025-10-21T12:00:00Z"
         ),
@@ -282,7 +271,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/double-burger.jpg",
             vendorId = "v3",
-            quantity = 25,
             createdAt = "2025-02-01T10:00:00Z",
             updatedAt = "2025-10-21T12:00:00Z"
         ),
@@ -296,7 +284,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/fries.jpg",
             vendorId = "v3",
-            quantity = 100,
             createdAt = "2025-02-01T10:00:00Z",
             updatedAt = "2025-10-21T12:00:00Z"
         ),
@@ -310,7 +297,6 @@ object DummyData {
             available = true,
             imageUrl = null,
             vendorId = "v3",
-            quantity = 80,
             createdAt = "2025-02-01T10:00:00Z",
             updatedAt = "2025-10-21T12:00:00Z"
         ),
@@ -324,7 +310,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/chocolate-shake.jpg",
             vendorId = "v3",
-            quantity = 50,
             createdAt = "2025-02-01T10:00:00Z",
             updatedAt = "2025-10-21T12:00:00Z"
         ),
@@ -338,7 +323,6 @@ object DummyData {
             available = true,
             imageUrl = null,
             vendorId = "v3",
-            quantity = 40,
             createdAt = "2025-02-01T10:00:00Z",
             updatedAt = "2025-10-21T12:00:00Z"
         ),
@@ -352,7 +336,6 @@ object DummyData {
             available = false,
             imageUrl = "https://example.com/oreo-shake.jpg",
             vendorId = "v3",
-            quantity = 0,
             createdAt = "2025-02-01T10:00:00Z",
             updatedAt = "2025-10-21T12:00:00Z"
         )
@@ -370,7 +353,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/plain-dosa.jpg",
             vendorId = "v4",
-            quantity = 80,
             createdAt = "2025-02-05T09:00:00Z",
             updatedAt = "2025-10-22T08:00:00Z"
         ),
@@ -384,7 +366,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/masala-dosa.jpg",
             vendorId = "v4",
-            quantity = 70,
             createdAt = "2025-02-05T09:00:00Z",
             updatedAt = "2025-10-22T08:00:00Z"
         ),
@@ -398,7 +379,6 @@ object DummyData {
             available = true,
             imageUrl = null,
             vendorId = "v4",
-            quantity = 50,
             createdAt = "2025-02-05T09:00:00Z",
             updatedAt = "2025-10-22T08:00:00Z"
         ),
@@ -412,7 +392,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/idli.jpg",
             vendorId = "v4",
-            quantity = 100,
             createdAt = "2025-02-05T09:00:00Z",
             updatedAt = "2025-10-22T08:00:00Z"
         ),
@@ -426,7 +405,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/vada.jpg",
             vendorId = "v4",
-            quantity = 80,
             createdAt = "2025-02-05T09:00:00Z",
             updatedAt = "2025-10-22T08:00:00Z"
         ),
@@ -440,7 +418,6 @@ object DummyData {
             available = true,
             imageUrl = null,
             vendorId = "v4",
-            quantity = 40,
             createdAt = "2025-02-05T09:00:00Z",
             updatedAt = "2025-10-22T08:00:00Z"
         ),
@@ -454,7 +431,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/uttapam.jpg",
             vendorId = "v4",
-            quantity = 35,
             createdAt = "2025-02-05T09:00:00Z",
             updatedAt = "2025-10-22T08:00:00Z"
         )
@@ -472,7 +448,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/isVeg-momos.jpg",
             vendorId = "v6",
-            quantity = 100,
             createdAt = "2025-03-01T10:00:00Z",
             updatedAt = "2025-10-21T18:00:00Z"
         ),
@@ -486,7 +461,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/chicken-momos.jpg",
             vendorId = "v6",
-            quantity = 80,
             createdAt = "2025-03-01T10:00:00Z",
             updatedAt = "2025-10-21T18:00:00Z"
         ),
@@ -500,7 +474,6 @@ object DummyData {
             available = true,
             imageUrl = null,
             vendorId = "v6",
-            quantity = 60,
             createdAt = "2025-03-01T10:00:00Z",
             updatedAt = "2025-10-21T18:00:00Z"
         ),
@@ -514,7 +487,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/isVeg-noodles.jpg",
             vendorId = "v6",
-            quantity = 50,
             createdAt = "2025-03-01T10:00:00Z",
             updatedAt = "2025-10-21T18:00:00Z"
         ),
@@ -528,7 +500,6 @@ object DummyData {
             available = true,
             imageUrl = null,
             vendorId = "v6",
-            quantity = 40,
             createdAt = "2025-03-01T10:00:00Z",
             updatedAt = "2025-10-21T18:00:00Z"
         ),
@@ -542,7 +513,6 @@ object DummyData {
             available = true,
             imageUrl = "https://example.com/manchurian.jpg",
             vendorId = "v6",
-            quantity = 45,
             createdAt = "2025-03-01T10:00:00Z",
             updatedAt = "2025-10-21T18:00:00Z"
         )

@@ -14,8 +14,6 @@ data class MenuItem(
     val imageUrl: String? = null,
     val name: String? = null,
     val price: Double? = null,
-    val quantity: Int? = null,
-    val quantityEnabled: Boolean? = null,
     val updatedAt: String? = null,
     @SerialName("isVeg")
     @JsonNames("veg")

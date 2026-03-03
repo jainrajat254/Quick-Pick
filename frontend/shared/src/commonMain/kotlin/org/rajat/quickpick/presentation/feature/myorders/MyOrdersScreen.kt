@@ -6,17 +6,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,28 +24,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import co.touchlab.kermit.Logger
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import org.koin.compose.koinInject
 import org.rajat.quickpick.presentation.feature.myorders.components.OrderList
 import org.rajat.quickpick.presentation.feature.myorders.components.OrderTab
 import org.rajat.quickpick.presentation.feature.myorders.components.StyledTabRow
+import org.rajat.quickpick.presentation.feature.payment.getPlatformActivityForPayment
+import org.rajat.quickpick.presentation.feature.payment.openRazorpayCheckout
 import org.rajat.quickpick.presentation.navigation.AppScreenUser
 import org.rajat.quickpick.presentation.viewmodel.CartViewModel
 import org.rajat.quickpick.presentation.viewmodel.OrderViewModel
 import org.rajat.quickpick.utils.BackHandler
+import org.rajat.quickpick.utils.ErrorUtils
 import org.rajat.quickpick.utils.UiState
 import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
-import co.touchlab.kermit.Logger
-import org.rajat.quickpick.presentation.feature.payment.openRazorpayCheckout
-import org.rajat.quickpick.presentation.feature.payment.getPlatformActivityForPayment
-import org.rajat.quickpick.utils.ErrorUtils
 
 private val razorLogger = Logger.withTag("RAZORPAYDEBUG")
 private val logger = Logger.withTag("MyOrdersScreen")
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MyOrderScreen(
     navController: NavHostController,
@@ -65,6 +60,7 @@ fun MyOrderScreen(
     var backPressedTime by remember { mutableStateOf(0L) }
 
     val myOrdersState by orderViewModel.myOrdersState.collectAsState()
+    val isRefreshing by orderViewModel.isRefreshing.collectAsState()
 
     BackHandler(enabled = true) {
         val currentTime = Clock.System.now().toEpochMilliseconds()
@@ -74,10 +70,6 @@ fun MyOrderScreen(
             backPressedTime = currentTime
             showToast("Press back again to exit")
         }
-    }
-
-    LaunchedEffect(Unit) {
-        orderViewModel.getMyOrders()
     }
 
     LaunchedEffect(myOrdersState) {
@@ -100,7 +92,12 @@ fun MyOrderScreen(
                     razorLogger.d { "MyOrdersScreen: calling openRazorpayCheckout with activity and order=${resp.transactionId}" }
                     try {
                         val amountInPaise = resp.amount?.times(100)?.toLong()
-                        openRazorpayCheckout(platformActivity, resp.razorpayKeyId, resp.transactionId, amountInPaise)
+                        openRazorpayCheckout(
+                            platformActivity,
+                            resp.razorpayKeyId,
+                            resp.transactionId,
+                            amountInPaise
+                        )
                         razorLogger.d { "MyOrdersScreen: openRazorpayCheckout invoked" }
                     } catch (e: Exception) {
                         razorLogger.d { "MyOrdersScreen: openRazorpayCheckout exception: ${e.message}" }
@@ -114,8 +111,15 @@ fun MyOrderScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        if (myOrdersState is UiState.Empty) {
+            orderViewModel.getMyOrders()
+        }
+    }
+
     val allOrders = when (myOrdersState) {
-        is UiState.Success -> (myOrdersState as UiState.Success).data.orders?.filterNotNull() ?: emptyList()
+        is UiState.Success -> (myOrdersState as UiState.Success).data.orders?.filterNotNull()
+            ?: emptyList()
         else -> emptyList()
     }
 
@@ -131,149 +135,156 @@ fun MyOrderScreen(
         it.orderStatus == "CANCELLED"
     }
 
-    Column(
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { orderViewModel.getMyOrders(forceRefresh = true) },
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        StyledTabRow(
-            tabs = tabs.map { it.title },
-            selectedTabIndex = selectedTabIndex,
-            onTabSelected = { selectedTabIndex = it }
-        )
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 16.dp),
-            contentAlignment = Alignment.TopCenter
+                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            when (val state = myOrdersState) {
-                is UiState.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.padding(top = 32.dp),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-                is UiState.Success -> {
-                    val currentOrders = when (tabs[selectedTabIndex]) {
-                        is OrderTab.Active -> activeOrders
-                        is OrderTab.Completed -> completedOrders
-                        is OrderTab.Cancelled -> cancelledOrders
+            StyledTabRow(
+                tabs = tabs.map { it.title },
+                selectedTabIndex = selectedTabIndex,
+                onTabSelected = { selectedTabIndex = it }
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 16.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                when (val state = myOrdersState) {
+                    is UiState.Loading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(top = 32.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
+                    is UiState.Success -> {
+                        val currentOrders = when (tabs[selectedTabIndex]) {
+                            is OrderTab.Active -> activeOrders
+                            is OrderTab.Completed -> completedOrders
+                            is OrderTab.Cancelled -> cancelledOrders
+                        }
 
-                    OrderList(
-                         orders = currentOrders,
-                         tabName = tabs[selectedTabIndex].title,
-                        onOrderCancel = {
-                            razorLogger.d { "MyOrdersScreen: onOrderCancel clicked for order=$it" }
-                            navController.navigate(
-                                AppScreenUser.CancelOrder(orderId = it)
-                            )
-                        },
-                        onOrderRate = {order->
-                            razorLogger.d { "MyOrdersScreen: onOrderRate clicked for order=${order.id}" }
-                            val orderId = order.id
-                            val firstItem = order.orderItems?.firstOrNull()
-                            val itemName = firstItem?.menuItemName ?: "Item"
-                            val itemImageUrl =  ""
-
-                            if (orderId != null) {
+                        OrderList(
+                             orders = currentOrders,
+                             tabName = tabs[selectedTabIndex].title,
+                            onOrderCancel = {
+                                razorLogger.d { "MyOrdersScreen: onOrderCancel clicked for order=$it" }
                                 navController.navigate(
-                                    AppScreenUser.ReviewOrder(
-                                        orderId = orderId,
-                                        itemName = itemName,
-                                        itemImageUrl = itemImageUrl
-                                    )
+                                    AppScreenUser.CancelOrder(orderId = it)
                                 )
-                            } else {
-                                showToast("Error: Cannot review this order.")
-                            }
-                        },
-                        onOrderAgain = { order ->
-                            razorLogger.d { "MyOrdersScreen: onOrderAgain clicked for order=${order.id}" }
-                            cartViewModel.clearCart()
-                            order.orderItems
-                                ?.filterNotNull()
-                                ?.forEach { item ->
+                            },
+                            onOrderRate = {order->
+                                razorLogger.d { "MyOrdersScreen: onOrderRate clicked for order=${order.id}" }
+                                val orderId = order.id
+                                val firstItem = order.orderItems?.firstOrNull()
+                                val itemName = firstItem?.menuItemName ?: "Item"
+                                val itemImageUrl =  ""
 
-                                    val id = item.menuItemId ?: return@forEach
-                                    val qty = item.quantity ?: return@forEach
-
-                                    cartViewModel.addToCart(
-                                        menuItemId = id,
-                                        quantity = qty
+                                if (orderId != null) {
+                                    navController.navigate(
+                                        AppScreenUser.ReviewOrder(
+                                            orderId = orderId,
+                                            itemName = itemName,
+                                            itemImageUrl = itemImageUrl
+                                        )
                                     )
+                                } else {
+                                    showToast("Error: Cannot review this order.")
                                 }
+                            },
+                            onOrderAgain = { order ->
+                                razorLogger.d { "MyOrdersScreen: onOrderAgain clicked for order=${order.id}" }
+                                cartViewModel.clearCart()
+                                order.orderItems
+                                    ?.filterNotNull()
+                                    ?.forEach { item ->
 
-                            navController.navigate(AppScreenUser.Cart)
-                        },
-                        onOrderViewDetails = {
-                            razorLogger.d { "MyOrdersScreen: onOrderViewDetails clicked for order=$it" }
-                            navController.navigate(AppScreenUser.OrderDetail(
-                                orderId = it
-                            ))
-                        },
-                        onclick = {
-                            razorLogger.d { "MyOrdersScreen: onclick order card for order=$it" }
-                            navController.navigate(AppScreenUser.OrderDetail(
-                                orderId = it
-                            )
-                            )
-                        },
-                        onPayNow = { orderId ->
-                            razorLogger.d { "MyOrdersScreen: Pay Now clicked for orderId=$orderId" }
-                            orderViewModel.initiatePayment(orderId, paymentMethod = "PAY_NOW")
-                        },
-                        paymentUiState = paymentUiState.value
-                    )
+                                        val id = item.menuItemId ?: return@forEach
+                                        val qty = item.quantity ?: return@forEach
 
+                                        cartViewModel.addToCart(
+                                            menuItemId = id,
+                                            quantity = qty
+                                        )
+                                    }
 
-                    if (paymentSuccessEvent != null) {
-                        val paidOrder = allOrders.firstOrNull { it.id == paymentSuccessEvent }
-                        val otpText = paidOrder?.otp ?: ""
-                        androidx.compose.material3.AlertDialog(
-                            onDismissRequest = { orderViewModel.resetPaymentSuccessEvent() },
-                            title = { Text("Payment Successful") },
-                            text = { Text("Your payment was successful. Pick up your order. OTP: $otpText") },
-                            confirmButton = {
-                                Button(onClick = { orderViewModel.resetPaymentSuccessEvent() }) {
-                                    Text("OK")
-                                }
-                            }
+                                navController.navigate(AppScreenUser.Cart)
+                            },
+                            onOrderViewDetails = {
+                                razorLogger.d { "MyOrdersScreen: onOrderViewDetails clicked for order=$it" }
+                                navController.navigate(AppScreenUser.OrderDetail(
+                                    orderId = it
+                                ))
+                            },
+                            onclick = {
+                                razorLogger.d { "MyOrdersScreen: onclick order card for order=$it" }
+                                navController.navigate(AppScreenUser.OrderDetail(
+                                    orderId = it
+                                )
+                                )
+                            },
+                            onPayNow = { orderId ->
+                                razorLogger.d { "MyOrdersScreen: Pay Now clicked for orderId=$orderId" }
+                                orderViewModel.initiatePayment(orderId, paymentMethod = "PAY_NOW")
+                            },
+                            paymentUiState = paymentUiState.value
                         )
-                    }
 
-                }
-                is UiState.Error -> {
-                    val raw = state.message
-                    logger.e { "MyOrders UI error display: $raw" }
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(top = 32.dp)
-                    ) {
+
+                        if (paymentSuccessEvent != null) {
+                            val paidOrder = allOrders.firstOrNull { it.id == paymentSuccessEvent }
+                            val otpText = paidOrder?.otp ?: ""
+                            androidx.compose.material3.AlertDialog(
+                                onDismissRequest = { orderViewModel.resetPaymentSuccessEvent() },
+                                title = { Text("Payment Successful") },
+                                text = { Text("Your payment was successful. Pick up your order. OTP: $otpText") },
+                                confirmButton = {
+                                    Button(onClick = { orderViewModel.resetPaymentSuccessEvent() }) {
+                                        Text("OK")
+                                    }
+                                }
+                            )
+                        }
+
+                    }
+                    is UiState.Error -> {
+                        val raw = state.message
+                        logger.e { "MyOrders UI error display: $raw" }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(top = 32.dp)
+                        ) {
+                            Text(
+                                text = "Failed to load orders",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Text(
+                                text = ErrorUtils.sanitizeError(raw),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                    }
+                    is UiState.Empty -> {
                         Text(
-                            text = "Failed to load orders",
+                            text = "No orders yet",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Text(
-                            text = ErrorUtils.sanitizeError(raw),
-                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 8.dp)
+                            modifier = Modifier.padding(top = 32.dp)
                         )
                     }
-                }
-                is UiState.Empty -> {
-                    Text(
-                        text = "No orders yet",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 32.dp)
-                    )
                 }
             }
         }

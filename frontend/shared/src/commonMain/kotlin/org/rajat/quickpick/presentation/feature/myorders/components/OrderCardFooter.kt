@@ -123,6 +123,7 @@ fun OrderCardFooter(
                 }
             }
             OrderStatus.PREPARING,
+            OrderStatus.PACKED,
             OrderStatus.READY_FOR_PICKUP -> {
                 if (isPaid) {
                     // If paid, show single Order details button

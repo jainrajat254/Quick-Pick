@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,7 +35,7 @@ import org.rajat.quickpick.utils.exitApp
 import org.rajat.quickpick.utils.toast.showToast
 import org.rajat.quickpick.utils.ErrorUtils
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -46,6 +48,7 @@ fun HomeScreen(
     var backPressedTime by remember { mutableStateOf(0L) }
 
     val vendorsState by homeViewModel.vendorsInCollegeState.collectAsState()
+    val isRefreshing by homeViewModel.isRefreshing.collectAsState()
 
     BackHandler(enabled = true) {
         val currentTime = Clock.System.now().toEpochMilliseconds()
@@ -58,7 +61,9 @@ fun HomeScreen(
     }
 
     LaunchedEffect(Unit) {
-        homeViewModel.getVendorsInCollege()
+        if (vendorsState is UiState.Empty) {
+            homeViewModel.getVendorsInCollege()
+        }
     }
 
     LaunchedEffect(vendorsState) {
@@ -68,11 +73,14 @@ fun HomeScreen(
                 val message = ErrorUtils.sanitizeError(raw)
                 showToast(message)
             }
+
             else -> Unit
         }
     }
 
-    Column(
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { homeViewModel.getVendorsInCollege(forceRefresh = true) },
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
@@ -112,6 +120,12 @@ fun HomeScreen(
                         vendors = vendors.vendors,
                         onVendorClick = { vendorId ->
                             navController.navigate(AppScreenUser.VendorDetail(vendorId))
+                        },
+                        onVendorVisible = { vendorId ->
+                            // Warm vendor detail & menu cache while user scrolls the home list
+                            // Both ViewModels guard against duplicate fetches internally
+                            vendorViewModel.getVendorsDetails(vendorId)
+                            menuItemViewModel.getVendorMenu(vendorId)
                         },
                         modifier = Modifier.fillMaxSize()
                     )

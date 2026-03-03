@@ -37,10 +37,6 @@ public interface MenuItemRepository extends MongoRepository<MenuItem, String> {
 
     List<MenuItem> findByVendorIdAndPriceBetween(String vendorId, double minPrice, double maxPrice);
 
-    List<MenuItem> findByQuantityGreaterThan(int quantity);
-
-    List<MenuItem> findByVendorIdAndQuantityGreaterThan(String vendorId, int quantity);
-
     boolean existsByVendorIdAndName(String vendorId, String name);
 
     @Query("{ 'vendorId': { $in: ?0 }, 'name': { $regex: ?1, $options: 'i' }, 'isAvailable': true }")

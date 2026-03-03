@@ -233,6 +233,27 @@ fun VendorOrderDetailScreen(
                                 onClick = {
                                     orderViewModel.updateOrderStatus(
                                         orderId,
+                                        org.rajat.quickpick.domain.modal.ordermanagement.UpdateOrderStateRequest("PACKED")
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = updateOrderStatusState !is UiState.Loading
+                            ) {
+                                if (updateOrderStatusState is UiState.Loading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                } else {
+                                    Text("Mark as Packed")
+                                }
+                            }
+                        }
+                        "PACKED" -> {
+                            Button(
+                                onClick = {
+                                    orderViewModel.updateOrderStatus(
+                                        orderId,
                                         org.rajat.quickpick.domain.modal.ordermanagement.UpdateOrderStateRequest("READY_FOR_PICKUP")
                                     )
                                 },
