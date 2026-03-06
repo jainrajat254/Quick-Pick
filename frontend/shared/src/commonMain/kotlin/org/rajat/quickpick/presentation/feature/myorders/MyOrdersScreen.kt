@@ -112,7 +112,7 @@ fun MyOrderScreen(
     }
 
     LaunchedEffect(Unit) {
-        if (myOrdersState is UiState.Empty) {
+        if (myOrdersState is UiState.Empty || myOrdersState is UiState.Error) {
             orderViewModel.getMyOrders()
         }
     }
