@@ -125,12 +125,14 @@ fun AppNavigation(
         AppScreenUser.VendorLogin,
         AppScreenUser.UserRegister,
         AppScreenUser.VendorRegister,
-        AppScreenUser.EmailOtpVerify, // hide base UI on OTP screen
         AppScreenUser.ReviewOrderConfirmation,
-        AppScreenUser.CancelOrderConfirmation,
-        AppScreenUser.ConfirmOrder -> false
+        AppScreenUser.CancelOrderConfirmation -> false
 
-        else -> true
+        else -> if (currentRouteUser is AppScreenUser.EmailOtpVerify ||
+            currentRouteUser is AppScreenUser.ForgotPassword ||
+            currentRouteUser is AppScreenUser.ResetPasswordOtp ||
+            currentRouteUser is AppScreenUser.ConfirmOrder
+        ) false else true
     }
 
 
